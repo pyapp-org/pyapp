@@ -1,3 +1,5 @@
+import pytest
+
 import pyapp.conf
 
 
@@ -37,4 +39,5 @@ class TestSettings(object):
         settings = pyapp.conf.Settings()
         settings.configure('tests.settings', 'tests.runtime_settings')
 
-        settings.load(pyapp.conf.ModuleLoader('tests.runtime_settings'))
+        with pytest.warns(ImportWarning):
+            settings.load(pyapp.conf.ModuleLoader('tests.runtime_settings'))
