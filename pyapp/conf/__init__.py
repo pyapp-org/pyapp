@@ -50,7 +50,7 @@ class Settings(object):
         self.SETTINGS_SOURCES.append(loader_key)
 
         # Handle instances of INCLUDE entries
-        include_settings = self.__dict__.pop('INCLUDE_SETTINGS')
+        include_settings = self.__dict__.pop('INCLUDE_SETTINGS', None)
         if include_settings:
             for source in include_settings:
                 pass
