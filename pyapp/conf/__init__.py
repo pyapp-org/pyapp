@@ -1,7 +1,10 @@
 """
-####################
-Configuration loader
-####################
+#############
+Configuration
+#############
+
+Provides a simple an easy woy to add loading of settings to your application.
+
 """
 from __future__ import absolute_import
 import logging
