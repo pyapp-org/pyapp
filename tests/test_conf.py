@@ -11,6 +11,16 @@ class TestSettings(object):
         assert not hasattr(settings, 'lower_value')
         assert not hasattr(settings, 'mixed_VALUE')
 
+    def test_configure__from_runtime_parameter(self):
+        settings = pyapp.conf.Settings()
+        settings.configure('tests.settings', 'tests.runtime_settings')
+
+        assert 'python:tests.runtime_settings' in settings.SETTINGS_SOURCES
+        assert hasattr(settings, 'UPPER_VALUE')
+        assert hasattr(settings, 'RUNTIME_VALUE')
+        assert not hasattr(settings, 'lower_value')
+        assert not hasattr(settings, 'mixed_VALUE')
+
     def test_configure__from_environment(self, monkeypatch):
         monkeypatch.setenv('PYAPP_SETTINGS', 'tests.runtime_settings')
 
@@ -22,3 +32,9 @@ class TestSettings(object):
         assert hasattr(settings, 'RUNTIME_VALUE')
         assert not hasattr(settings, 'lower_value')
         assert not hasattr(settings, 'mixed_VALUE')
+
+    def test_load__duplicate_settings_file(self):
+        settings = pyapp.conf.Settings()
+        settings.configure('tests.settings', 'tests.runtime_settings')
+
+        settings.load(pyapp.conf.ModuleLoader('tests.runtime_settings'))
