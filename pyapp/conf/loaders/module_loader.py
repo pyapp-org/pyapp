@@ -14,7 +14,7 @@ class ModuleLoader(object):
         self.module = module
 
     def __str__(self):
-        return "Module:{}".format(self.module)
+        return "python:{}".format(self.module)
 
     def __iter__(self):
         if not self.module:
