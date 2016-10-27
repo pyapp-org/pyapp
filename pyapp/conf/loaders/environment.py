@@ -1,5 +1,0 @@
-
-
-class EnvironmentLoader(object):
-    pass
-

@@ -1,11 +1,3 @@
-INCLUDE_SETTINGS = []
-"""
-Include settings for a location.
-
-This could be from a JSON file on disk/via HTTP/from S3 etc or a different
-Python settings file.
-"""
-
 DEBUG = False
 """
 Enable debug mode

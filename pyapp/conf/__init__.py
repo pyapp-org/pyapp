@@ -6,8 +6,9 @@ Configuration loader
 from __future__ import absolute_import
 import logging
 import os
+import warnings
 
-from . import base_settings
+from . import default_settings
 from .loaders.module_loader import ModuleLoader
 
 logger = logging.getLogger("pyapp.conf")
@@ -19,10 +20,9 @@ class Settings(object):
     """
     Settings container
     """
-    def __init__(self, base_settings=base_settings):
+    def __init__(self, base_settings=default_settings):
         # Copy values from base settings file.
-        for key, value in ((k, getattr(base_settings, k)) for k in dir(base_settings) if k.isupper()):
-            setattr(self, key, value)
+        self.__dict__.update((k, getattr(base_settings, k)) for k in dir(base_settings))
 
         self.SETTINGS_SOURCES = []
 
@@ -38,39 +38,41 @@ class Settings(object):
         """
         loader_key = str(loader)
         if loader_key in self.SETTINGS_SOURCES:
-            logger.warn("Settings already loaded: %s", loader_key)
+            warnings.warn("Settings already loaded: {}".format(loader_key), category=ImportWarning)
             return  # Prevent circular loading
 
         logger.info("Loading settings from: %s", loader_key)
 
         # Apply values from loader
-        for key, value in loader:
-            setattr(self, key, value)
+        self.__dict__.update(iter(loader))
 
         # Store loader key to prevent circular loading
         self.SETTINGS_SOURCES.append(loader_key)
 
-        # Handle instances of REQUIRE entries
-        for source in self.INCLUDE_SETTINGS:
-            pass
+        # Handle instances of INCLUDE entries
+        include_settings = self.__dict__.pop('INCLUDE_SETTINGS')
+        if include_settings:
+            for source in include_settings:
+                pass
 
-    def configure(self, default_settings, runtime_settings=None, env_settings_key=DEFAULT_ENV_KEY,
+    def configure(self, application_settings, runtime_settings=None, env_settings_key=DEFAULT_ENV_KEY,
                   additional_loaders=None):
         """
         Configure the settings object
 
-        :param default_settings: Your applications default settings file.
-        :type default_settings: str | unicode
+        :param application_settings: Your applications default settings file.
+        :type application_settings: str | unicode
         :param runtime_settings: Settings defined for the current runtime (eg from the command line)
         :type runtime_settings: str | unicode
         :param env_settings_key: Environment variable key used to override the runtime_settings.
         :type env_settings_key: str | unicode
+        :param additional_loaders: Additional loaders to execute
 
         """
-        loaders = [ModuleLoader(default_settings)]
+        loaders = [ModuleLoader(application_settings)]
 
         # Add run time settings (which can be overridden or specified by an
-        # enviornment variable).
+        # environment variable).
         runtime_settings = runtime_settings or os.environ.get(env_settings_key)
         if runtime_settings:
             loaders.append(ModuleLoader(runtime_settings))
@@ -84,4 +86,3 @@ class Settings(object):
             self.load(loader)
 
 settings = Settings()
-
