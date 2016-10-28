@@ -1,5 +1,5 @@
-#####
-PYApp
-#####
+######################################
+PyApp - A python application framework
+######################################
 
-A Python application framework for less boiler plate.
+*Let us handle the boring stuff!*

@@ -11,7 +11,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='pyapp',
     version='0.1',
-    description='Let us do the boilerplate',
+    description='A Python application framework - Let us handle the boring stuff!',
     long_description=open(path.join(here, 'README.rst'), encoding='utf-8').read(),
     url='https://github.com/timsavage/pyapp',
     author='Tim Savage',
