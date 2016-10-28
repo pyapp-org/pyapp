@@ -32,7 +32,7 @@ class FileLoader(object):
 
     def __iter__(self):
         try:
-            with open(self.path, encoding=self.encoding) as f:
+            with open(self.path) as f:
                 data = json.load(f)
 
         except OSError as ex:
