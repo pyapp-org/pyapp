@@ -1,28 +1,38 @@
 import importlib
 
+from pyapp.exceptions import InvalidConfiguration
+
 
 class ModuleLoader(object):
     """
     Load configuration from an importable module.
 
+    Loader will load all upper case attributes from the imported module.
+
     Usage:
 
-        >>> ModuleLoader("name.of.module")
+        >>> loader = ModuleLoader("name.of.module")
+        >>> settings = dict(loader)
 
     """
+    scheme = 'python'
+
     def __init__(self, module):
+        """
+        :param module: Fully qualify python module path.
+        :type module: str
+        """
+        assert module
+
         self.module = module
 
-    def __str__(self):
-        return "python:{}".format(self.module)
-
     def __iter__(self):
-        if not self.module:
-            raise Exception("Unable to load module: {}".format(self))
-
         try:
             mod = importlib.import_module(self.module)
         except ImportError as ex:
-            raise Exception("Unable to load module: {}\n{}".format(self, ex))
+            raise InvalidConfiguration("Unable to load module: {}\n{}".format(self, ex))
 
         return ((k, getattr(mod, k)) for k in dir(mod) if k.isupper())
+
+    def __str__(self):
+        return "{}:{}".format(self.scheme, self.module)
