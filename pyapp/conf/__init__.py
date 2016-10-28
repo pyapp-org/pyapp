@@ -30,9 +30,9 @@ class Settings(object):
         self.SETTINGS_SOURCES = []
 
     def __repr__(self):
-        return '<{cls} {sources}>'.format(
+        return '{cls}({sources})'.format(
             cls=self.__class__.__name__,
-            sources=self.SETTINGS_SOURCES or 'Un-configured'
+            sources=self.SETTINGS_SOURCES or 'UN-CONFIGURED'
         )
 
     def load(self, loader):
@@ -47,7 +47,7 @@ class Settings(object):
         logger.info("Loading settings from: %s", loader_key)
 
         # Apply values from loader
-        self.__dict__.update(iter(loader))
+        self.__dict__.update(loader)
 
         # Store loader key to prevent circular loading
         self.SETTINGS_SOURCES.append(loader_key)
