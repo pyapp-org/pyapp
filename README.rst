@@ -5,17 +5,13 @@ PyApp - A python application framework
 *Let us handle the boring stuff!*
 
 .. image:: https://img.shields.io/travis/timsavage/pyapp.svg?style=flat
-    :target: https://travis-ci.org/timsavage/pyapp
-    :alt: Travis CI Status
+   :target: https://travis-ci.org/timsavage/pyapp
+   :alt: Travis CI Status
 
 .. image:: https://codecov.io/gh/timsavage/pyapp/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/timsavage/pyapp
-    :alt: Test Coverage
+   :target: https://codecov.io/gh/timsavage/pyapp
+   :alt: Test Coverage
 
 .. image:: https://landscape.io/github/timsavage/pyapp/master/landscape.svg?style=flat
-    :target: https://landscape.io/github/timsavage/pyapp/master
-    :alt: Code Health
-
-.. image:: https://img.shields.io/requires/github/timsavage/pyapp.svg?style=flat
-    :target: https://requires.io/github/timsavage/pyapp/requirements/?branch=master
-    :alt: Requirements Status
+   :target: https://landscape.io/github/timsavage/pyapp/master
+   :alt: Code Health
