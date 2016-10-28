@@ -1,0 +1,18 @@
+# Python ignores
+*.py[o|c]
+*.coverage
+.cache
+
+# UNIX ignores
+*~
+
+# Project artifacts
+dist
+*.egg-info
+build
+_build
+.tox
+
+# IDE cruft
+.idea
+.ropeproject

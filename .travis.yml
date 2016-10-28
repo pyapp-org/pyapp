@@ -1,0 +1,21 @@
+language: python
+sudo: false
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "pypy"
+
+branches:
+  only:
+    - master
+    - development
+
+install:
+  - travis_retry pip install -Ur requirements.txt pytest pytest-cov pytest-mock
+
+script:
+  - py.test tests/ --cov=pyapp
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
