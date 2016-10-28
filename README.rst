@@ -11,11 +11,7 @@ PyApp - A python application framework
 .. image:: https://codecov.io/gh/timsavage/pyapp/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/timsavage/pyapp
     :alt: Test Coverage
-
+    
 .. image:: https://landscape.io/github/timsavage/pyapp/master/landscape.svg?style=flat
     :target: https://landscape.io/github/timsavage/pyapp/master
     :alt: Code Health
-
-.. image:: https://img.shields.io/requires/github/timsavage/pyapp.svg?style=flat
-    :target: https://requires.io/github/timsavage/pyapp/requirements/?branch=master
-    :alt: Requirements Status
