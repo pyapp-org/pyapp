@@ -35,7 +35,7 @@ class FileLoader(object):
             with open(self.path) as f:
                 data = json.load(f)
 
-        except OSError as ex:
+        except IOError as ex:
             raise InvalidConfiguration("Unable to load settings: {}\n{}".format(self, ex))
 
         except ValueError as ex:
