@@ -41,3 +41,14 @@ class TestSettings(object):
 
         with pytest.warns(ImportWarning):
             settings.load(pyapp.conf.ModuleLoader('tests.runtime_settings'))
+
+    def test_repr__un_configured(self):
+        settings = pyapp.conf.Settings()
+
+        assert repr(settings) == 'Settings(UN-CONFIGURED)'
+
+    def test_repr__configured(self):
+        settings = pyapp.conf.Settings()
+        settings.configure('tests.settings')
+
+        assert repr(settings) == "Settings(['python:tests.settings'])"
