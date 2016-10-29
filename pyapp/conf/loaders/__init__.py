@@ -57,30 +57,36 @@ class ModuleLoader(object):
         return "{}:{}".format(self.scheme, self.module)
 
 
-LOADERS = {
-    FileLoader.scheme: FileLoader,
-    ModuleLoader.scheme: ModuleLoader,
-}
+class SettingsLoaderRegistry(object):
+    def __init__(self):
+        self.loaders = {
+            FileLoader.scheme: FileLoader,
+            ModuleLoader.scheme: ModuleLoader,
+        }
+
+    def factory(self, settings_url):
+        """
+        Factory method that returns a factory suitable for opening the settings uri reference.
+
+        The URI scheme (identifier prior to the first `:`) is used to determine the correct loader.
+
+        :param settings_url: URI that references a settings source.
+        :type settings_url: str
+        :return: Loader instance
+        :raises: ValueError
+
+        """
+        result = urlparse(settings_url)
+        if not result.scheme:
+            # If no scheme is defined assume python module
+            return ModuleLoader.from_url(result)
+
+        try:
+            return self.loaders[result.scheme].from_url(result)
+        except KeyError:
+            raise InvalidConfiguration("Unknown scheme `{}` in settings URI: {}".format(result.scheme, result))
 
 
-def factory(settings_url):
-    """
-    Factory method that returns a factory suitable for opening the settings uri reference.
-
-    The URI scheme (identifier prior to the first `:`) is used to determine the correct loader.
-
-    :param settings_url: URI that references a settings source.
-    :type settings_url: str
-    :return: Loader instance
-    :raises: ValueError
-
-    """
-    result = urlparse(settings_url)
-    if not result.scheme:
-        # If no scheme is defined assume python module
-        return ModuleLoader.from_url(result)
-
-    try:
-        return LOADERS[result.scheme].from_url(result)
-    except KeyError:
-        raise InvalidConfiguration("Unknown scheme `{}` in settings URI: {}".format(result.scheme, result))
+# Singleton instance
+registry = SettingsLoaderRegistry()
+factory = registry.factory
