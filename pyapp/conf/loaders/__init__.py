@@ -1,7 +1,60 @@
 from __future__ import absolute_import
 
+import importlib
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    # Fallback for Python 2
+    from urlparse import urlparse
+
+from pyapp.exceptions import InvalidConfiguration
 from .file_loader import FileLoader
-from .module_loader import ModuleLoader
+
+
+class ModuleLoader(object):
+    """
+    Load configuration from an importable module.
+
+    Loader will load all upper case attributes from the imported module.
+
+    Usage:
+
+        >>> loader = ModuleLoader("name.of.module")
+        >>> settings = dict(loader)
+
+    """
+    scheme = 'python'
+
+    @classmethod
+    def from_url(cls, parse_result):
+        """
+        Create an instance of :class:`ModuleLoader` from :class:`urllib.parse.ParseResult`.
+
+        :type parse_result: urllib.parse.ParseResult
+        :rtype: ModuleLoader
+
+        """
+        return cls(parse_result.path)
+
+    def __init__(self, module):
+        """
+        :param module: Fully qualify python module path.
+        :type module: str
+        """
+        assert module
+
+        self.module = module
+
+    def __iter__(self):
+        try:
+            mod = importlib.import_module(self.module)
+        except ImportError as ex:
+            raise InvalidConfiguration("Unable to load module: {}\n{}".format(self, ex))
+
+        return ((k, getattr(mod, k)) for k in dir(mod) if k.isupper())
+
+    def __str__(self):
+        return "{}:{}".format(self.scheme, self.module)
 
 
 LOADERS = {
@@ -10,21 +63,24 @@ LOADERS = {
 }
 
 
-def factory(settings_uri):
+def factory(settings_url):
     """
     Factory method that returns a factory suitable for opening the settings uri reference.
 
     The URI scheme (identifier prior to the first `:`) is used to determine the correct loader.
 
-    :param settings_uri: URI that references a settings source.
-    :type settings_uri: str
+    :param settings_url: URI that references a settings source.
+    :type settings_url: str
     :return: Loader instance
     :raises: ValueError
 
     """
-    scheme, _ = settings_uri.split(':', 1)
+    result = urlparse(settings_url)
+    if not result.scheme:
+        # If no scheme is defined assume python module
+        return ModuleLoader.from_url(result)
 
     try:
-        return LOADERS[scheme](settings_uri)
+        return LOADERS[result.scheme].from_url(result)
     except KeyError:
-        raise ValueError("Unknown scheme `{}` in settings URI: {}".format(scheme, settings_uri))
+        raise InvalidConfiguration("Unknown scheme `{}` in settings URI: {}".format(result.scheme, result))

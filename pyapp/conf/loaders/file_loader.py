@@ -17,6 +17,17 @@ class FileLoader(object):
     """
     scheme = 'file'
 
+    @classmethod
+    def from_url(cls, parse_result):
+        """
+        Create an instance of :class:`FileLoader` from :class:`urllib.parse.ParseResult`.
+
+        :type parse_result: urllib.parse.ParseResult
+        :rtype: FileLoader
+
+        """
+        return cls(parse_result.path)
+
     def __init__(self, path, encoding='UTF8'):
         """
         :param path: Path to file; can be either absolute or relative to PWD.
@@ -48,4 +59,4 @@ class FileLoader(object):
         return ((k, v) for k, v in data.items() if k.isupper())
 
     def __str__(self):
-        return "{}:{}".format(self.scheme, self.path)
+        return "{}://{}".format(self.scheme, self.path)
