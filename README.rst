@@ -15,3 +15,5 @@ PyApp - A python application framework
 .. image:: https://landscape.io/github/timsavage/pyapp/master/landscape.svg?style=flat
    :target: https://landscape.io/github/timsavage/pyapp/master
    :alt: Code Health
+
+Many features inspired by Django, but modified to be more general for use outside of web applications.
