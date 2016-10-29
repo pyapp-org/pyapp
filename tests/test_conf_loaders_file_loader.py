@@ -14,7 +14,7 @@ class TestFileLoader(object):
 
         actual = dict(target)
 
-        assert str(target) == 'file:{}'.format(file)
+        assert str(target) == 'file://{}'.format(file)
         assert actual == {
             'UPPER_CASE': 'foo'
         }
@@ -26,7 +26,7 @@ class TestFileLoader(object):
         with pytest.raises(InvalidConfiguration):
             dict(target)
 
-        assert str(target) == 'file:{}'.format(file)
+        assert str(target) == 'file://{}'.format(file)
 
     def test__invalid_file(self):
         file = path.join(FIXTURES, 'settings-invalid-file.json')
@@ -35,7 +35,7 @@ class TestFileLoader(object):
         with pytest.raises(InvalidConfiguration):
             dict(target)
 
-        assert str(target) == 'file:{}'.format(file)
+        assert str(target) == 'file://{}'.format(file)
 
     def test__invalid_container(self):
         file = path.join(FIXTURES, 'settings-invalid-container.json')
@@ -44,4 +44,4 @@ class TestFileLoader(object):
         with pytest.raises(InvalidConfiguration):
             dict(target)
 
-        assert str(target) == 'file:{}'.format(file)
+        assert str(target) == 'file://{}'.format(file)
