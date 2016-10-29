@@ -12,7 +12,7 @@ import os
 import warnings
 
 from . import default_settings
-from .loaders.module_loader import ModuleLoader
+from .loaders import factory, ModuleLoader
 
 logger = logging.getLogger("pyapp.conf")
 
@@ -37,7 +37,10 @@ class Settings(object):
 
     def load(self, loader):
         """
-        Load settings from a loader instance.
+        Load settings from a loader instance. A loader is an iterator that yields key/value pairs.
+
+        See :py:class:`pyapp.conf.loaders.ModuleLoader` as an example.
+
         """
         loader_key = str(loader)
         if loader_key in self.SETTINGS_SOURCES:
@@ -55,11 +58,11 @@ class Settings(object):
         # Handle instances of INCLUDE entries
         include_settings = self.__dict__.pop('INCLUDE_SETTINGS', None)
         if include_settings:
-            for source in include_settings:
-                pass
+            for source_url in include_settings:
+                self.load(factory(source_url))
 
-    def configure(self, application_settings, runtime_settings=None, env_settings_key=DEFAULT_ENV_KEY,
-                  additional_loaders=None):
+    def configure(self, application_settings, runtime_settings=None, additional_loaders=None,
+                  env_settings_key=DEFAULT_ENV_KEY):
         """
         Configure the settings object
 
@@ -67,9 +70,10 @@ class Settings(object):
         :type application_settings: str | unicode
         :param runtime_settings: Settings defined for the current runtime (eg from the command line)
         :type runtime_settings: str | unicode
+        :param additional_loaders: Additional loaders to execute
+        :type additional_loaders: list()
         :param env_settings_key: Environment variable key used to override the runtime_settings.
         :type env_settings_key: str | unicode
-        :param additional_loaders: Additional loaders to execute
 
         """
         loaders = [ModuleLoader(application_settings)]

@@ -35,12 +35,33 @@ class TestSettings(object):
         assert not hasattr(settings, 'lower_value')
         assert not hasattr(settings, 'mixed_VALUE')
 
+    def test_configure__additional_loaders(self):
+        settings = pyapp.conf.Settings()
+
+        with pytest.warns(ImportWarning):
+            settings.configure('tests.settings', 'tests.runtime_settings', [
+                pyapp.conf.ModuleLoader('tests.runtime_settings_with_imports')
+            ])
+
+        assert 'python:tests.runtime_settings_with_imports' in settings.SETTINGS_SOURCES
+        assert 'python:tests.runtime_settings' in settings.SETTINGS_SOURCES
+
     def test_load__duplicate_settings_file(self):
         settings = pyapp.conf.Settings()
         settings.configure('tests.settings', 'tests.runtime_settings')
 
         with pytest.warns(ImportWarning):
             settings.load(pyapp.conf.ModuleLoader('tests.runtime_settings'))
+
+    def test_load__specify_include_settings(self):
+        settings = pyapp.conf.Settings()
+        settings.configure('tests.settings', 'tests.runtime_settings_with_imports')
+
+        assert 'python:tests.runtime_settings_with_imports' in settings.SETTINGS_SOURCES
+        assert 'python:tests.runtime_settings' in settings.SETTINGS_SOURCES
+        assert not hasattr(settings, 'INCLUDE_SETTINGS')
+        assert hasattr(settings, 'TEST_VALUE')
+        assert hasattr(settings, 'RUNTIME_VALUE')
 
     def test_repr__un_configured(self):
         settings = pyapp.conf.Settings()
