@@ -24,14 +24,59 @@ class TestModuleLoader(object):
         assert str(target) == 'python:tests.unknown.settings'
 
 
-class TestFactory(object):
+class TestSettingsLoaderRegistry(object):
+    def test_register__as_decorator(self):
+        target = loaders.SettingsLoaderRegistry()
+
+        @target.register
+        class SimpleSettings(object):
+            scheme = 'eek'
+
+            @classmethod
+            def from_url(cls, settings_url):
+                return cls(settings_url)
+
+            def __init__(self, settings_url):
+                self.settings_url = settings_url
+
+            def __iter__(self):
+                return {
+                    'SIMPLE': self.settings_url
+                }.items()
+
+        assert 'eek' in target.loaders
+        assert isinstance(target.factory('eek:sample'), SimpleSettings)
+
+    def test_register__as_method(self):
+        target = loaders.SettingsLoaderRegistry()
+
+        class SimpleSettings(object):
+            @classmethod
+            def from_url(cls, settings_url):
+                return cls(settings_url)
+
+            def __init__(self, settings_url):
+                self.settings_url = settings_url
+
+            def __iter__(self):
+                return {
+                    'SIMPLE': self.settings_url
+                }.items()
+
+        target.register(SimpleSettings, scheme='eek')
+
+        assert 'eek' in target.loaders
+        assert isinstance(target.factory('eek:sample'), SimpleSettings)
+
     @pytest.mark.parametrize(('settings_uri', 'expected', 'str_value'), (
         ('sample.settings', loaders.ModuleLoader, 'python:sample.settings'),
         ('python:sample.settings', loaders.ModuleLoader, 'python:sample.settings'),
         ('file:///path/to/sample.json', loaders.FileLoader, 'file:///path/to/sample.json'),
     ))
-    def test__loaders_correctly_resolved(self, settings_uri, expected, str_value):
-        actual = loaders.factory(settings_uri)
+    def test_factory__loaders_correctly_resolved(self, settings_uri, expected, str_value):
+        target = loaders.SettingsLoaderRegistry()
+
+        actual = target.factory(settings_uri)
 
         assert isinstance(actual, expected)
         assert str(actual) == str_value
@@ -39,8 +84,10 @@ class TestFactory(object):
     @pytest.mark.parametrize(('settings_uri', 'expected'), (
         ('py:sample.settings', 'Unknown scheme `py` in settings URI:'),
     ))
-    def test__invalid_settings_uri(self, settings_uri, expected):
+    def test_factory__invalid_settings_uri(self, settings_uri, expected):
+        target = loaders.SettingsLoaderRegistry()
+
         with pytest.raises(InvalidConfiguration) as e:
-            loaders.factory(settings_uri)
+            target.factory(settings_uri)
 
         assert str(e.value).startswith(expected)

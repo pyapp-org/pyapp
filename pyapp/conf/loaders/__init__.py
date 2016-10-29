@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 
 import importlib
+
+from pyapp.utils import is_iterable
+
 try:
     from urllib.parse import urlparse
 except ImportError:
@@ -64,6 +67,23 @@ class SettingsLoaderRegistry(object):
             ModuleLoader.scheme: ModuleLoader,
         }
 
+    def register(self, loader=None, scheme=None):
+        """
+        Register a new loader, this method can be used as decorator
+
+        :param loader: Loader to register
+        :param scheme: Scheme to register this loader for, if supplied scheme must be a attribute of the loader
+
+        """
+        def inner(obj):
+            loader_scheme = scheme or getattr(obj, 'scheme', None)
+            assert loader_scheme, "Scheme has not been defined."
+            assert hasattr(obj, 'from_url'), "Settings loaders must implement a from_url method"
+            self.loaders[loader_scheme] = obj
+            return obj
+
+        return inner(loader) if loader else inner
+
     def factory(self, settings_url):
         """
         Factory method that returns a factory suitable for opening the settings uri reference.
@@ -89,4 +109,5 @@ class SettingsLoaderRegistry(object):
 
 # Singleton instance
 registry = SettingsLoaderRegistry()
+register = registry.register
 factory = registry.factory
