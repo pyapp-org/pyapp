@@ -2,8 +2,6 @@ from __future__ import absolute_import
 
 import importlib
 
-from pyapp.utils import is_iterable
-
 try:
     from urllib.parse import urlparse
 except ImportError:
