@@ -19,7 +19,7 @@ setup(
     license='BSD',
     keywords='application-framework',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 3 - Alpha',
 
         'Intended Audience :: Developers',
 
