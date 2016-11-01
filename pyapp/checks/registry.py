@@ -6,6 +6,13 @@ from pyapp.utils import is_iterable
 from .messages import CheckMessage
 
 
+class Tags(object):
+    """
+    Built-in tags used by pyApp.
+    """
+    configuration = 'configuration'
+
+
 class CheckRegistry(object):
     def __init__(self):
         self.registered_checks = []
