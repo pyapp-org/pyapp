@@ -108,11 +108,13 @@ class TestSettings(object):
 
         with settings.modify() as patch:
             del patch.SETTING_3
+            del patch.SETTING_6
 
             assert not hasattr(settings, 'SETTING_3')
-            assert not hasattr(patch, 'SETTING_3')
+            assert not hasattr(settings, 'SETTING_6')
 
         assert settings.SETTING_3 == 3
+        assert not hasattr(settings, 'SETTING_6')
 
     def test_modify__multiple_changes_reversed(self):
         settings = pyapp.conf.Settings()
