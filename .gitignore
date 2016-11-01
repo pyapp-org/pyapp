@@ -12,6 +12,7 @@ dist
 build
 _build
 .tox
+.eggs
 
 # IDE cruft
 .idea
