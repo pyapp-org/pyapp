@@ -73,3 +73,65 @@ class TestSettings(object):
         settings.configure('tests.settings')
 
         assert repr(settings) == "Settings(['python:tests.settings'])"
+
+    def test_modify__change_a_setting(self):
+        settings = pyapp.conf.Settings()
+        settings.configure('tests.settings')
+
+        with settings.modify() as patch:
+            patch.SETTING_1 = 10
+            patch.SETTING_2 = 20
+
+            assert settings.SETTING_1 == 10
+            assert patch.SETTING_1 == 10
+            assert settings.SETTING_2 == 20
+            assert patch.SETTING_2 == 20
+
+        assert settings.SETTING_1 == 1
+        assert settings.SETTING_2 == 2
+
+    def test_modify__add_a_setting(self):
+        settings = pyapp.conf.Settings()
+        settings.configure('tests.settings')
+
+        with settings.modify() as patch:
+            patch.SETTING_6 = 60
+
+            assert settings.SETTING_6 == 60
+            assert patch.SETTING_6 == 60
+
+        assert not hasattr(settings, 'SETTING_6')
+
+    def test_modify__remove_a_setting(self):
+        settings = pyapp.conf.Settings()
+        settings.configure('tests.settings')
+
+        with settings.modify() as patch:
+            del patch.SETTING_3
+
+            assert not hasattr(settings, 'SETTING_3')
+            assert not hasattr(patch, 'SETTING_3')
+
+        assert settings.SETTING_3 == 3
+
+    def test_modify__multiple_changes_reversed(self):
+        settings = pyapp.conf.Settings()
+        settings.configure('tests.settings')
+
+        with settings.modify() as patch:
+            patch.SETTING_1 = 10
+            del patch.SETTING_1
+            patch.SETTING_2 = 20
+            patch.SETTING_1 = 30
+            del patch.SETTING_3
+            patch.SETTING_6 = 60
+
+            assert settings.SETTING_1 == 30
+            assert settings.SETTING_2 == 20
+            assert not hasattr(settings, 'SETTING_3')
+            assert settings.SETTING_6 == 60
+
+        assert settings.SETTING_1 == 1
+        assert settings.SETTING_2 == 2
+        assert settings.SETTING_3 == 3
+        assert not hasattr(settings, 'SETTING_6')

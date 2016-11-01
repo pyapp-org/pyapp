@@ -19,6 +19,60 @@ logger = logging.getLogger("pyapp.conf")
 DEFAULT_ENV_KEY = 'PYAPP_SETTINGS'
 
 
+class ModifySettingsContext(object):
+    """
+    Context object used to make temporary modifications to settings.
+
+    This is designed for usage with test cases.
+
+    """
+    def __init__(self, settings_container):
+        self.__dict__.update(
+            _container=settings_container,
+            _roll_back=[]
+        )
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        container = self._container
+
+        # Restore the state by running the rollback actions in reverse
+        for action, args in reversed(self._roll_back):
+            action(container, *args)
+
+    def __getattr__(self, item):
+        # Proxy the underlying settings container
+        return getattr(self._container, item)
+
+    def __setattr__(self, key, value):
+        container = self._container
+
+        if hasattr(container, key):
+            # Prepare an action that puts the current value back
+            action = setattr, (key, getattr(container, key))
+        else:
+            # Prepare an action to remove the key again
+            action = delattr, (key,)
+        self._roll_back.append(action)
+
+        setattr(container, key, value)
+
+    def __delattr__(self, item):
+        container = self._container
+
+        if hasattr(container, item):
+            # Prepare an action that puts the current value back
+            action = setattr, (item, getattr(container, item))
+            self._roll_back.append(action)
+
+            delattr(container, item)
+        else:
+            # Do nothing...
+            pass
+
+
 class Settings(object):
     """
     Settings container
@@ -91,5 +145,27 @@ class Settings(object):
         # Actually load settings from each loader
         for loader in loaders:
             self.load(loader)
+
+    def modify(self):
+        """
+        Apply changes to settings file using a context manager that will roll back the changes on exit of
+        a with block. Designed to simplify test cases.
+
+        This should be used with a context manager:
+
+            >>> settings = Settings()
+            >>> with settings.modify() as patch:
+            >>>     # Change a setting
+            >>>     patch.FOO = 'foo'
+            >>>     # Remove a setting
+            >>>     del patch.BAR
+            >>>
+            >>>     ...
+
+        :rtype: ModifySettingsContext
+
+        """
+        return ModifySettingsContext(self)
+
 
 settings = Settings()
