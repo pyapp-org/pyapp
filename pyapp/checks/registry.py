@@ -15,6 +15,9 @@ class CheckRegistry(object):
         Can be used as a function or a decorator. Register given function
         `func` labeled with given `tags`. The function should receive **kwargs
         and return a list of Messages.
+
+        Calling this method a second time allows for additional tags to be added.
+
         """
         def inner(func):
             func.tags = tags
@@ -31,7 +34,10 @@ class CheckRegistry(object):
 
     def run_checks(self, tags=None):
         """
-        Run all registered checks and return Messages.
+        Run all registered checks and return Messages. Use tags to filter checks.
+
+        :param tags: Iterable of tags to filter checks by.
+
         """
         messages = []
         checks = list(self.registered_checks)
