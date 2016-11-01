@@ -59,7 +59,7 @@ class TestCheckRegistry(object):
         def check_1(settings, **kwargs):
             assert settings
 
-        @target.register
+        @target.register()
         def check_2(settings, **kwargs):
             assert settings
 
@@ -74,7 +74,7 @@ class TestCheckRegistry(object):
         def check_1(**kwargs):
             return messages.Info("Message1")
 
-        @target.register
+        @target.register()
         def check_2(**kwargs):
             return messages.Info("Message2"), messages.Info("Message3")
 
