@@ -10,7 +10,7 @@ class Tags(object):
     """
     Built-in tags used by pyApp.
     """
-    configuration = 'configuration'
+    security = 'security'
 
 
 class CheckRegistry(object):

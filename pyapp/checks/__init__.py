@@ -9,9 +9,18 @@ Provides a interface and reporting of simple pre-flight sanity checks for your a
 from __future__ import absolute_import
 
 from .messages import (
+    CheckMessage,
     DEBUG, INFO, WARNING, ERROR, CRITICAL,
     Debug, Info, Warn, Error, Critical,
-    CheckMessage
 )
-
 from .registry import register, run_checks, Tags
+
+import pyapp.checks.built_in.security  # NOQA isort:skip
+
+
+__all__ = [
+    'CheckMessage',
+    'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL',
+    'Debug', 'Info', 'Warn', 'Error', 'Critical',
+    'register', 'run_checks', 'Tags'
+]
