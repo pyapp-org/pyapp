@@ -54,9 +54,9 @@ class Info(CheckMessage):
         super(Info, self).__init__(INFO, *args, **kwargs)
 
 
-class Warning(CheckMessage):
+class Warn(CheckMessage):
     def __init__(self, *args, **kwargs):
-        super(Warning, self).__init__(WARNING, *args, **kwargs)
+        super(Warn, self).__init__(WARNING, *args, **kwargs)
 
 
 class Error(CheckMessage):
