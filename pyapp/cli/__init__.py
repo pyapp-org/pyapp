@@ -4,6 +4,8 @@ Command Line Interface (CLI)
 ############################
 
 """
+from __future__ import print_function
+
 import argparse
 try:
     import argcomplete
@@ -14,7 +16,15 @@ from pyapp import conf
 
 
 def checks(opts):
-    pass
+    """
+    Entry point for checks
+    """
+    import pyapp.checks
+    messages = pyapp.checks.run_checks(tags=opts.tags)
+
+    print("Running checks...")
+    for message in messages:
+        print(message)
 
 
 class HandlerProxy(object):
@@ -66,7 +76,7 @@ class CliApplication(object):
                                  ))
 
         # Create sub parsers
-        self.sub_parsers = self.parser.add_subparsers()
+        self.sub_parsers = self.parser.add_subparsers(dest='handler')
 
         self._handlers = {}
         self.register_builtin_handlers()
@@ -96,8 +106,17 @@ class CliApplication(object):
         return inner(handler) if handler else inner
 
     def register_builtin_handlers(self):
+        """
+        Register any built in handlers
+        """
         handler = self.handler(checks)
         handler.add_argument('--tag', dest='tags', action='append')
+
+    def configure_logging(self):
+        """
+        Configure the logging framework
+        """
+        pass
 
     def dispatch(self):
         # Enable auto complete if available
@@ -106,4 +125,12 @@ class CliApplication(object):
 
         opts = self.parser.parse_args()
 
+        conf.settings.configure('pyapp.cli.default_settings')
 
+        # Dispatch to handler instance.
+        try:
+            handler = self._handlers[opts.handler]
+        except KeyError:
+            exit(2)
+        else:
+            handler(opts)
