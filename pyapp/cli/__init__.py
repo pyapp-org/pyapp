@@ -19,12 +19,9 @@ def checks(opts):
     """
     Entry point for checks
     """
-    import pyapp.checks
-    messages = pyapp.checks.run_checks(tags=opts.tags)
+    from pyapp.checks.report import CheckReport
 
-    print("Running checks...")
-    for message in messages:
-        print(message)
+    CheckReport(opts.verbose).run(opts.tags)
 
 
 class HandlerProxy(object):
@@ -72,8 +69,7 @@ class CliApplication(object):
                                  choices=('DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'))
         self.parser.add_argument('--version', action='version',
                                  version='%(prog)s version: {}'.format(
-                                     version or getattr(root_module, '__version__', 'Unknown')
-                                 ))
+                                     version or getattr(root_module, '__version__', 'Unknown')))
 
         # Create sub parsers
         self.sub_parsers = self.parser.add_subparsers(dest='handler')
@@ -109,8 +105,12 @@ class CliApplication(object):
         """
         Register any built in handlers
         """
+        # Register the checks handler
         handler = self.handler(checks)
         handler.add_argument('--tag', dest='tags', action='append')
+        handler.add_argument('--verbose', dest='verbose', action='store_true')
+        handler.add_argument('--no-color', dest='no_color', action='store_true',
+                             help="Disable colour output")
 
     def configure_logging(self):
         """
@@ -119,6 +119,9 @@ class CliApplication(object):
         pass
 
     def dispatch(self):
+        """
+        Dispatch to correct application.
+        """
         # Enable auto complete if available
         if argcomplete:
             argcomplete.autocomplete(self.parser)

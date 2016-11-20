@@ -39,11 +39,13 @@ class CheckRegistry(object):
                 tags += (check, )
             return inner
 
-    def run_checks(self, tags=None):
+    def run_checks(self, tags=None, pre_callback=None, post_callback=None):
         """
         Run all registered checks and return Messages. Use tags to filter checks.
 
         :param tags: Iterable of tags to filter checks by.
+        :param pre_callback: A function called before each check is executed.
+        :param post_callback: A function called after each check is executed.
 
         """
         messages = []
@@ -55,7 +57,14 @@ class CheckRegistry(object):
                       if hasattr(check, 'tags') and set(check.tags) & set(tags)]
 
         for check in checks:
+            if callable(pre_callback):
+                pre_callback(check)
+
             new_messages = check(settings=settings)
+
+            if callable(post_callback):
+                post_callback(check, new_messages)
+
             if isinstance(new_messages, CheckMessage):
                 messages.append(new_messages)
             elif is_iterable(new_messages):
