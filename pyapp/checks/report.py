@@ -25,3 +25,5 @@ class CheckReport(object):
 
         for message in messages:
             print(message, file=self.f_out)
+        
+        return messages

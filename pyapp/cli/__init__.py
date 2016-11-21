@@ -15,13 +15,14 @@ except ImportError:
 from pyapp import conf
 
 
-def checks(opts):
-    """
-    Entry point for checks
-    """
-    from pyapp.checks.report import CheckReport
-
-    CheckReport(opts.verbose).run(opts.tags)
+# def checks(opts):
+#     """
+#     Entry point for checks
+#     """
+#     from pyapp.checks.report import CheckReport
+#
+#     messages = CheckReport(opts.verbose).run(opts.tags)
+#     if any()
 
 
 class HandlerProxy(object):
@@ -83,6 +84,7 @@ class CliApplication(object):
 
         :param handler:
         :param cli_name:
+        :rtype: HandlerProxy
 
         """
         def inner(func):
@@ -106,11 +108,22 @@ class CliApplication(object):
         Register any built in handlers
         """
         # Register the checks handler
-        handler = self.handler(checks)
-        handler.add_argument('--tag', dest='tags', action='append')
-        handler.add_argument('--verbose', dest='verbose', action='store_true')
-        handler.add_argument('--no-color', dest='no_color', action='store_true',
-                             help="Disable colour output")
+        @self.handler
+        def checks(opts):
+            """
+            Execute checks
+            """
+            from pyapp.checks.report import CheckReport
+
+            messages = CheckReport(opts.verbose).run(opts.tags)
+            if any(message.is_serious() for message in messages):
+                exit(2)
+        checks.add_argument('--tag', dest='tags', action='append',
+                            help="Run checks associated with a tags.")
+        checks.add_argument('--verbose', dest='verbose', action='store_true',
+                            help="Verbose output")
+        checks.add_argument('--no-color', dest='no_color', action='store_true',
+                            help="Disable colour output.")
 
     def configure_logging(self):
         """

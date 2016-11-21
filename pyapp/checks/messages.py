@@ -1,3 +1,7 @@
+"""
+Messages
+"""
+
 # Levels
 DEBUG = 10
 INFO = 20
@@ -7,6 +11,9 @@ CRITICAL = 50
 
 
 class CheckMessage(object):
+    """
+    Check message base class
+    """
     def __init__(self, level, msg, hint=None, obj=None):
         assert isinstance(level, int), "The first argument should be level."
         self.level = level
@@ -22,7 +29,7 @@ class CheckMessage(object):
         )
 
     def __ne__(self, other):
-        return not (self == other)
+        return not self == other
 
     def __str__(self):
         if self.obj is None:
@@ -45,6 +52,9 @@ class CheckMessage(object):
 
 
 class Debug(CheckMessage):
+    """
+    Debug check message
+    """
     def __init__(self, *args, **kwargs):
         super(Debug, self).__init__(DEBUG, *args, **kwargs)
 
