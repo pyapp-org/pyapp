@@ -39,36 +39,51 @@ class CheckRegistry(object):
                 tags += (check, )
             return inner
 
-    def run_checks(self, tags=None, pre_callback=None, post_callback=None):
+    def checks_by_tags(self, tags=None):
+        """
+        Return an iterator of checks that relate to a specific tag (or tags)
+        """
+        checks = self.registered_checks
+
+        if tags:
+            tags = set(tags)
+            return (check for check in checks
+                    if hasattr(check, 'tags') and set(check.tags) & tags)
+        else:
+            return iter(checks)
+
+    def run_checks_iter(self, tags=None, pre_callback=None): 
+        """
+        Iterate through all registered checks and run each to return messages.
+
+        :param tags: Iterable of tags to filter checks by.
+
+        """
+        check_kwargs = dict(settings=settings)
+
+        for check in self.checks_by_tags(tags):
+            if pre_callback:
+                pre_callback(check)
+
+            messages = check(**check_kwargs)
+            if isinstance(messages, CheckMessage):
+                yield messages,  # yield tuple, comma is expected
+            elif messages:
+                yield messages
+            else:
+                yield tuple()  # empty tuple a value should be yielded for each check
+
+    def run_checks(self, tags=None): 
         """
         Run all registered checks and return Messages. Use tags to filter checks.
 
         :param tags: Iterable of tags to filter checks by.
-        :param pre_callback: A function called before each check is executed.
-        :param post_callback: A function called after each check is executed.
 
         """
         messages = []
-        checks = list(self.registered_checks)
 
-        if tags:
-            # Filter the checks list
-            checks = [check for check in checks
-                      if hasattr(check, 'tags') and set(check.tags) & set(tags)]
-
-        for check in checks:
-            if callable(pre_callback):
-                pre_callback(check)
-
-            new_messages = check(settings=settings)
-
-            if callable(post_callback):
-                post_callback(check, new_messages)
-
-            if isinstance(new_messages, CheckMessage):
-                messages.append(new_messages)
-            elif is_iterable(new_messages):
-                messages.extend(new_messages)
+        for new_messages in self.run_checks_iter(tags):
+            messages.extend(new_messages)
 
         return messages
 
