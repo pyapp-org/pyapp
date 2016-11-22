@@ -11,18 +11,11 @@ try:
     import argcomplete
 except ImportError:
     argcomplete = None
+import logging
+import logging.config
 
 from pyapp import conf
-
-
-# def checks(opts):
-#     """
-#     Entry point for checks
-#     """
-#     from pyapp.checks.report import CheckReport
-#
-#     messages = CheckReport(opts.verbose).run(opts.tags)
-#     if any()
+from pyapp.conf import settings
 
 
 class HandlerProxy(object):
@@ -125,11 +118,17 @@ class CliApplication(object):
         checks.add_argument('--no-color', dest='no_color', action='store_true',
                             help="Disable colour output.")
 
+    def configure_settings(self):
+        """
+        Configure settings
+        """
+        settings.configure()
+
     def configure_logging(self):
         """
         Configure the logging framework
         """
-        pass
+        logging.config.dictConfig(settings.LOGGING)
 
     def dispatch(self):
         """
