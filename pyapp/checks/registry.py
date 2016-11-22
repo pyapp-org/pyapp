@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from itertools import chain
 
 from pyapp.conf import settings
 from pyapp.utils import is_iterable
@@ -57,6 +58,7 @@ class CheckRegistry(object):
         Iterate through all registered checks and run each to return messages.
 
         :param tags: Iterable of tags to filter checks by.
+        :param pre_callback: Callback triggered before each check is executed.
 
         """
         check_kwargs = dict(settings=settings)
@@ -80,12 +82,7 @@ class CheckRegistry(object):
         :param tags: Iterable of tags to filter checks by.
 
         """
-        messages = []
-
-        for new_messages in self.run_checks_iter(tags):
-            messages.extend(new_messages)
-
-        return messages
+        return list(chain.from_iterable(self.run_checks_iter(tags)))
 
 
 # Singleton instance of registry

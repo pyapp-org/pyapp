@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 import colorama
 import sys
 
@@ -12,7 +13,10 @@ class CheckReport(object):
         self._registry = report_registry
 
     def pre_callback(self, check):
-        pass
+        if self.verbose:
+            print("+ {}".format(check), file=self.f_out)
+        else:
+            self.f_out.write('.')
 
     def post_callback(self, check, messages):
         pass
@@ -21,7 +25,7 @@ class CheckReport(object):
         pass
 
     def run(self, tags=None):
-        messages = self._registry.run_checks(tags, self.pre_callback, self.post_callback)
+        messages = self._registry.run_checks_iter(tags, self.pre_callback)
 
         for message in messages:
             print(message, file=self.f_out)
