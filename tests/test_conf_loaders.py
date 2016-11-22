@@ -6,11 +6,11 @@ from pyapp.exceptions import InvalidConfiguration
 
 class TestModuleLoader(object):
     def test__module_exists(self):
-        target = loaders.ModuleLoader('tests.settings')
+        target = loaders.ModuleLoader('settings')
 
         actual = dict(target)
 
-        assert str(target) == 'python:tests.settings'
+        assert str(target) == 'python:settings'
         assert actual == {
             'UPPER_VALUE': 'foo',
             'SETTING_1': 1,

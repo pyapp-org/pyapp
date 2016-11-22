@@ -1,5 +1,3 @@
-import pytest
-
 from pyapp.checks import registry
 from pyapp.checks import messages
 

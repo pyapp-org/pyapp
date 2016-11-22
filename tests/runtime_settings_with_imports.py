@@ -1,5 +1,5 @@
 INCLUDE_SETTINGS = [
-    'python:tests.runtime_settings'
+    'python:runtime_settings'
 ]
 
 # Test only upper values are included

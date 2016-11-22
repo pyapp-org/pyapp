@@ -1,5 +1,4 @@
 from pyapp.conf import settings
-
 from pyapp.checks.built_in import security
 
 

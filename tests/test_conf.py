@@ -6,30 +6,30 @@ import pyapp.conf
 class TestSettings(object):
     def test_configure(self):
         settings = pyapp.conf.Settings()
-        settings.configure('tests.settings')
+        settings.configure('settings')
 
-        assert 'python:tests.settings' in settings.SETTINGS_SOURCES
+        assert 'python:settings' in settings.SETTINGS_SOURCES
         assert hasattr(settings, 'UPPER_VALUE')
         assert not hasattr(settings, 'lower_value')
         assert not hasattr(settings, 'mixed_VALUE')
 
     def test_configure__from_runtime_parameter(self):
         settings = pyapp.conf.Settings()
-        settings.configure('tests.settings', 'tests.runtime_settings')
+        settings.configure('settings', 'runtime_settings')
 
-        assert 'python:tests.runtime_settings' in settings.SETTINGS_SOURCES
+        assert 'python:runtime_settings' in settings.SETTINGS_SOURCES
         assert hasattr(settings, 'UPPER_VALUE')
         assert hasattr(settings, 'RUNTIME_VALUE')
         assert not hasattr(settings, 'lower_value')
         assert not hasattr(settings, 'mixed_VALUE')
 
     def test_configure__from_environment(self, monkeypatch):
-        monkeypatch.setenv('PYAPP_SETTINGS', 'tests.runtime_settings')
+        monkeypatch.setenv('PYAPP_SETTINGS', 'runtime_settings')
 
         settings = pyapp.conf.Settings()
-        settings.configure('tests.settings')
+        settings.configure('settings')
 
-        assert 'python:tests.runtime_settings' in settings.SETTINGS_SOURCES
+        assert 'python:runtime_settings' in settings.SETTINGS_SOURCES
         assert hasattr(settings, 'UPPER_VALUE')
         assert hasattr(settings, 'RUNTIME_VALUE')
         assert not hasattr(settings, 'lower_value')
@@ -39,26 +39,26 @@ class TestSettings(object):
         settings = pyapp.conf.Settings()
 
         with pytest.warns(ImportWarning):
-            settings.configure('tests.settings', 'tests.runtime_settings', [
-                pyapp.conf.ModuleLoader('tests.runtime_settings_with_imports')
+            settings.configure('settings', 'runtime_settings', [
+                pyapp.conf.ModuleLoader('runtime_settings_with_imports')
             ])
 
-        assert 'python:tests.runtime_settings_with_imports' in settings.SETTINGS_SOURCES
-        assert 'python:tests.runtime_settings' in settings.SETTINGS_SOURCES
+        assert 'python:runtime_settings_with_imports' in settings.SETTINGS_SOURCES
+        assert 'python:runtime_settings' in settings.SETTINGS_SOURCES
 
     def test_load__duplicate_settings_file(self):
         settings = pyapp.conf.Settings()
-        settings.configure('tests.settings', 'tests.runtime_settings')
+        settings.configure('settings', 'runtime_settings')
 
         with pytest.warns(ImportWarning):
-            settings.load(pyapp.conf.ModuleLoader('tests.runtime_settings'))
+            settings.load(pyapp.conf.ModuleLoader('runtime_settings'))
 
     def test_load__specify_include_settings(self):
         settings = pyapp.conf.Settings()
-        settings.configure('tests.settings', 'tests.runtime_settings_with_imports')
+        settings.configure('settings', 'runtime_settings_with_imports')
 
-        assert 'python:tests.runtime_settings_with_imports' in settings.SETTINGS_SOURCES
-        assert 'python:tests.runtime_settings' in settings.SETTINGS_SOURCES
+        assert 'python:runtime_settings_with_imports' in settings.SETTINGS_SOURCES
+        assert 'python:runtime_settings' in settings.SETTINGS_SOURCES
         assert not hasattr(settings, 'INCLUDE_SETTINGS')
         assert hasattr(settings, 'TEST_VALUE')
         assert hasattr(settings, 'RUNTIME_VALUE')
@@ -70,13 +70,13 @@ class TestSettings(object):
 
     def test_repr__configured(self):
         settings = pyapp.conf.Settings()
-        settings.configure('tests.settings')
+        settings.configure('settings')
 
-        assert repr(settings) == "Settings(['python:tests.settings'])"
+        assert repr(settings) == "Settings(['python:settings'])"
 
     def test_modify__change_a_setting(self):
         settings = pyapp.conf.Settings()
-        settings.configure('tests.settings')
+        settings.configure('settings')
 
         with settings.modify() as patch:
             patch.SETTING_1 = 10
@@ -92,7 +92,7 @@ class TestSettings(object):
 
     def test_modify__add_a_setting(self):
         settings = pyapp.conf.Settings()
-        settings.configure('tests.settings')
+        settings.configure('settings')
 
         with settings.modify() as patch:
             patch.SETTING_6 = 60
@@ -104,7 +104,7 @@ class TestSettings(object):
 
     def test_modify__remove_a_setting(self):
         settings = pyapp.conf.Settings()
-        settings.configure('tests.settings')
+        settings.configure('settings')
 
         with settings.modify() as patch:
             del patch.SETTING_3
@@ -118,7 +118,7 @@ class TestSettings(object):
 
     def test_modify__multiple_changes_reversed(self):
         settings = pyapp.conf.Settings()
-        settings.configure('tests.settings')
+        settings.configure('settings')
 
         with settings.modify() as patch:
             patch.SETTING_1 = 10
