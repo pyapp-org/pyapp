@@ -7,7 +7,6 @@ Enable debug mode
 # Logging
 
 LOGGING = {
-    'version': 1,
     'formatters': {
         'default': {
             'format': '%(asctime)s | %(levelname)s | %(name)s | %(message)s',

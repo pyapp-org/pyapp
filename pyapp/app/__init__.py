@@ -158,7 +158,9 @@ class CliApplication(object):
         """
         Configure the logging framework
         """
-        logging.config.dictConfig(settings.LOGGING)
+        dict_config = settings.LOGGING.copy()
+        dict_config.setdefault('version', 1)
+        logging.config.dictConfig(dict_config)
 
     def dispatch(self):
         """
