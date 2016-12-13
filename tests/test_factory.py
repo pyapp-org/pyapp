@@ -1,7 +1,8 @@
+import mock
 import pytest
 
 import pyapp.factory
-from pyapp.conf import settings
+from tests import factory
 
 
 def factory_test(key):
@@ -13,7 +14,7 @@ class TestDefaultCache(object):
         target = pyapp.factory.DefaultCache()
 
         with pytest.raises(KeyError):
-            actual = target['foo']
+            target['foo']
 
         assert 'foo' not in target
 
@@ -42,6 +43,7 @@ class TestNamedFactory(object):
         target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY')
 
         actual = target()
+        assert isinstance(actual, factory.Bar)
         assert str(actual) == 'Bar'
         assert actual.length == 42
 
@@ -49,6 +51,7 @@ class TestNamedFactory(object):
         target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY')
 
         actual = target('iron')
+        assert isinstance(actual, factory.IronBar)
         assert str(actual) == 'Iron Bar'
         assert actual.length == 24
 
@@ -56,6 +59,7 @@ class TestNamedFactory(object):
         target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY', default_name='iron')
 
         actual = target()
+        assert isinstance(actual, factory.IronBar)
         assert str(actual) == 'Iron Bar'
         assert actual.length == 24
 
@@ -63,5 +67,56 @@ class TestNamedFactory(object):
         target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY')
 
         with pytest.raises(KeyError):
+            target('copper')
+
+    def test_with_abc_defined(self):
+        target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY', abc=factory.BarABC)
+
+        actual = target()
+        assert isinstance(actual, factory.Bar)
+
+    def test_type_error_raised_if_not_correct_abc(self):
+        target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY', abc=factory.BarABC)
+
+        with pytest.raises(TypeError):
             target('steel')
 
+    def test_get_type_definition_is_cached(self, monkeypatch):
+        mock_import = mock.Mock()
+        mock_import.return_value = factory.Bar
+        monkeypatch.setattr(pyapp.factory, '_import_type', mock_import)
+
+        target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY')
+
+        actual1 = target()
+        actual2 = target()
+
+        assert isinstance(actual1, factory.Bar)
+        assert isinstance(actual2, factory.Bar)
+        assert actual1 is not actual2
+        mock_import.assert_called_once_with('tests.factory.Bar')
+
+
+class TestNamedSingletonFactory(object):
+    def test_get_default(self):
+        target = pyapp.factory.NamedSingletonFactory('TEST_NAMED_FACTORY')
+
+        actual1 = target()
+        actual2 = target()
+
+        assert actual1 is actual2
+
+    def test_get_type_definition_is_cached(self, monkeypatch):
+        mock_import = mock.Mock()
+        mock_import.return_value = factory.Bar
+        monkeypatch.setattr(pyapp.factory, '_import_type', mock_import)
+
+        target = pyapp.factory.NamedSingletonFactory('TEST_NAMED_FACTORY')
+
+        actual1 = target()
+        actual2 = target()
+
+        assert isinstance(actual1, factory.Bar)
+        assert isinstance(actual2, factory.Bar)
+        assert actual1 is actual2
+        mock_import.assert_called_once_with('tests.factory.Bar')

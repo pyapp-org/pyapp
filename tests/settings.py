@@ -21,5 +21,7 @@ TEST_NAMED_FACTORY = {
         'tests.factory.IronBar', {
             'length': 24
         },
-    )
+    ),
+    'steel': ('tests.factory.SteelBeam', {})
 }
+

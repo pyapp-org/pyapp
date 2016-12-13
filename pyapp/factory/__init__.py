@@ -84,7 +84,7 @@ class NamedFactory(object):
     """
     def __init__(self, setting, abc=None, default_name='default'):
         """
-        Initialise a named ABC factory.
+        Initialise a named factory.
 
         :param setting: Setting attribute that holds the definition of a 
             instance, this value should be an upper case.
@@ -123,26 +123,26 @@ class NamedFactory(object):
         except KeyError:
             raise KeyError("Setting definition `{}` not found".format(name))
 
-        return _import_type(type_name), kwargs
+        type_ = _import_type(type_name)
+        if self.abc and not issubclass(type_, self.abc):
+            raise TypeError("Setting definition `{}` is not a subclass of `{}`".format(
+                type_name, self.abc
+            ))
+
+        return type_, kwargs
 
     def create_instance(self, name=None):
         """
         Get a named instance.
 
-        :param name: Named instance definition, default is to get the default
-            instance type.
+        :param name: Named instance definition; default value is defined by the
+            ``default_name`` instance argument.
         :returns: New instance of the named type.
 
         """
         with self._type_definitions_lock:
             instance_type, kwargs = self._type_definitions[name or self.default_name]
         return instance_type(**kwargs)
-    #
-    # def check(self):
-    #     """
-    #     Perform checks on named definitions.
-    #     """
-    #     pass
 
 
 class NamedSingletonFactory(NamedFactory):
@@ -152,7 +152,7 @@ class NamedSingletonFactory(NamedFactory):
     This instance factory type is useful for instance types that only require
     a single instance eg database connections, web service agents.
 
-    If your instance type of not thread safe it is recommended that the 
+    If your instance types are not thread safe it is recommended that the
     :py:class:`ThreadSafeNamedSingletonFactory` is used.
 
     """
@@ -167,8 +167,8 @@ class NamedSingletonFactory(NamedFactory):
         """
         Get a named singleton instance.
 
-        :param name: Named instance definition, default is to get the default
-            instance type.
+        :param name: Named instance definition; default value is defined by the
+            ``default_name`` instance argument.
         :returns: Instance of the named type.
 
         """
