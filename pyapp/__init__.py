@@ -9,7 +9,9 @@ PyApp - A python application framework
 """
 import logging
 import os
+
 from pkg_resources import get_distribution, DistributionNotFound
+
 
 # Configure a default null handler for logging.
 logging.getLogger(__name__).addHandler(logging.NullHandler())
