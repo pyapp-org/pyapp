@@ -66,12 +66,14 @@ class TestSettings(object):
     def test_repr__un_configured(self):
         settings = pyapp.conf.Settings()
 
+        assert not settings.is_configured
         assert repr(settings) == 'Settings(UN-CONFIGURED)'
 
     def test_repr__configured(self):
         settings = pyapp.conf.Settings()
         settings.configure('tests.settings')
 
+        assert settings.is_configured
         assert repr(settings) == "Settings(['python:tests.settings'])"
 
     def test_modify__change_a_setting(self):

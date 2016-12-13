@@ -11,14 +11,7 @@ class TestModuleLoader(object):
         actual = dict(target)
 
         assert str(target) == 'python:tests.settings'
-        assert actual == {
-            'UPPER_VALUE': 'foo',
-            'SETTING_1': 1,
-            'SETTING_2': 2,
-            'SETTING_3': 3,
-            'SETTING_4': 4,
-            'SETTING_5': 5,
-        }
+        assert all(key.isupper() for key in actual)
 
     def test__module_not_found(self):
         target = loaders.ModuleLoader('tests.unknown.settings')

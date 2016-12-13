@@ -89,6 +89,13 @@ class Settings(object):
             sources=self.SETTINGS_SOURCES or 'UN-CONFIGURED'
         )
 
+    @property
+    def is_configured(self):
+        """
+        Settings have been configured.
+        """
+        return bool(self.SETTINGS_SOURCES)
+
     def load(self, loader):
         """
         Load settings from a loader instance. A loader is an iterator that yields key/value pairs.
