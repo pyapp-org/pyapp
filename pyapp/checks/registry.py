@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from itertools import chain
 
 from pyapp.conf import settings
-from pyapp.utils import is_iterable
 
 from .messages import CheckMessage
 
@@ -28,7 +27,7 @@ class CheckRegistry(object):
 
         """
         def inner(func):
-            func.tags = tags
+            setattr(func, 'tags', tags)
             if func not in self.registered_checks:
                 self.registered_checks.append(func)
             return func
