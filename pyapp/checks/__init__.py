@@ -15,7 +15,7 @@ from .messages import (
 )
 from .registry import register, run_checks, Tags
 
-import pyapp.checks.built_in.security  # NOQA isort:skip
+from .built_in import security  # NOQA isort:skip
 
 
 __all__ = [
