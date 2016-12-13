@@ -60,20 +60,32 @@ class Debug(CheckMessage):
 
 
 class Info(CheckMessage):
+    """
+    Info check message
+    """
     def __init__(self, *args, **kwargs):
         super(Info, self).__init__(INFO, *args, **kwargs)
 
 
 class Warn(CheckMessage):
+    """
+    Warning check message
+    """
     def __init__(self, *args, **kwargs):
         super(Warn, self).__init__(WARNING, *args, **kwargs)
 
 
 class Error(CheckMessage):
+    """
+    Error check message
+    """
     def __init__(self, *args, **kwargs):
         super(Error, self).__init__(ERROR, *args, **kwargs)
 
 
 class Critical(CheckMessage):
+    """
+    Critical check message
+    """
     def __init__(self, *args, **kwargs):
         super(Critical, self).__init__(CRITICAL, *args, **kwargs)

@@ -1,5 +1,6 @@
 -r requirements.txt
 tox
 pytest
+pytest-cov
 mock
 coverage
