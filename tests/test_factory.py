@@ -96,6 +96,11 @@ class TestNamedFactory(object):
         assert actual1 is not actual2
         mock_import.assert_called_once_with('tests.factory.Bar')
 
+    def test_available_definitions(self):
+        target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY')
+
+        assert set(target.available) == {'default', 'iron', 'steel'}
+
 
 class TestNamedSingletonFactory(object):
     def test_get_default(self):
@@ -112,6 +117,31 @@ class TestNamedSingletonFactory(object):
         monkeypatch.setattr(pyapp.factory, '_import_type', mock_import)
 
         target = pyapp.factory.NamedSingletonFactory('TEST_NAMED_FACTORY')
+
+        actual1 = target()
+        actual2 = target()
+
+        assert isinstance(actual1, factory.Bar)
+        assert isinstance(actual2, factory.Bar)
+        assert actual1 is actual2
+        mock_import.assert_called_once_with('tests.factory.Bar')
+
+
+class TestThreadLocalNamedSingletonFactory(object):
+    def test_get_default(self):
+        target = pyapp.factory.ThreadLocalNamedSingletonFactory('TEST_NAMED_FACTORY')
+
+        actual1 = target()
+        actual2 = target()
+
+        assert actual1 is actual2
+
+    def test_get_type_definition_is_cached(self, monkeypatch):
+        mock_import = mock.Mock()
+        mock_import.return_value = factory.Bar
+        monkeypatch.setattr(pyapp.factory, '_import_type', mock_import)
+
+        target = pyapp.factory.ThreadLocalNamedSingletonFactory('TEST_NAMED_FACTORY')
 
         actual1 = target()
         actual2 = target()

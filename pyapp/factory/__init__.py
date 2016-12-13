@@ -3,22 +3,27 @@
 Configuration based Instance factories
 ######################################
 
-Instance factories that generate an instance of an object based on 
-configuration. Makes use of :py:mod:`pyapp.conf` for the definition of named
-instance definition.
+Inversion of control style instance factories that return an object instance
+based on a named definition from configuration. Makes use of
+:py:mod:`pyapp.conf` to store instance definitions in settings.
+
+An instance definition includes both the object type as well as arguments
+provided at instantiation, this can be used to provide for example connections
+to different multiple different database instances (that use the same database
+engine and connection library).
 
 The default instance factory also integrates with the :py:mod:`pyapp.checks`
 framework to allow checks to be executed on the instances.
 
 Usage::
 
-    >>> foo_factory = NamedABCFactory('FOO')
-    >>> instance = foo_factory.get_instance()
+    >>> foo_factory = NamedFactory('FOO')
+    >>> instance = foo_factory()
 
 or taking advantage of the factory being callable we can create a singleton
 factory::
 
-    >>> get_bar_instance = NamedSingletonABCFactory('BAR')
+    >>> get_bar_instance = NamedSingletonFactory('BAR')
     >>> # Get iron bar instance
     >>> bar = get_bar_instance('iron')
 
@@ -117,6 +122,13 @@ class NamedFactory(object):
         """
         return self.create_instance(name)
 
+    @property
+    def available(self):
+        """
+        Defined names available in settings.
+        """
+        return self._instance_definitions.keys()
+
     def _get_type_definition(self, name):
         try:
             type_name, kwargs = self._instance_definitions[name]
@@ -153,7 +165,7 @@ class NamedSingletonFactory(NamedFactory):
     a single instance eg database connections, web service agents.
 
     If your instance types are not thread safe it is recommended that the
-    :py:class:`ThreadSafeNamedSingletonFactory` is used.
+    :py:class:`ThreadLocalNamedSingletonFactory` is used.
 
     """
     def __init__(self, *args, **kwargs):
@@ -176,18 +188,36 @@ class NamedSingletonFactory(NamedFactory):
             return self._instances[name]
 
 
-# class ThreadSafeNamedSingletonFactory(NamedFactory):
-#     """
-#     :py:class:`NamedABCFactory` that provides a single instance of an object
-#     for each thread.
-#
-#     This instance factory type is useful for instance types that are not
-#     thread safe.
-#
-#     """
-#     def __init__(self, *args, **kwargs):
-#         super(ThreadSafeNamedSingletonFactory, self).__init__(*args, **kwargs)
-#
-#         import threading
-#         self._local = threading.local()
-#
+class ThreadLocalNamedSingletonFactory(NamedFactory):
+    """
+    :py:class:`NamedFactory` that provides a single instance of an object per
+    thread.
+
+    This instance factory type is useful for instance types that only require
+    a single instance eg database connections, web service agents and that are
+    not thread safe.
+
+    """
+    def __init__(self, *args, **kwargs):
+        super(ThreadLocalNamedSingletonFactory, self).__init__(*args, **kwargs)
+        self._local = threading.local()
+
+    @property
+    def _local_cache(self):
+        try:
+            return getattr(self._local, 'cache')
+        except AttributeError:
+            super_create_instance = super(ThreadLocalNamedSingletonFactory, self).create_instance
+            self._local.cache = cache = DefaultCache(super_create_instance)
+            return cache
+
+    def create_instance(self, name=None):
+        """
+        Get a named singleton instance.
+
+        :param name: Named instance definition; default value is defined by the
+            ``default_name`` instance argument.
+        :returns: Instance of the named type.
+
+        """
+        return self._local_cache[name]
