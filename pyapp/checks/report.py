@@ -122,12 +122,14 @@ class CheckReport(object):
 
             if self.no_color:
                 line_sep = "\n"
+                border_style = ""
             else:
                 line_sep = Style.RESET_ALL + "\n" + Style.DIM + Fore.WHITE
+                border_style = COLOURS[message.level][1]
 
             indent_width = len(" Hint: ")
             return self.HINT_TEMPLATE.format(
-                border_style=COLOURS[message.level][1],
+                border_style=border_style,
                 hint='\n\n'.join(self.wrap_text(p, indent_width, line_sep) for p in hint).lstrip()
             )
         else:
