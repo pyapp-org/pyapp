@@ -12,7 +12,7 @@ branches:
     - development
 
 install:
-  - travis_retry pip install -Ur requirements.txt pytest pytest-cov pytest-mock
+  - travis_retry pip install -Ur requirements-dev.txt
 
 script:
   - py.test tests/ --cov=pyapp
