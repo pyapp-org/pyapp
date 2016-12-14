@@ -147,7 +147,6 @@ class CliApplication(object):
         @add_argument('--out', dest='out', default=sys.stdout,
                       type=argparse.FileType(mode='w'),
                       help='File to output check report to; default is stdout.')
-        @self.register_handler
         def checks(opts):
             """
             Run a check report
@@ -156,6 +155,8 @@ class CliApplication(object):
 
             if CheckReport(opts.verbose, opts.no_color, opts.out).run(opts.tags):
                 exit(4)
+
+        self.register_handler(checks)
 
     def configure_settings(self, opts):
         """
