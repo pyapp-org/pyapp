@@ -41,7 +41,7 @@ class CheckReport(object):
         self.verbose = verbose
         self.f_out = f_out
         # Default color to be disabled if colorama is not installed.
-        self.no_color = no_color if colorama else False
+        self.no_color = no_color if colorama else True
         self.registry = check_registry
         self.width = width
 
