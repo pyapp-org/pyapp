@@ -92,8 +92,6 @@ class CliApplication(object):
                                       'URL. Defaults to the env variable {}'.format(conf.DEFAULT_ENV_KEY))
         self.parser.add_argument('--log-level', dest='log_level', default='INFO',
                                  choices=('DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'))
-        self.parser.add_argument('--nocolor', dest='no_color', action='store_true',
-                                 help="Disable colour output (if colorama is installed).")
         self.parser.add_argument('--version', action='version',
                                  version='%(prog)s version: {}'.format(
                                      version or getattr(root_module, '__version__', 'Unknown')))
@@ -144,15 +142,19 @@ class CliApplication(object):
                       help="Run checks associated with a tag.")
         @add_argument('--verbose', dest='verbose', action='store_true',
                       help="Verbose output.")
+        @add_argument('--nocolor', dest='no_color', action='store_true',
+                      help="Disable colour output (if colorama is installed).")
+        @add_argument('--out', dest='out', default=sys.stdout,
+                      type=argparse.FileType(mode='w'),
+                      help='File to output check report to; default is stdout.')
         @self.register_handler
         def checks(opts):
             """
-            Execute checks
+            Run a check report
             """
             from pyapp.checks.report import CheckReport
 
-            messages = CheckReport(opts.verbose).run(opts.tags)
-            if any(message.is_serious() for message in messages):
+            if CheckReport(opts.verbose, opts.no_color, opts.out).run(opts.tags):
                 exit(4)
 
     def configure_settings(self, opts):

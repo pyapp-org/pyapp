@@ -74,7 +74,7 @@ class CheckRegistry(object):
             else:
                 yield tuple()  # empty tuple a value should be yielded for each check
 
-    def run_checks(self, tags=None): 
+    def run_checks(self, tags=None):
         """
         Run all registered checks and return Messages. Use tags to filter checks.
 

@@ -1,13 +1,7 @@
 """
 Messages
 """
-
-# Levels
-DEBUG = 10
-INFO = 20
-WARNING = 30
-ERROR = 40
-CRITICAL = 50
+from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 
 class CheckMessage(object):
@@ -15,7 +9,23 @@ class CheckMessage(object):
     Check message base class
     """
     def __init__(self, level, msg, hint=None, obj=None):
-        assert isinstance(level, int), "The first argument should be level."
+        """
+        Messages returned from check functions.
+
+        :param level: Importance level of message (based on logging levels)
+        :type level: int
+        :param msg: Description of issue identified by check. Note that this
+            message will be word wrapped to 80 characters.
+        :type msg: str
+        :param hint: A hint on how to fix the issue (this can be either a
+            single string or a list of strings that make up individual
+            paragraphs. Note that any messages are word wrapped to 80 chars
+            for display.
+        :type hint: str | list(str)
+        :param obj: An object this message relates to (useful in the case of
+            multiple database connections for example).
+
+        """
         self.level = level
         self.msg = msg
         self.hint = hint
