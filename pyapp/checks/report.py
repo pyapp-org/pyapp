@@ -50,7 +50,7 @@ class CheckReport(object):
             self.VERBOSE_CHECK_TEMPLATE = "+ {name}\n"
             self.TITLE_TEMPLATE = " {level}: {title}"
             self.HINT_TEMPLATE = ("-" * self.width) + "\n HINT: {hint}\n"
-            self.MESSAGE_TEMPLATE = ("=" * self.width) + "\n{title}\n{hint}" + ("-" * self.width) + '\n\n'
+            self.MESSAGE_TEMPLATE = ("=" * self.width) + "\n{title}\n{hint}" + ("=" * self.width) + '\n\n'
 
         else:
             self.VERBOSE_CHECK_TEMPLATE = Fore.YELLOW + "+ " + Fore.CYAN + "{name}\n" + Style.RESET_ALL
@@ -61,7 +61,7 @@ class CheckReport(object):
             self.MESSAGE_TEMPLATE = \
                 "{border_style}" + ("=" * self.width) + Style.RESET_ALL + \
                 "\n{title}\n{hint}" + \
-                "{border_style}" + ("-" * self.width) + Style.RESET_ALL + \
+                "{border_style}" + ("=" * self.width) + Style.RESET_ALL + \
                 "\n\n"
 
     def pre_callback(self, check):
