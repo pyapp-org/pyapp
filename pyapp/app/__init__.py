@@ -140,6 +140,8 @@ class CliApplication(object):
         # Register the checks handler
         @add_argument('-t', '--tag', dest='tags', action='append',
                       help="Run checks associated with a tag.")
+        @add_argument('-l', '--level', dest='message_level', default='INFO',
+                      choices=('DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'))
         @add_argument('--verbose', dest='verbose', action='store_true',
                       help="Verbose output.")
         @add_argument('--nocolor', dest='no_color', action='store_true',
@@ -153,7 +155,9 @@ class CliApplication(object):
             """
             from pyapp.checks.report import CheckReport
 
-            if CheckReport(opts.verbose, opts.no_color, opts.out).run(opts.tags):
+            # Note the getLevelName method returns the level code if a string level is supplied!
+            message_level = logging.getLevelName(opts.message_level)
+            if CheckReport(opts.verbose, opts.no_color, opts.out).run(message_level, opts.tags):
                 exit(4)
 
         self.register_handler(checks)

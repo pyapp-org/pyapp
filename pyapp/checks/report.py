@@ -152,25 +152,33 @@ class CheckReport(object):
 
         self.f_out.write(self.MESSAGE_TEMPLATE.format(**format_args))
 
-    def run(self, tags=None):
+    def run(self, message_level=logging.INFO, tags=None):
         """
         Run the report
 
+        :param message_level: Level of message to be displayed.
+        :type message_level: int
         :param tags: List of tags to include in report
         :type tags: list(str)
         :return: Indicate if any serious message where generated.
         :rtype: bool
 
         """
-        # Generate report
         serious_message = False
+
+        # Generate report
         for messages in self.registry.run_checks_iter(tags, self.pre_callback):
+            message_shown = False
             if messages:
                 for message in messages:
                     serious_message = serious_message or message.is_serious()
-                    self.output_result(message)
-            else:
-                if not self.verbose:
-                    self.f_out.write(".\n")
+
+                    # Filter output
+                    if message.level >= message_level:
+                        message_shown = True
+                        self.output_result(message)
+
+            if not (self.verbose or message_shown):  # DeMorgans law
+                self.f_out.write(".\n")
 
         return serious_message
