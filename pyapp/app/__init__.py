@@ -121,7 +121,7 @@ class CliApplication(object):
             name = cli_name or func.__name__
 
             # Setup sub parser
-            doc = handler.__doc__
+            doc = func.__doc__
             sub_parser = self.sub_parsers.add_parser(
                 name, help=doc.strip() if doc else None
             )
