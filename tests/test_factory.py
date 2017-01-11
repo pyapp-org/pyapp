@@ -2,6 +2,9 @@ import mock
 import pytest
 
 import pyapp.factory
+
+from pyapp import checks
+from pyapp.conf import settings
 from tests import factory
 
 
@@ -35,10 +38,6 @@ class TestDefaultCache(object):
 
 
 class TestNamedFactory(object):
-    def test_settings_not_defined(self):
-        with pytest.raises(ValueError):
-            pyapp.factory.NamedFactory('UNKNOWN_NAMED_FACTORY')
-
     def test_get_default(self):
         target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY')
 
@@ -100,6 +99,119 @@ class TestNamedFactory(object):
         target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY')
 
         assert set(target.available) == {'default', 'iron', 'steel'}
+
+    def test_checks_settings_missing(self):
+        target = pyapp.factory.NamedFactory('UNKNOWN_FACTORY_DEFINITION')
+
+        actual = target.checks(settings)
+
+        assert isinstance(actual, checks.Critical)
+        assert "INSTANCE DEFINITIONS MISSING" in actual.msg.upper()
+        assert actual.obj == 'settings.UNKNOWN_FACTORY_DEFINITION'
+
+    def test_checks_ignore_none_settings(self):
+        with settings.modify() as patch:
+            patch.FACTORY = None
+            target = pyapp.factory.NamedFactory('FACTORY')
+
+            actual = target.checks(settings)
+
+        assert actual is None
+
+    def test_checks_invalid_type(self):
+        with settings.modify() as patch:
+            patch.INVALID_SETTING = []
+
+            target = pyapp.factory.NamedFactory('INVALID_SETTING')
+            actual = target.checks(settings)
+
+        assert isinstance(actual, checks.Critical)
+        assert "NOT A DICT INSTANCE" in actual.msg.upper()
+        assert actual.obj == 'settings.INVALID_SETTING'
+
+    def test_checks_un_defined_value(self):
+        with settings.modify() as patch:
+            patch.INVALID_SETTING = []
+
+            target = pyapp.factory.NamedFactory('INVALID_SETTING')
+            actual = target.checks(settings)
+
+        assert isinstance(actual, checks.Critical)
+        assert "NOT A DICT INSTANCE" in actual.msg.upper()
+        assert actual.obj == 'settings.INVALID_SETTING'
+
+    def test_checks_default_not_defined(self):
+        with settings.modify() as patch:
+            patch.FACTORY = {}
+
+            target = pyapp.factory.NamedFactory('FACTORY')
+            actual = target.checks(settings)
+
+        assert len(actual) == 1
+        message = actual[0]
+        assert isinstance(message, checks.Warn)
+        assert "DEFAULT DEFINITION NOT DEFINED" in message.msg.upper()
+        assert message.obj == 'settings.FACTORY'
+
+    def test_checks_invalid_instance_def_type(self):
+        with settings.modify() as patch:
+            patch.FACTORY = {
+                'default': {}
+            }
+
+            target = pyapp.factory.NamedFactory('FACTORY')
+            actual = target.checks(settings)
+
+        assert len(actual) == 1
+        message = actual[0]
+        assert isinstance(message, checks.Critical)
+        assert "DEFINITION IS NOT A LIST/TUPLE" in message.msg.upper()
+        assert message.obj == 'settings.FACTORY[default]'
+
+    def test_checks_invalid_instance_def_length(self):
+        with settings.modify() as patch:
+            patch.FACTORY = {
+                'default': ('a', 'b', 'c')
+            }
+
+            target = pyapp.factory.NamedFactory('FACTORY')
+            actual = target.checks(settings)
+
+        assert len(actual) == 1
+        message = actual[0]
+        assert isinstance(message, checks.Critical)
+        assert "NOT A TYPE NAME, KWARG" in message.msg.upper()
+        assert message.obj == 'settings.FACTORY[default]'
+
+    def test_checks_invalid_instance_def_kwargs(self):
+        with settings.modify() as patch:
+            patch.FACTORY = {
+                'default': ('tests.factory.IronBar', [])
+            }
+
+            target = pyapp.factory.NamedFactory('FACTORY')
+            actual = target.checks(settings)
+
+        assert len(actual) == 1
+        message = actual[0]
+        assert isinstance(message, checks.Critical)
+        assert "KWARGS IS NOT A DICT" in message.msg.upper()
+        assert message.obj == 'settings.FACTORY[default]'
+
+    def test_checks_invalid_instance_def_cannot_import(self):
+        with settings.modify() as patch:
+            patch.FACTORY = {
+                'default': ('a.b.c', {})
+            }
+
+            target = pyapp.factory.NamedFactory('FACTORY')
+            actual = target.checks(settings)
+
+        assert len(actual) == 1
+        message = actual[0]
+        assert isinstance(message, checks.Error)
+        assert "UNABLE TO IMPORT TYPE" in message.msg.upper()
+        assert message.obj == 'settings.FACTORY[default]'
 
 
 class TestNamedSingletonFactory(object):

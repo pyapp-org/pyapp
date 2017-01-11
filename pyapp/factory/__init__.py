@@ -99,15 +99,12 @@ class NamedFactory(object):
             default instance type if a value is not supplied.
 
         """
+        self.setting = setting
         self.abc = abc
         self.default_name = default_name
 
         assert isinstance(setting, six.string_types) and setting.isupper()
-        try:
-            self._instance_definitions = getattr(settings, setting)
-        except AttributeError:
-            raise ValueError("Instance definitions for `{}` not found in settings.".format(setting))
-
+        self._instance_definitions = getattr(settings, setting, {})
         self._type_definitions = DefaultCache(self._get_type_definition)
         self._type_definitions_lock = threading.RLock()
 
@@ -155,6 +152,112 @@ class NamedFactory(object):
         with self._type_definitions_lock:
             instance_type, kwargs = self._type_definitions[name or self.default_name]
         return instance_type(**kwargs)
+
+    def checks(self, settings_, **kwargs):
+        """
+        Run checks to ensure settings are valid, secondly run checks against
+        individual definitions in settings.
+
+        """
+        from pyapp import checks
+
+        # Check settings are defined
+        if not hasattr(settings_, self.setting):
+            return checks.Critical(
+                "Instance definitions missing from settings.",
+                hint="Add a {} entry into settings.".format(self.setting),
+                obj="settings.{}".format(self.setting)
+            )
+
+        instance_definitions = getattr(settings_, self.setting)
+        if instance_definitions is None:
+            return  # Nothing is defined so end now.
+
+        if not isinstance(instance_definitions, dict):
+            return checks.Critical(
+                "Instance definitions defined in settings not a dict instance.",
+                hint="Change setting {} to be a dict in settings file.".format(self.setting),
+                obj="settings.{}".format(self.setting)
+            )
+
+        # Take over the lock while checks are being performed
+        with self._type_definitions_lock:
+            # Backup definitions, replace and clear cache
+            instance_definitions_orig = self._instance_definitions
+            try:
+                self._instance_definitions = instance_definitions
+                self._type_definitions.clear()
+
+                messages = []
+
+                # Check default is defined
+                if self.default_name not in self._instance_definitions:
+                    messages.append(checks.Warn(
+                        "Default definition not defined.",
+                        hint="The default instance type `{}` is not defined.".format(self.default_name),
+                        obj="settings.{}".format(self.setting)
+                    ))
+
+                # Check instance definitions
+                for name in self._instance_definitions:
+                    message = self.check_instance(name, **kwargs)
+                    if isinstance(message, checks.CheckMessage):
+                        messages.append(message)
+                    elif message:
+                        messages += message
+
+                return messages
+
+            finally:
+                # Put definitions back and clear cache.
+                self._instance_definitions = instance_definitions_orig
+                self._type_definitions.clear()
+
+    def check_instance(self, name, **_):
+        """
+        Checks for individual instances.
+
+        :param name:
+        :return:
+
+        """
+        from pyapp import checks
+
+        definition = self._instance_definitions[name]
+        if not isinstance(definition, (tuple, list)):
+            return checks.Critical(
+                "Instance definition is not a list/tuple.",
+                hint="Change definition to be a list/tuple (type_name, kwargs) in settings.",
+                obj='settings.{}[{}]'.format(self.setting, name)
+            )
+
+        if len(definition) != 2:
+            return checks.Critical(
+                "Instance definition is not a type name, kwarg (dict) pair.",
+                hint="Change definition to be a list/tuple (type_name, kwargs) in settings.",
+                obj='settings.{}[{}]'.format(self.setting, name)
+            )
+
+        type_name, kwargs = definition
+        messages = []
+
+        try:
+            _import_type(type_name)
+        except (ImportError, ValueError):
+            messages.append(checks.Error(
+                "Unable to import type `{}`.".format(type_name),
+                hint="Check the type name in definition.",
+                obj='settings.{}[{}]'.format(self.setting, name)
+            ))
+
+        if not isinstance(kwargs, dict):
+            messages.append(checks.Critical(
+                "Instance kwargs is not a dict.",
+                hint="Change kwargs definition to be a dict.",
+                obj='settings.{}[{}]'.format(self.setting, name)
+            ))
+
+        return messages
 
 
 class NamedSingletonFactory(NamedFactory):
