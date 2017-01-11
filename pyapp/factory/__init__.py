@@ -34,6 +34,7 @@ import importlib
 import six
 import threading
 
+from pyapp import checks
 from pyapp.conf import settings
 
 
@@ -159,8 +160,6 @@ class NamedFactory(object):
         individual definitions in settings.
 
         """
-        from pyapp import checks
-
         # Check settings are defined
         if not hasattr(settings_, self.setting):
             return checks.Critical(
@@ -221,8 +220,6 @@ class NamedFactory(object):
         :return:
 
         """
-        from pyapp import checks
-
         definition = self._instance_definitions[name]
         if not isinstance(definition, (tuple, list)):
             return checks.Critical(
