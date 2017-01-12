@@ -61,7 +61,7 @@ class CheckRegistry(object):
         :param pre_callback: Callback triggered before each check is executed.
 
         """
-        check_kwargs = {}
+        check_kwargs = {'settings': settings}
 
         for check in self.checks_by_tags(tags):
             if pre_callback:
@@ -69,9 +69,9 @@ class CheckRegistry(object):
 
             # Detect attached checks (or a class with checks)
             if hasattr(check, 'checks'):
-                messages = check.checks(settings, **check_kwargs)
+                messages = check.checks(**check_kwargs)
             else:
-                messages = check(settings, **check_kwargs)
+                messages = check(**check_kwargs)
 
             if isinstance(messages, CheckMessage):
                 yield messages,  # yield tuple, comma is expected

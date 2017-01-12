@@ -1,6 +1,5 @@
 import pytest
 
-from pyapp.checks import report, registry
 from pyapp.conf import settings
 
 from tests.sample_app.__main__ import app

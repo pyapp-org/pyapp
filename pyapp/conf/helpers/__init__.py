@@ -97,12 +97,14 @@ class NamedConfiguration(object):
         """
         return self._get_config_definition(name or self.default_name)
 
-    def checks(self, settings_, **kwargs):
+    def checks(self, **kwargs):
         """
         Run checks to ensure settings are valid, secondly run checks against
         individual definitions in settings.
 
         """
+        settings_ = kwargs['settings']
+
         # Check settings are defined
         if not hasattr(settings_, self.setting):
             return checks.Critical(
@@ -141,6 +143,7 @@ class NamedConfiguration(object):
                 messages += message
 
         return messages
+    checks.check_name = "named_configuration_settings"
 
     def check_definition(self, name, **_):
         """

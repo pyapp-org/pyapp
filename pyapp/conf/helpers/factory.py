@@ -158,12 +158,14 @@ class NamedFactory(object):
     def _register_checks(self):
         checks.register(self)
 
-    def checks(self, settings_, **kwargs):
+    def checks(self, **kwargs):
         """
         Run checks to ensure settings are valid, secondly run checks against
         individual definitions in settings.
 
         """
+        settings_ = kwargs['settings']
+
         # Check settings are defined
         if not hasattr(settings_, self.setting):
             return checks.Critical(
@@ -215,6 +217,7 @@ class NamedFactory(object):
                 # Put definitions back and clear cache.
                 self._instance_definitions = instance_definitions_orig
                 self._type_definitions.clear()
+    checks.check_name = "named_factory_settings"
 
     def check_instance(self, name, **_):
         """

@@ -103,7 +103,7 @@ class TestNamedFactory(object):
     def test_checks_settings_missing(self):
         target = conf_factory.NamedFactory('UNKNOWN_FACTORY_DEFINITION')
 
-        actual = target.checks(settings)
+        actual = target.checks(settings=settings)
 
         assert isinstance(actual, checks.Critical)
         assert "INSTANCE DEFINITIONS MISSING" in actual.msg.upper()
@@ -114,7 +114,7 @@ class TestNamedFactory(object):
             patch.FACTORY = None
             target = conf_factory.NamedFactory('FACTORY')
 
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert actual is None
 
@@ -123,7 +123,7 @@ class TestNamedFactory(object):
             patch.INVALID_SETTING = []
 
             target = conf_factory.NamedFactory('INVALID_SETTING')
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert isinstance(actual, checks.Critical)
         assert "NOT A DICT INSTANCE" in actual.msg.upper()
@@ -134,7 +134,7 @@ class TestNamedFactory(object):
             patch.FACTORY = {}
 
             target = conf_factory.NamedFactory('FACTORY')
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert len(actual) == 1
         message = actual[0]
@@ -149,7 +149,7 @@ class TestNamedFactory(object):
             }
 
             target = conf_factory.NamedFactory('FACTORY')
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert len(actual) == 1
         message = actual[0]
@@ -164,7 +164,7 @@ class TestNamedFactory(object):
             }
 
             target = conf_factory.NamedFactory('FACTORY')
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert len(actual) == 1
         message = actual[0]
@@ -179,7 +179,7 @@ class TestNamedFactory(object):
             }
 
             target = conf_factory.NamedFactory('FACTORY')
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert len(actual) == 1
         message = actual[0]
@@ -194,7 +194,7 @@ class TestNamedFactory(object):
             }
 
             target = conf_factory.NamedFactory('FACTORY')
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert len(actual) == 1
         message = actual[0]

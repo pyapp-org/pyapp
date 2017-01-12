@@ -66,7 +66,10 @@ class CheckReport(object):
 
     def pre_callback(self, check):
         if self.verbose:
-            self.f_out.write(self.VERBOSE_CHECK_TEMPLATE.format(name=check.__name__))
+            if hasattr(check, 'checks'):
+                check = check.checks
+            name = getattr(check, 'check_name', check.__name__)
+            self.f_out.write(self.VERBOSE_CHECK_TEMPLATE.format(name=name))
 
     def wrap_text(self, text, indent_width, line_sep='\n'):
         """
