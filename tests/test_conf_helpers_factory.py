@@ -1,10 +1,10 @@
 import mock
 import pytest
 
-import pyapp.factory
-
 from pyapp import checks
 from pyapp.conf import settings
+from pyapp.conf.helpers import factory as conf_factory
+
 from tests import factory
 
 
@@ -14,7 +14,7 @@ def factory_test(key):
 
 class TestDefaultCache(object):
     def test_key_error_when_no_factory(self):
-        target = pyapp.factory.DefaultCache()
+        target = conf_factory.DefaultCache()
 
         with pytest.raises(KeyError):
             target['foo']
@@ -22,14 +22,14 @@ class TestDefaultCache(object):
         assert 'foo' not in target
 
     def test_factory_not_called_if_item_exists(self):
-        target = pyapp.factory.DefaultCache(factory_test, foo='bar')
+        target = conf_factory.DefaultCache(factory_test, foo='bar')
 
         actual = target['foo']
         assert actual == 'bar'
         assert 'foo' in target
 
     def test_factory_being_called_if_item_missing(self):
-        target = pyapp.factory.DefaultCache(factory_test, foo='bar')
+        target = conf_factory.DefaultCache(factory_test, foo='bar')
 
         actual = target['eek']
         assert actual == 'Factory[eek]'
@@ -39,7 +39,7 @@ class TestDefaultCache(object):
 
 class TestNamedFactory(object):
     def test_get_default(self):
-        target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY')
+        target = conf_factory.NamedFactory('TEST_NAMED_FACTORY')
 
         actual = target()
         assert isinstance(actual, factory.Bar)
@@ -47,7 +47,7 @@ class TestNamedFactory(object):
         assert actual.length == 42
 
     def test_get_specific(self):
-        target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY')
+        target = conf_factory.NamedFactory('TEST_NAMED_FACTORY')
 
         actual = target('iron')
         assert isinstance(actual, factory.IronBar)
@@ -55,7 +55,7 @@ class TestNamedFactory(object):
         assert actual.length == 24
 
     def test_specify_alternate_default_name(self):
-        target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY', default_name='iron')
+        target = conf_factory.NamedFactory('TEST_NAMED_FACTORY', default_name='iron')
 
         actual = target()
         assert isinstance(actual, factory.IronBar)
@@ -63,19 +63,19 @@ class TestNamedFactory(object):
         assert actual.length == 24
 
     def test_unknown_instance_definition(self):
-        target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY')
+        target = conf_factory.NamedFactory('TEST_NAMED_FACTORY')
 
         with pytest.raises(KeyError):
             target('copper')
 
     def test_with_abc_defined(self):
-        target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY', abc=factory.BarABC)
+        target = conf_factory.NamedFactory('TEST_NAMED_FACTORY', abc=factory.BarABC)
 
         actual = target()
         assert isinstance(actual, factory.Bar)
 
     def test_type_error_raised_if_not_correct_abc(self):
-        target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY', abc=factory.BarABC)
+        target = conf_factory.NamedFactory('TEST_NAMED_FACTORY', abc=factory.BarABC)
 
         with pytest.raises(TypeError):
             target('steel')
@@ -83,9 +83,9 @@ class TestNamedFactory(object):
     def test_get_type_definition_is_cached(self, monkeypatch):
         mock_import = mock.Mock()
         mock_import.return_value = factory.Bar
-        monkeypatch.setattr(pyapp.factory, '_import_type', mock_import)
+        monkeypatch.setattr(conf_factory, '_import_type', mock_import)
 
-        target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY')
+        target = conf_factory.NamedFactory('TEST_NAMED_FACTORY')
 
         actual1 = target()
         actual2 = target()
@@ -96,12 +96,12 @@ class TestNamedFactory(object):
         mock_import.assert_called_once_with('tests.factory.Bar')
 
     def test_available_definitions(self):
-        target = pyapp.factory.NamedFactory('TEST_NAMED_FACTORY')
+        target = conf_factory.NamedFactory('TEST_NAMED_FACTORY')
 
         assert set(target.available) == {'default', 'iron', 'steel'}
 
     def test_checks_settings_missing(self):
-        target = pyapp.factory.NamedFactory('UNKNOWN_FACTORY_DEFINITION')
+        target = conf_factory.NamedFactory('UNKNOWN_FACTORY_DEFINITION')
 
         actual = target.checks(settings)
 
@@ -112,7 +112,7 @@ class TestNamedFactory(object):
     def test_checks_ignore_none_settings(self):
         with settings.modify() as patch:
             patch.FACTORY = None
-            target = pyapp.factory.NamedFactory('FACTORY')
+            target = conf_factory.NamedFactory('FACTORY')
 
             actual = target.checks(settings)
 
@@ -122,7 +122,7 @@ class TestNamedFactory(object):
         with settings.modify() as patch:
             patch.INVALID_SETTING = []
 
-            target = pyapp.factory.NamedFactory('INVALID_SETTING')
+            target = conf_factory.NamedFactory('INVALID_SETTING')
             actual = target.checks(settings)
 
         assert isinstance(actual, checks.Critical)
@@ -133,7 +133,7 @@ class TestNamedFactory(object):
         with settings.modify() as patch:
             patch.INVALID_SETTING = []
 
-            target = pyapp.factory.NamedFactory('INVALID_SETTING')
+            target = conf_factory.NamedFactory('INVALID_SETTING')
             actual = target.checks(settings)
 
         assert isinstance(actual, checks.Critical)
@@ -144,7 +144,7 @@ class TestNamedFactory(object):
         with settings.modify() as patch:
             patch.FACTORY = {}
 
-            target = pyapp.factory.NamedFactory('FACTORY')
+            target = conf_factory.NamedFactory('FACTORY')
             actual = target.checks(settings)
 
         assert len(actual) == 1
@@ -159,7 +159,7 @@ class TestNamedFactory(object):
                 'default': {}
             }
 
-            target = pyapp.factory.NamedFactory('FACTORY')
+            target = conf_factory.NamedFactory('FACTORY')
             actual = target.checks(settings)
 
         assert len(actual) == 1
@@ -174,7 +174,7 @@ class TestNamedFactory(object):
                 'default': ('a', 'b', 'c')
             }
 
-            target = pyapp.factory.NamedFactory('FACTORY')
+            target = conf_factory.NamedFactory('FACTORY')
             actual = target.checks(settings)
 
         assert len(actual) == 1
@@ -189,7 +189,7 @@ class TestNamedFactory(object):
                 'default': ('tests.factory.IronBar', [])
             }
 
-            target = pyapp.factory.NamedFactory('FACTORY')
+            target = conf_factory.NamedFactory('FACTORY')
             actual = target.checks(settings)
 
         assert len(actual) == 1
@@ -204,7 +204,7 @@ class TestNamedFactory(object):
                 'default': ('a.b.c', {})
             }
 
-            target = pyapp.factory.NamedFactory('FACTORY')
+            target = conf_factory.NamedFactory('FACTORY')
             actual = target.checks(settings)
 
         assert len(actual) == 1
@@ -216,7 +216,7 @@ class TestNamedFactory(object):
 
 class TestNamedSingletonFactory(object):
     def test_get_default(self):
-        target = pyapp.factory.NamedSingletonFactory('TEST_NAMED_FACTORY')
+        target = conf_factory.NamedSingletonFactory('TEST_NAMED_FACTORY')
 
         actual1 = target()
         actual2 = target()
@@ -226,9 +226,9 @@ class TestNamedSingletonFactory(object):
     def test_get_type_definition_is_cached(self, monkeypatch):
         mock_import = mock.Mock()
         mock_import.return_value = factory.Bar
-        monkeypatch.setattr(pyapp.factory, '_import_type', mock_import)
+        monkeypatch.setattr(conf_factory, '_import_type', mock_import)
 
-        target = pyapp.factory.NamedSingletonFactory('TEST_NAMED_FACTORY')
+        target = conf_factory.NamedSingletonFactory('TEST_NAMED_FACTORY')
 
         actual1 = target()
         actual2 = target()
@@ -241,7 +241,7 @@ class TestNamedSingletonFactory(object):
 
 class TestThreadLocalNamedSingletonFactory(object):
     def test_get_default(self):
-        target = pyapp.factory.ThreadLocalNamedSingletonFactory('TEST_NAMED_FACTORY')
+        target = conf_factory.ThreadLocalNamedSingletonFactory('TEST_NAMED_FACTORY')
 
         actual1 = target()
         actual2 = target()
@@ -251,9 +251,9 @@ class TestThreadLocalNamedSingletonFactory(object):
     def test_get_type_definition_is_cached(self, monkeypatch):
         mock_import = mock.Mock()
         mock_import.return_value = factory.Bar
-        monkeypatch.setattr(pyapp.factory, '_import_type', mock_import)
+        monkeypatch.setattr(conf_factory, '_import_type', mock_import)
 
-        target = pyapp.factory.ThreadLocalNamedSingletonFactory('TEST_NAMED_FACTORY')
+        target = conf_factory.ThreadLocalNamedSingletonFactory('TEST_NAMED_FACTORY')
 
         actual1 = target()
         actual2 = target()

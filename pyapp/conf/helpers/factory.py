@@ -35,13 +35,14 @@ import threading
 from pyapp import checks
 from pyapp.conf import settings
 
+__all__ = ('NamedFactory', 'NamedSingletonFactory', 'ThreadLocalNamedSingletonFactory')
+
 
 class DefaultCache(dict):
     """
     Very similar to :py:class:`collections.defaultdict` (using __missing__)
     however passes the specified key to the default factory method.
     """
-
     def __init__(self, default_factory=None, **kwargs):
         super(DefaultCache, self).__init__(**kwargs)
         self.default_factory = default_factory
@@ -98,14 +99,16 @@ class NamedFactory(object):
             default instance type if a value is not supplied.
 
         """
+        assert isinstance(setting, six.string_types) and setting.isupper()
         self.setting = setting
         self.abc = abc
         self.default_name = default_name
 
-        assert isinstance(setting, six.string_types) and setting.isupper()
         self._instance_definitions = getattr(settings, setting, {})
         self._type_definitions = DefaultCache(self._get_type_definition)
         self._type_definitions_lock = threading.RLock()
+
+        self._register_checks()
 
     def __call__(self, name=None):
         """
@@ -151,6 +154,9 @@ class NamedFactory(object):
         with self._type_definitions_lock:
             instance_type, kwargs = self._type_definitions[name or self.default_name]
         return instance_type(**kwargs)
+
+    def _register_checks(self):
+        checks.register(self)
 
     def checks(self, settings_, **kwargs):
         """
