@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import inspect
 from itertools import chain
 
 from pyapp.conf import settings
@@ -60,7 +61,7 @@ class CheckRegistry(object):
         :param pre_callback: Callback triggered before each check is executed.
 
         """
-        check_kwargs = dict(settings=settings)
+        check_kwargs = {}
 
         for check in self.checks_by_tags(tags):
             if pre_callback:
@@ -68,9 +69,10 @@ class CheckRegistry(object):
 
             # Detect attached checks (or a class with checks)
             if hasattr(check, 'checks'):
-                messages = check.checks(**check_kwargs)
+                messages = check.checks(settings, **check_kwargs)
             else:
-                messages = check(**check_kwargs)
+                messages = check(settings, **check_kwargs)
+
             if isinstance(messages, CheckMessage):
                 yield messages,  # yield tuple, comma is expected
             elif messages:

@@ -69,11 +69,11 @@ class TestCheckRegistry(object):
         target = registry.CheckRegistry()
 
         @target.register
-        def check_1(**kwargs):
+        def check_1(settings, **kwargs):
             return messages.Info("Message1")
 
         @target.register()
-        def check_2(**kwargs):
+        def check_2(settings, **kwargs):
             return messages.Info("Message2"), messages.Info("Message3")
 
         actual = target.run_checks()
@@ -89,15 +89,15 @@ class TestCheckRegistry(object):
         target = registry.CheckRegistry()
 
         @target.register('foo')
-        def check_1(**kwargs):
+        def check_1(settings, **kwargs):
             return messages.Info("Message1")
 
         @target.register('foo', 'bar')
-        def check_2(**kwargs):
+        def check_2(settings, **kwargs):
             return messages.Info("Message2")
 
         @target.register('bar')
-        def check_3(**kwargs):
+        def check_3(settings, **kwargs):
             return messages.Info("Message3"), messages.Info("Message4")
 
         actual = target.run_checks(['foo'])
