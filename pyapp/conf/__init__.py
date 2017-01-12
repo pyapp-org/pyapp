@@ -33,6 +33,7 @@ are reverted.
 
 """
 from __future__ import absolute_import
+
 import logging
 import os
 import warnings
@@ -198,6 +199,5 @@ class Settings(object):
 
         """
         return ModifySettingsContext(self)
-
 
 settings = Settings()
