@@ -1,7 +1,5 @@
 """
-######################################
-Configuration based Instance factories
-######################################
+*Configuration based Instance factories*
 
 Inversion of control style instance factories that return an object instance
 based on a named definition from configuration. Makes use of

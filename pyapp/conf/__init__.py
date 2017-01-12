@@ -1,9 +1,35 @@
 """
-#############
-Configuration
-#############
+*Provides a simple woy to add settings to your application.*
 
-Provides a simple woy to add settings to your application.
+Management of loading of settings from different file types and merging into
+a simple easy to use settings object.
+
+Usage::
+
+    >>> from pyapp.conf import settings
+    >>> # Configure default settings
+    >>> settings.configure('my_app.default_settings')
+
+    >>> settings.MY_CONFIG_VALUE
+    'foo'
+
+The settings object also has helper methods to simplify your testing::
+
+    >>> from pyapp.conf import settings
+    >>> with settings.modify() as patch:
+    ...     patch.MY_CONFIG_VALUE = 'bar'
+    ...     settings.MY_CONFIG_VALUE
+    'bar'
+    >>> settings.MY_CONFIG_VALUE
+    'foo'
+
+In addition to changing values new values can be added or existing values
+removed using the `del` keyword. Once the context has been exited all changes
+are reverted.
+
+.. note::
+    All settings must be UPPER_CASE. If a setting is not upper case it will not
+    be imported into the settings object.
 
 """
 from __future__ import absolute_import
@@ -166,8 +192,7 @@ class Settings(object):
             >>>     patch.FOO = 'foo'
             >>>     # Remove a setting
             >>>     del patch.BAR
-            >>>
-            >>>     ...
+
 
         :rtype: ModifySettingsContext
 

@@ -1,7 +1,36 @@
 """
-######################################
-Application with bindings for commands
-######################################
+*Application with bindings for commands*
+
+Quick demo::
+
+    >>> import my_app
+    >>> from pyapp.app import CliApplication, add_argument
+    >>> app = CliApplication(my_app)
+
+    >>> @add_argument('--verbose', target='verbose', action='store_true')
+    >>> @app.register_handler()
+    >>> def hello(opts):
+    ...     if opts.verbose:
+    ...         print("Being verbose!")
+    ...     print("Hello")
+
+    >>> if __name__ == '__main__':
+    ...     app.dispatch()
+
+This example provides an application with a command `hello` that takes an
+optional `verbose` flag. The framework also provides help, configures and loads
+settings (using :py:mod:`pyapp.conf`), an interface to the checks framework
+and configures the Python logging framework.
+
+There are however a few more things that are required to get this going. The
+:py:class:`CliApplication` class expects a certain structure of your
+application to allow for it's (customisable) defaults to be applied.
+
+Your application should have the following structure::
+
+    my_app/__init__.py          # Include a __version__ variable
+           __main__.py          # This is where the quick demo is located
+           default_settings.py  # The default settings file
 
 """
 from __future__ import print_function, absolute_import
@@ -78,7 +107,15 @@ def add_argument(*args, **kwargs):
 
 class CliApplication(object):
     """
-    A CLI application.
+    :param root_module: The root module for this application (used for
+        discovery of other modules)
+    :param name: Name of your application; defaults to `sys.argv[0]`
+    :param description: A description of your application for `--help`.
+    :param version: Specify a specific version; defaults to
+        `getattr(root_module, '__version__')`
+    :param application_settings: The default settings for this application;
+        defaults to `root_module.default_settings`
+
     """
     def __init__(self, root_module, name=None, description=None, version=None, 
                  application_settings=None):
@@ -111,6 +148,8 @@ class CliApplication(object):
         """
         Decorator for registering handlers.
 
+        The description for help is taken from the handlers doc string.
+
         :param handler: Handler function
         :param cli_name: Optional name to use for CLI; defaults to the
             function name.
@@ -135,7 +174,7 @@ class CliApplication(object):
 
     def register_builtin_handlers(self):
         """
-        Register any built in handlers
+        Register any built in handlers.
         """
         # Register the checks handler
         @add_argument('-t', '--tag', dest='tags', action='append',
@@ -151,7 +190,7 @@ class CliApplication(object):
                       help='File to output check report to; default is stdout.')
         def checks(opts):
             """
-            Run a check report
+            Run a check report.
             """
             from pyapp.checks.report import CheckReport
 
@@ -164,13 +203,13 @@ class CliApplication(object):
 
     def configure_settings(self, opts):
         """
-        Configure settings
+        Configure settings container.
         """
         settings.configure(self.application_settings, opts.settings)
 
     def configure_logging(self, opts):
         """
-        Configure the logging framework
+        Configure the logging framework.
         """
         # Set a default version if not supplied by settings
         dict_config = settings.LOGGING.copy()
@@ -183,7 +222,7 @@ class CliApplication(object):
 
     def dispatch(self, args=None):
         """
-        Dispatch to correct application.
+        Dispatch command to registered handler.
         """
         # Enable auto complete if available
         if argcomplete:
