@@ -1,8 +1,8 @@
 from __future__ import absolute_import
+
 from itertools import chain
 
 from pyapp.conf import settings
-
 from .messages import CheckMessage
 
 
@@ -27,7 +27,7 @@ class CheckRegistry(object):
 
         """
         def inner(func):
-            setattr(func, 'tags', tags)
+            setattr(func, '_check__tags', tags)
             if func not in self.registered_checks:
                 self.registered_checks.append(func)
             return func
@@ -48,7 +48,7 @@ class CheckRegistry(object):
         if tags:
             tags = set(tags)
             return (check for check in checks
-                    if hasattr(check, 'tags') and set(check.tags) & tags)
+                    if set(getattr(check, '_check__tags', [])) & tags)
         else:
             return iter(checks)
 
@@ -66,7 +66,11 @@ class CheckRegistry(object):
             if pre_callback:
                 pre_callback(check)
 
-            messages = check(**check_kwargs)
+            # Detect attached checks (or a class with checks)
+            if hasattr(check, 'checks'):
+                messages = check.checks(**check_kwargs)
+            else:
+                messages = check(**check_kwargs)
             if isinstance(messages, CheckMessage):
                 yield messages,  # yield tuple, comma is expected
             elif messages:
