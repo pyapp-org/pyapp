@@ -25,3 +25,14 @@ TEST_NAMED_FACTORY = {
     'steel': ('tests.factory.SteelBeam', {})
 }
 
+# Config sample values
+TEST_NAMED_CONFIG = {
+    'default': {
+        'length': 42,
+        'foo': 'bar'
+    },
+    'eek': {
+        'length': 24,
+        'foo': 'bar'
+    }
+}
