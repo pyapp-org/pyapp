@@ -46,7 +46,7 @@ class TestNamedConfiguration(object):
     def test_checks_settings_missing(self):
         target = helpers.NamedConfiguration('UNKNOWN_NAMED_CONFIG')
 
-        actual = target.checks(settings)
+        actual = target.checks(settings=settings)
 
         assert isinstance(actual, checks.Critical)
         assert "CONFIG DEFINITIONS MISSING" in actual.msg.upper()
@@ -57,7 +57,7 @@ class TestNamedConfiguration(object):
             patch.NAMED_CONFIG = None
             target = helpers.NamedConfiguration('NAMED_CONFIG')
 
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert actual is None
         assert actual is None
@@ -67,7 +67,7 @@ class TestNamedConfiguration(object):
             patch.NAMED_CONFIG = []
 
             target = helpers.NamedConfiguration('NAMED_CONFIG')
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert isinstance(actual, checks.Critical)
         assert "NOT A DICT INSTANCE" in actual.msg.upper()
@@ -78,7 +78,7 @@ class TestNamedConfiguration(object):
             patch.NAMED_CONFIG = {}
 
             target = helpers.NamedConfiguration('NAMED_CONFIG')
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert len(actual) == 1
         message = actual[0]
@@ -93,7 +93,7 @@ class TestNamedConfiguration(object):
             }
 
             target = helpers.NamedConfiguration('NAMED_CONFIG')
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert len(actual) == 1
         message = actual[0]
@@ -111,7 +111,7 @@ class TestNamedConfiguration(object):
                 'NAMED_CONFIG',
                 required_keys=('foo',)
             )
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert len(actual) == 1
         message = actual[0]
@@ -133,7 +133,7 @@ class TestNamedConfiguration(object):
                 required_keys=('foo',),
                 optional_keys=('bar',)
             )
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert len(actual) == 1
         message = actual[0]
@@ -151,6 +151,6 @@ class TestNamedConfiguration(object):
             }
 
             target = helpers.NamedConfiguration('NAMED_CONFIG')
-            actual = target.checks(settings)
+            actual = target.checks(settings=settings)
 
         assert len(actual) == 0
