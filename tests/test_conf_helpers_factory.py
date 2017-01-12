@@ -129,17 +129,6 @@ class TestNamedFactory(object):
         assert "NOT A DICT INSTANCE" in actual.msg.upper()
         assert actual.obj == 'settings.INVALID_SETTING'
 
-    def test_checks_un_defined_value(self):
-        with settings.modify() as patch:
-            patch.INVALID_SETTING = []
-
-            target = conf_factory.NamedFactory('INVALID_SETTING')
-            actual = target.checks(settings)
-
-        assert isinstance(actual, checks.Critical)
-        assert "NOT A DICT INSTANCE" in actual.msg.upper()
-        assert actual.obj == 'settings.INVALID_SETTING'
-
     def test_checks_default_not_defined(self):
         with settings.modify() as patch:
             patch.FACTORY = {}
