@@ -12,7 +12,7 @@ class TestCheckRegistry(object):
 
         assert len(target.registered_checks) == 1
         assert my_check_func in target.registered_checks
-        assert len(my_check_func.tags) == 0
+        assert len(my_check_func._check__tags) == 0
 
     def test_register__with_decorator_with_tags(self):
         target = registry.CheckRegistry()
@@ -23,7 +23,7 @@ class TestCheckRegistry(object):
 
         assert len(target.registered_checks) == 1
         assert my_check_func in target.registered_checks
-        assert len(my_check_func.tags) == 2
+        assert len(my_check_func._check__tags) == 2
 
     def test_register__with_method(self):
         target = registry.CheckRegistry()
@@ -35,7 +35,7 @@ class TestCheckRegistry(object):
 
         assert len(target.registered_checks) == 1
         assert my_check_func in target.registered_checks
-        assert len(my_check_func.tags) == 2
+        assert len(my_check_func._check__tags) == 2
 
     def test_register__same_check(self):
         target = registry.CheckRegistry()
@@ -48,7 +48,7 @@ class TestCheckRegistry(object):
 
         assert len(target.registered_checks) == 1
         assert my_check_func in target.registered_checks
-        assert len(my_check_func.tags) == 2
+        assert len(my_check_func._check__tags) == 2
 
     def test_run_checks__all_successful(self):
         target = registry.CheckRegistry()
