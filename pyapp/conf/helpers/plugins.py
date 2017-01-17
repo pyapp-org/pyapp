@@ -1,7 +1,7 @@
 """
 *Configuration based Instance factories*
 
-Inversion of control style instance factories that return an object instance
+Inversion of control style plugin factories that return an object instance
 based on a named definition from configuration. Makes use of
 :py:mod:`pyapp.conf` to store instance definitions in settings.
 
@@ -15,13 +15,13 @@ framework to allow checks to be executed on the instances.
 
 Usage::
 
-    >>> foo_factory = NamedFactory('FOO')
+    >>> foo_factory = NamedPluginFactory('FOO')
     >>> instance = foo_factory()
 
 or taking advantage of the factory being callable we can create a singleton
 factory::
 
-    >>> get_bar_instance = NamedSingletonFactory('BAR')
+    >>> get_bar_instance = NamedSingletonPluginFactory('BAR')
     >>> # Get iron bar instance
     >>> bar = get_bar_instance('iron')
 
@@ -35,7 +35,7 @@ import threading
 from pyapp import checks
 from pyapp.conf import settings
 
-__all__ = ('NamedFactory', 'NamedSingletonFactory', 'ThreadLocalNamedSingletonFactory')
+__all__ = ('NamedPluginFactory', 'NamedSingletonPluginFactory', 'ThreadLocalNamedSingletonPluginFactory')
 
 
 class DefaultCache(dict):
@@ -67,7 +67,7 @@ def _import_type(type_name):
     return getattr(module, type_name)
 
 
-class NamedFactory(object):
+class NamedPluginFactory(object):
     """
     Factory object that generates a named instance from a definition in
     settings. Can optionally verify an instance type against a specified ABC
@@ -264,21 +264,21 @@ class NamedFactory(object):
         return messages
 
 
-class NamedSingletonFactory(NamedFactory):
+class NamedSingletonPluginFactory(NamedPluginFactory):
     """
-    :py:class:`NamedFactory` that provides a single instance of an object.
+    :py:class:`NamedPluginFactory` that provides a single instance of an object.
 
     This instance factory type is useful for instance types that only require
     a single instance eg database connections, web service agents.
 
     If your instance types are not thread safe it is recommended that the
-    :py:class:`ThreadLocalNamedSingletonFactory` is used.
+    :py:class:`ThreadLocalNamedSingletonPluginFactory` is used.
 
     """
     def __init__(self, *args, **kwargs):
-        super(NamedSingletonFactory, self).__init__(*args, **kwargs)
+        super(NamedSingletonPluginFactory, self).__init__(*args, **kwargs)
 
-        super_create_instance = super(NamedSingletonFactory, self).create_instance
+        super_create_instance = super(NamedSingletonPluginFactory, self).create_instance
         self._instances = DefaultCache(super_create_instance)
         self._instances_lock = threading.RLock()
 
@@ -295,9 +295,9 @@ class NamedSingletonFactory(NamedFactory):
             return self._instances[name]
 
 
-class ThreadLocalNamedSingletonFactory(NamedFactory):
+class ThreadLocalNamedSingletonPluginFactory(NamedPluginFactory):
     """
-    :py:class:`NamedFactory` that provides a single instance of an object per
+    :py:class:`NamedPluginFactory` that provides a single instance of an object per
     thread.
 
     This instance factory type is useful for instance types that only require
@@ -306,7 +306,7 @@ class ThreadLocalNamedSingletonFactory(NamedFactory):
 
     """
     def __init__(self, *args, **kwargs):
-        super(ThreadLocalNamedSingletonFactory, self).__init__(*args, **kwargs)
+        super(ThreadLocalNamedSingletonPluginFactory, self).__init__(*args, **kwargs)
         self._local = threading.local()
 
     @property
@@ -314,7 +314,7 @@ class ThreadLocalNamedSingletonFactory(NamedFactory):
         try:
             return getattr(self._local, 'cache')
         except AttributeError:
-            super_create_instance = super(ThreadLocalNamedSingletonFactory, self).create_instance
+            super_create_instance = super(ThreadLocalNamedSingletonPluginFactory, self).create_instance
             self._local.cache = cache = DefaultCache(super_create_instance)
             return cache
 

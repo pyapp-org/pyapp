@@ -1,13 +1,18 @@
 from __future__ import absolute_import
 
 import itertools
+import threading
+
 import six
 
 from pyapp import checks
 from pyapp.conf import settings
-from pyapp.conf.helpers.factory import *
+from pyapp.conf.helpers.plugins import *
+from .plugins import DefaultCache
 
-__all__ = ('NamedConfiguration', 'NamedFactory', 'NamedSingletonFactory', 'ThreadLocalNamedSingletonFactory')
+__all__ = ('NamedConfiguration',
+           'NamedFactory', 'NamedSingletonFactory', 'ThreadLocalNamedSingletonFactory',
+           'NamedPluginFactory', 'NamedSingletonPluginFactory', 'ThreadLocalNamedSingletonPluginFactory')
 
 
 class NamedConfiguration(object):
@@ -181,3 +186,74 @@ class NamedConfiguration(object):
                     ))
 
         return messages
+
+
+class NamedFactory(NamedConfiguration):
+    def get(self, name=None):
+        """
+        Get named instance from settings
+
+        :param name: Name of value or default value.
+        :return:
+
+        """
+        definition = self._get_config_definition(name or self.default_name)
+        return self.create_instance(name, definition)
+
+    def create_instance(self, name, definition):
+        raise NotImplementedError()
+
+
+class NamedSingletonFactory(NamedFactory):
+    """"
+    :py:class:`NamedFactory` that provides a single instance of an object.
+
+    This instance factory type is useful for instance types that only require
+    a single instance eg database connections, web service agents.
+
+    If your instance types are not thread safe it is recommended that the
+    :py:class:`ThreadLocalNamedSingletonFactory` is used.
+    """
+    def __init__(self, *args, **kwargs):
+        super(NamedSingletonFactory, self).__init__(*args, **kwargs)
+
+        super_get = super(NamedSingletonFactory, self).get
+        self._instances = DefaultCache(super_get)
+        self._instances_lock = threading.RLock()
+
+    def get(self, name=None):
+        with self._instances_lock:
+            return self._instances[name or self.default_name]
+
+    def create_instance(self, name, definition):
+        raise NotImplementedError()
+
+
+class ThreadLocalNamedSingletonFactory(NamedFactory):
+    """
+    :py:class:`NamedFactory` that provides a single instance of an object per
+    thread.
+
+    This instance factory type is useful for instance types that only require
+    a single instance eg database connections, web service agents and that are
+    not thread safe.
+
+    """
+    def __init__(self, *args, **kwargs):
+        super(ThreadLocalNamedSingletonFactory, self).__init__(*args, **kwargs)
+        self._local = threading.local()
+
+    @property
+    def _local_cache(self):
+        try:
+            return getattr(self._local, 'cache')
+        except AttributeError:
+            super_get = super(ThreadLocalNamedSingletonFactory, self).get
+            self._local.cache = cache = DefaultCache(super_get)
+            return cache
+
+    def get(self, name=None):
+        return self._local_cache[name]
+
+    def create_instance(self, name, definition):
+        raise NotImplementedError()
