@@ -9,26 +9,26 @@ class TestNamedConfiguration(object):
     def test_get_default(self):
         target = helpers.NamedConfiguration('TEST_NAMED_CONFIG')
 
-        actual = target()
+        actual = target.get()
         assert actual == {'length': 42, 'foo': 'bar'}
 
     def test_get_specific(self):
         target = helpers.NamedConfiguration('TEST_NAMED_CONFIG')
 
-        actual = target('eek')
+        actual = target.get('eek')
         assert actual == {'length': 24, 'foo': 'bar'}
 
     def test_specify_alternate_default_name(self):
         target = helpers.NamedConfiguration('TEST_NAMED_CONFIG', default_name='eek')
 
-        actual = target('eek')
+        actual = target.get('eek')
         assert actual == {'length': 24, 'foo': 'bar'}
 
     def test_unknown_instance_definition(self):
         target = helpers.NamedConfiguration('TEST_NAMED_CONFIG')
 
         with pytest.raises(KeyError):
-            target('other')
+            target.get('other')
 
     def test_defaults_are_applied(self):
         target = helpers.NamedConfiguration(
@@ -40,7 +40,7 @@ class TestNamedConfiguration(object):
             optional_keys=('foo',)
         )
 
-        actual = target()
+        actual = target.get()
         assert actual == {'length': 42, 'foo': 'bar', 'bar': 123}
 
     def test_checks_settings_missing(self):
