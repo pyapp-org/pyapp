@@ -221,7 +221,7 @@ class NamedPluginFactory(object):
                 # Put definitions back and clear cache.
                 self._instance_definitions = instance_definitions_orig
                 self._type_definitions.clear()
-    checks.check_name = "{obj.__class__.__name__}.check_configuration"
+    checks.check_name = "{obj.setting}.check_configuration"
 
     def check_instance(self, instance_definitions, name, **_):
         """

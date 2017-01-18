@@ -140,7 +140,7 @@ class NamedConfiguration(object):
                 messages += message
 
         return messages
-    checks.check_name = "{obj.__class__.__name__}.check_configuration"
+    checks.check_name = "{obj.setting}.check_configuration"
 
     def check_definition(self, config_definitions, name, **_):
         """
