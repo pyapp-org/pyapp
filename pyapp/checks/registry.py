@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import inspect
 from itertools import chain
 
 from pyapp.conf import settings
@@ -94,3 +93,13 @@ class CheckRegistry(object):
 registry = CheckRegistry()
 register = registry.register
 run_checks = registry.run_checks
+
+
+def import_checks():
+    """
+    Import all of the modules defined in the setting `CHECK_LOCATIONS`.
+
+    By importing the modules this ensures that checks are registered.
+    """
+    for location in settings.CHECK_LOCATIONS:
+        __import__(location)

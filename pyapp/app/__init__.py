@@ -192,7 +192,10 @@ class CliApplication(object):
             """
             Run a check report.
             """
+            from pyapp.checks.registry import import_checks
             from pyapp.checks.report import CheckReport
+
+            import_checks()
 
             # Note the getLevelName method returns the level code if a string level is supplied!
             message_level = logging.getLevelName(opts.message_level)

@@ -25,3 +25,11 @@ LOGGING = {
         'handlers': ['console'],
     }
 }
+
+###############################################################################
+# Checks
+
+CHECK_LOCATIONS = []
+"""
+Locations to import to ensure checks are registered.
+"""
