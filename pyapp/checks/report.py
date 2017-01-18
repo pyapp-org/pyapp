@@ -64,11 +64,10 @@ class CheckReport(object):
                 "{border_style}" + ("=" * self.width) + Style.RESET_ALL + \
                 "\n\n"
 
-    def pre_callback(self, check):
+    def pre_callback(self, obj):
         if self.verbose:
-            if hasattr(check, 'checks'):
-                check = check.checks
-            name = getattr(check, 'check_name', check.__name__)
+            check = obj.checks if hasattr(obj, 'checks') else obj
+            name = getattr(check, 'check_name', check.__name__).format(obj=obj)
             self.f_out.write(self.VERBOSE_CHECK_TEMPLATE.format(name=name))
 
     def wrap_text(self, text, indent_width, line_sep='\n'):

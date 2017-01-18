@@ -10,7 +10,7 @@ from pyapp.conf import settings
 from pyapp.conf.helpers.plugins import *
 from .plugins import DefaultCache
 
-__all__ = ('NamedConfiguration',
+__all__ = ('NamedConfiguration', 'DefaultCache',
            'NamedFactory', 'NamedSingletonFactory', 'ThreadLocalNamedSingletonFactory',
            'NamedPluginFactory', 'NamedSingletonPluginFactory', 'ThreadLocalNamedSingletonPluginFactory')
 
@@ -124,7 +124,7 @@ class NamedConfiguration(object):
         if self.default_name not in self._config_definitions:
             messages.append(checks.Warn(
                 "Default definition not defined.",
-                hint="The default instance type `{}` is not defined.".format(self.default_name),
+                hint="Add a `{}` entry.".format(self.default_name,),
                 obj="settings.{}".format(self.setting)
             ))
 
@@ -137,7 +137,7 @@ class NamedConfiguration(object):
                 messages += message
 
         return messages
-    checks.check_name = "named_configuration_settings"
+    checks.check_name = "{obj.__class__.__name__}.check_configuration"
 
     def check_definition(self, name, **_):
         """
@@ -189,7 +189,7 @@ class NamedFactory(NamedConfiguration):
         """
         return self.create_instance(name)
 
-    def create_instance(self, name):
+    def create_instance(self, name=None):
         raise NotImplementedError()
 
 
@@ -210,7 +210,7 @@ class NamedSingletonFactory(NamedFactory):
         self._instances = DefaultCache(super_create_instance)
         self._instances_lock = threading.RLock()
 
-    def create_instance(self, name):
+    def create_instance(self, name=None):
         raise NotImplementedError()
 
 
@@ -237,5 +237,5 @@ class ThreadLocalNamedSingletonFactory(NamedFactory):
             self._local.cache = cache = DefaultCache(super_create_instance)
             return cache
 
-    def create_instance(self, name):
+    def create_instance(self, name=None):
         raise NotImplementedError()
