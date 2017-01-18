@@ -190,7 +190,8 @@ class NamedPluginFactory(object):
 
         # Take over the lock while checks are being performed
         with self._type_definitions_lock:
-            # Backup definitions, replace and clear cache
+            # Backup definitions, replace and clear cache, this is to make it
+            # easier to write checks for instances.
             instance_definitions_orig = self._instance_definitions
             try:
                 self._instance_definitions = instance_definitions
@@ -199,7 +200,7 @@ class NamedPluginFactory(object):
                 messages = []
 
                 # Check default is defined
-                if self.default_name not in self._instance_definitions:
+                if self.default_name not in instance_definitions:
                     messages.append(checks.Warn(
                         "Default definition not defined.",
                         hint="The default instance type `{}` is not defined.".format(self.default_name),
@@ -207,8 +208,8 @@ class NamedPluginFactory(object):
                     ))
 
                 # Check instance definitions
-                for name in self._instance_definitions:
-                    message = self.check_instance(name, **kwargs)
+                for name in instance_definitions:
+                    message = self.check_instance(instance_definitions, name, **kwargs)
                     if isinstance(message, checks.CheckMessage):
                         messages.append(message)
                     elif message:
@@ -222,15 +223,16 @@ class NamedPluginFactory(object):
                 self._type_definitions.clear()
     checks.check_name = "{obj.__class__.__name__}.check_configuration"
 
-    def check_instance(self, name, **_):
+    def check_instance(self, instance_definitions, name, **_):
         """
         Checks for individual instances.
 
+        :param instance_definitions:
         :param name:
         :return:
 
         """
-        definition = self._instance_definitions[name]
+        definition = instance_definitions[name]
         if not isinstance(definition, (tuple, list)):
             return checks.Critical(
                 "Instance definition is not a list/tuple.",

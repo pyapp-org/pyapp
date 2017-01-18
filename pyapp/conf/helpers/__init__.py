@@ -124,7 +124,7 @@ class NamedConfiguration(object):
         messages = []
 
         # Check default is defined
-        if self.default_name not in self._config_definitions:
+        if self.default_name not in config_definitions:
             messages.append(checks.Warn(
                 "Default definition not defined.",
                 hint="Add a `{}` entry.".format(self.default_name,),
@@ -132,8 +132,8 @@ class NamedConfiguration(object):
             ))
 
         # Check instance definitions
-        for name in self._config_definitions:
-            message = self.check_definition(name, **kwargs)
+        for name in config_definitions:
+            message = self.check_definition(config_definitions, name, **kwargs)
             if isinstance(message, checks.CheckMessage):
                 messages.append(message)
             elif message:
@@ -142,15 +142,16 @@ class NamedConfiguration(object):
         return messages
     checks.check_name = "{obj.__class__.__name__}.check_configuration"
 
-    def check_definition(self, name, **_):
+    def check_definition(self, config_definitions, name, **_):
         """
         Checks for individual definitions.
 
+        :param config_definitions:
         :param name:
         :return:
 
         """
-        definition = self._config_definitions[name]
+        definition = config_definitions[name]
         if not isinstance(definition, dict):
             return checks.Critical(
                 "Config definition entry is not a dict.",
