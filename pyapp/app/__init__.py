@@ -115,10 +115,12 @@ class CliApplication(object):
         `getattr(root_module, '__version__')`
     :param application_settings: The default settings for this application;
         defaults to `root_module.default_settings`
+    :param application_checks: Location of application checks file; defaults to
+        `root_module.checks` if it exists.
 
     """
     def __init__(self, root_module, name=None, description=None, version=None, 
-                 application_settings=None):
+                 application_settings=None, application_checks=None):
         self.root_module = root_module
         self.name = name
 
@@ -143,6 +145,11 @@ class CliApplication(object):
         if application_settings is None:
             application_settings = '{}.default_settings'.format(root_module.__name__)
         self.application_settings = application_settings
+
+        # Determine application checks
+        if application_checks is None:
+            application_checks = '{}.checks'.format(root_module.__name__)
+        self.application_checks = application_checks
 
     def register_handler(self, handler=None, cli_name=None):
         """
@@ -195,6 +202,13 @@ class CliApplication(object):
             from pyapp.checks.registry import import_checks
             from pyapp.checks.report import CheckReport
 
+            # Import default application checks
+            try:
+                __import__(self.application_checks)
+            except ImportError:
+                pass
+
+            # Import additional checks defined in settings.
             import_checks()
 
             # Note the getLevelName method returns the level code if a string level is supplied!
