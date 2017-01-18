@@ -68,17 +68,6 @@ class NamedConfiguration(object):
         self._config_definitions = getattr(settings, setting, {})
         self._args = set(itertools.chain(self.required_keys, self.optional_keys, self.defaults))
 
-    def __call__(self, name=None):
-        """
-        Get a named configuration.
-
-        :param name: Named configuration; default is to the name specified by
-            the `default_name` property.
-        :returns: New instanced of the named type.
-
-        """
-        return self.get(name)
-
     def _get_config_definition(self, name):
         try:
             kwargs = self._config_definitions[name]
@@ -189,18 +178,18 @@ class NamedConfiguration(object):
 
 
 class NamedFactory(NamedConfiguration):
-    def get(self, name=None):
+    def __call__(self, name=None):
         """
-        Get named instance from settings
+        Get a named instance.
 
-        :param name: Name of value or default value.
-        :return:
+        :param name: Named configuration; default is to the name specified by
+            the `default_name` property.
+        :returns: New instanced of the named type.
 
         """
-        definition = self._get_config_definition(name or self.default_name)
-        return self.create_instance(name, definition)
+        return self.create_instance(name)
 
-    def create_instance(self, name, definition):
+    def create_instance(self, name):
         raise NotImplementedError()
 
 
@@ -217,15 +206,11 @@ class NamedSingletonFactory(NamedFactory):
     def __init__(self, *args, **kwargs):
         super(NamedSingletonFactory, self).__init__(*args, **kwargs)
 
-        super_get = super(NamedSingletonFactory, self).get
-        self._instances = DefaultCache(super_get)
+        super_create_instance = super(NamedSingletonFactory, self).create_instance
+        self._instances = DefaultCache(super_create_instance)
         self._instances_lock = threading.RLock()
 
-    def get(self, name=None):
-        with self._instances_lock:
-            return self._instances[name or self.default_name]
-
-    def create_instance(self, name, definition):
+    def create_instance(self, name):
         raise NotImplementedError()
 
 
@@ -248,12 +233,9 @@ class ThreadLocalNamedSingletonFactory(NamedFactory):
         try:
             return getattr(self._local, 'cache')
         except AttributeError:
-            super_get = super(ThreadLocalNamedSingletonFactory, self).get
-            self._local.cache = cache = DefaultCache(super_get)
+            super_create_instance = super(ThreadLocalNamedSingletonFactory, self).create_instance
+            self._local.cache = cache = DefaultCache(super_create_instance)
             return cache
 
-    def get(self, name=None):
-        return self._local_cache[name]
-
-    def create_instance(self, name, definition):
+    def create_instance(self, name):
         raise NotImplementedError()
