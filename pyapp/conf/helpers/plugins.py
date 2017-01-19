@@ -32,6 +32,8 @@ import importlib
 import six
 import threading
 
+from cached_property import cached_property
+
 from pyapp import checks
 from pyapp.conf import settings
 
@@ -104,7 +106,6 @@ class NamedPluginFactory(object):
         self.abc = abc
         self.default_name = default_name
 
-        self._instance_definitions = None
         self._type_definitions = DefaultCache(self._get_type_definition)
         self._type_definitions_lock = threading.RLock()
 
@@ -121,6 +122,10 @@ class NamedPluginFactory(object):
         """
         return self.create_instance(name)
 
+    @cached_property
+    def _instance_definitions(self):
+        return getattr(settings, self.setting, {})
+
     @property
     def available(self):
         """
@@ -129,9 +134,6 @@ class NamedPluginFactory(object):
         return self._instance_definitions.keys()
 
     def _get_type_definition(self, name):
-        if self._instance_definitions is None:
-            self._instance_definitions = getattr(settings, self.setting, {})
-
         try:
             type_name, kwargs = self._instance_definitions[name]
         except KeyError:

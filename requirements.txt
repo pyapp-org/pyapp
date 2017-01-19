@@ -1,1 +1,2 @@
 six
+cached_property

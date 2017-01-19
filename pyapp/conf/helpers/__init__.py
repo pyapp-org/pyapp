@@ -2,8 +2,9 @@ from __future__ import absolute_import
 
 import itertools
 import threading
-
 import six
+
+from cached_property import cached_property
 
 from pyapp import checks
 from pyapp.conf import settings
@@ -65,13 +66,13 @@ class NamedConfiguration(object):
         if optional_keys is not None:
             self.optional_keys = optional_keys
 
-        self._config_definitions = None
         self._args = set(itertools.chain(self.required_keys, self.optional_keys, self.defaults))
 
-    def _get_config_definition(self, name):
-        if self._config_definitions is None:
-            self._config_definitions = getattr(settings, self.setting, {})
+    @cached_property
+    def _config_definitions(self):
+        return getattr(settings, self.setting, {})
 
+    def _get_config_definition(self, name):
         try:
             kwargs = self._config_definitions[name]
         except KeyError:
