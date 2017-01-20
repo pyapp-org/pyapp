@@ -119,6 +119,16 @@ class CliApplication(object):
         `root_module.checks` if it exists.
 
     """
+    default_log_handler = logging.StreamHandler(sys.stderr)
+    """
+    Log handler applied by default to root logger.
+    """
+
+    default_log_formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+    """
+    Log formatter applied by default to root logger handler.
+    """
+
     def __init__(self, root_module, name=None, description=None, version=None, 
                  application_settings=None, application_checks=None):
         self.root_module = root_module
@@ -218,6 +228,21 @@ class CliApplication(object):
 
         self.register_handler(checks)
 
+    def pre_configure_logging(self, opts):
+        """
+        Set some default logging so setting are logged.
+
+        The main logging configuration from settings leaving us with a chicken
+        and egg situation.
+
+        """
+        handler = self.default_log_handler
+        handler.formatter = self.default_log_formatter
+
+        # Apply handler to root logger and set level.
+        logging.root.handlers = [handler]
+        logging.root.setLevel(opts.log_level)
+
     def configure_settings(self, opts):
         """
         Configure settings container.
@@ -228,14 +253,17 @@ class CliApplication(object):
         """
         Configure the logging framework.
         """
-        # Set a default version if not supplied by settings
-        dict_config = settings.LOGGING.copy()
-        dict_config.setdefault('version', 1)
+        if settings.LOGGING:
+            logging.debug("Applying logging configuration.")
 
-        logging.config.dictConfig(dict_config)
+            # Set a default version if not supplied by settings
+            dict_config = settings.LOGGING.copy()
+            dict_config.setdefault('version', 1)
 
-        # Configure root log level
-        logging.root.setLevel(opts.log_level)
+            logging.config.dictConfig(dict_config)
+
+            # Configure root log level
+            logging.root.setLevel(opts.log_level)
 
     def dispatch(self, args=None):
         """
@@ -247,6 +275,7 @@ class CliApplication(object):
 
         opts = self.parser.parse_args(args)
 
+        self.pre_configure_logging(opts)
         self.configure_settings(opts)
         self.configure_logging(opts)
 
@@ -254,5 +283,6 @@ class CliApplication(object):
         try:
             self._handlers[opts.handler](opts)
         except Exception:
+            logging.exception("Un-handled exception caught executing handler: %s", opts.handler)
             # TODO: Generate an exception report.
             raise
