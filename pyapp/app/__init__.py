@@ -36,6 +36,8 @@ Your application should have the following structure::
 from __future__ import print_function, absolute_import
 
 import argparse
+import six
+
 try:
     import argcomplete
 except ImportError:
@@ -129,11 +131,23 @@ class CliApplication(object):
         self.parser.add_argument('--settings', dest='settings',
                                  help='Settings to load; either a Python module or settings '
                                       'URL. Defaults to the env variable {}'.format(conf.DEFAULT_ENV_KEY))
-        self.parser.add_argument('--log-level', dest='log_level', default='INFO',
-                                 choices=('DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'))
+        self.parser.add_argument('--nocolor', dest='no_color', action='store_true',
+                                 help="Disable colour output (if colorama is installed).")
         self.parser.add_argument('--version', action='version',
                                  version='%(prog)s version: {}'.format(
                                      version or getattr(root_module, '__version__', 'Unknown')))
+
+        # Log configuration
+        self.parser.add_argument('--log-level', dest='log_level', default='INFO',
+                                 choices=('DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'))
+
+        # Global check values
+        self.parser.add_argument('--checks', dest='checks_on_startup', action='store_true',
+                                 help='Run checks on startup, any serious error will result '
+                                      'in the application terminating.')
+        self.parser.add_argument('--checks-level', dest='checks_message_level', default='INFO',
+                                 choices=('DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'),
+                                 help='Minimum level of check message to display')
 
         # Create sub parsers
         self.sub_parsers = self.parser.add_subparsers(dest='handler')
@@ -179,6 +193,33 @@ class CliApplication(object):
 
         return inner(handler) if handler else inner
 
+    def run_checks(self, output, message_level=logging.INFO, tags=None, verbose=False, no_color=False):
+        """
+        Run application checks.
+
+        :param output: File like object to write output to.
+        :param message_level: Reporting level.
+        :param tags: Specific tags to run.
+        :param verbose: Display verbose output.
+        :param no_color: Disable coloured output.
+
+        """
+        from pyapp.checks.registry import import_checks
+        from pyapp.checks.report import CheckReport
+
+        # Import default application checks
+        try:
+            __import__(self.application_checks)
+        except ImportError:
+            pass
+
+        # Import additional checks defined in settings.
+        import_checks()
+
+        # Note the getLevelName method returns the level code if a string level is supplied!
+        message_level = logging.getLevelName(message_level)
+        return CheckReport(verbose, no_color, output).run(message_level, tags)
+
     def register_builtin_handlers(self):
         """
         Register any built in handlers.
@@ -186,12 +227,8 @@ class CliApplication(object):
         # Register the checks handler
         @add_argument('-t', '--tag', dest='tags', action='append',
                       help="Run checks associated with a tag.")
-        @add_argument('-l', '--level', dest='message_level', default='INFO',
-                      choices=('DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'))
         @add_argument('--verbose', dest='verbose', action='store_true',
                       help="Verbose output.")
-        @add_argument('--nocolor', dest='no_color', action='store_true',
-                      help="Disable colour output (if colorama is installed).")
         @add_argument('--out', dest='out', default=sys.stdout,
                       type=argparse.FileType(mode='w'),
                       help='File to output check report to; default is stdout.')
@@ -199,21 +236,8 @@ class CliApplication(object):
             """
             Run a check report.
             """
-            from pyapp.checks.registry import import_checks
-            from pyapp.checks.report import CheckReport
-
-            # Import default application checks
-            try:
-                __import__(self.application_checks)
-            except ImportError:
-                pass
-
-            # Import additional checks defined in settings.
-            import_checks()
-
-            # Note the getLevelName method returns the level code if a string level is supplied!
-            message_level = logging.getLevelName(opts.message_level)
-            if CheckReport(opts.verbose, opts.no_color, opts.out).run(message_level, opts.tags):
+            message_level = logging.getLevelName(opts.checks_message_level)
+            if self.run_checks(opts.out, message_level, opts.tags, opts.verbose, opts.no_color):
                 exit(4)
 
         self.register_handler(checks)
@@ -237,6 +261,22 @@ class CliApplication(object):
         # Configure root log level
         logging.root.setLevel(opts.log_level)
 
+    def checks_on_startup(self, opts):
+        """
+        Run checks on startup.
+        """
+        if opts.checks_on_startup:
+            out = six.StringIO()
+
+            message_level = logging.getLevelName(opts.checks_message_level)
+            serious_error = self.run_checks(out, message_level, None, True, False)
+
+            if serious_error:
+                logging.error("Check results:\n%s", out.getvalue())
+                exit(4)
+            else:
+                logging.info("Check results:\n%s", out.getvalue())
+
     def dispatch(self, args=None):
         """
         Dispatch command to registered handler.
@@ -248,11 +288,24 @@ class CliApplication(object):
         opts = self.parser.parse_args(args)
 
         self.configure_settings(opts)
-        self.configure_logging(opts)
 
-        # Dispatch to handler.
-        try:
+        if opts.handler == 'checks':
+            # If checks handler execute before logging etc is configured.
+            # this allows for logging settings to be checked.
             self._handlers[opts.handler](opts)
-        except Exception:
-            # TODO: Generate an exception report.
-            raise
+
+        else:
+            self.configure_logging(opts)
+            self.checks_on_startup(opts)
+
+            # Dispatch to handler.
+            try:
+                self._handlers[opts.handler](opts)
+
+            except Exception:
+                # TODO: Generate an exception report.
+                raise
+
+            except KeyboardInterrupt:
+                print("\n\nInterrupted.", file=sys.stderr)
+                exit(-1)
