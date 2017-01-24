@@ -133,6 +133,7 @@ class Settings(object):
         loader_key = str(loader)
         if loader_key in self.SETTINGS_SOURCES:
             warnings.warn("Settings already loaded: {}".format(loader_key), category=ImportWarning)
+            logger.warn("Settings already loaded: %s", loader_key)
             return  # Prevent circular loading
 
         logger.info("Loading settings from: %s", loader_key)
@@ -164,6 +165,8 @@ class Settings(object):
         :type env_settings_key: str | unicode
 
         """
+        logger.debug("Configuring settings...")
+
         loaders = [ModuleLoader(application_settings)]
 
         # Add run time settings (which can be overridden or specified by an
@@ -179,6 +182,8 @@ class Settings(object):
         # Actually load settings from each loader
         for loader in loaders:
             self.load(loader)
+
+        logger.debug("Settings loaded %s.", settings.SETTINGS_SOURCES)
 
     def modify(self):
         """
