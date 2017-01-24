@@ -3,9 +3,9 @@
 
 Quick demo::
 
-    >>> import my_app
+    >>> import sample
     >>> from pyapp.app import CliApplication, add_argument
-    >>> app = CliApplication(my_app)
+    >>> app = CliApplication(sample)
 
     >>> @add_argument('--verbose', target='verbose', action='store_true')
     >>> @app.register_handler()
@@ -319,8 +319,8 @@ class CliApplication(object):
         self.configure_settings(opts)
 
         if opts.handler != 'checks':
-            # If checks handler don't execute logging or "checks
-            # on startup".
+            # If checks handler don't configure logging or call the "checks on
+            # startup" process.
             self.configure_logging(opts)
             self.checks_on_startup(opts)
 
