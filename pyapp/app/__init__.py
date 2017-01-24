@@ -49,6 +49,8 @@ import sys
 from pyapp import conf
 from pyapp.conf import settings
 
+logger = logging.getLogger(__name__)
+
 
 class HandlerProxy(object):
     """
@@ -278,7 +280,7 @@ class CliApplication(object):
         Configure the logging framework.
         """
         if settings.LOGGING:
-            logging.debug("Applying logging configuration.")
+            logger.debug("Applying logging configuration.")
 
             # Set a default version if not supplied by settings
             dict_config = settings.LOGGING.copy()
@@ -300,10 +302,10 @@ class CliApplication(object):
             serious_error = self.run_checks(out, message_level, None, True, False)
 
             if serious_error:
-                logging.error("Check results:\n%s", out.getvalue())
+                logger.error("Check results:\n%s", out.getvalue())
                 exit(4)
             else:
-                logging.info("Check results:\n%s", out.getvalue())
+                logger.info("Check results:\n%s", out.getvalue())
 
     def dispatch(self, args=None):
         """
@@ -329,7 +331,7 @@ class CliApplication(object):
             self._handlers[opts.handler](opts)
 
         except Exception:
-            logging.exception("Un-handled exception caught executing handler: %s", opts.handler)
+            logger.exception("Un-handled exception caught executing handler: %s", opts.handler)
             # TODO: Generate an exception report.
             raise
 

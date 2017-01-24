@@ -41,7 +41,7 @@ import warnings
 from . import default_settings
 from .loaders import factory, ModuleLoader
 
-logger = logging.getLogger("pyapp.conf")
+logger = logging.getLogger(__name__)
 
 DEFAULT_ENV_KEY = 'PYAPP_SETTINGS'
 
