@@ -11,7 +11,6 @@ from .messages import (
     Debug, Info, Warn, Error, Critical,
 )
 from .registry import register, run_checks, Tags
-
 from .built_in import security  # NOQA isort:skip
 
 

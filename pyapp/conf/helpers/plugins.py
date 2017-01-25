@@ -27,9 +27,9 @@ factory::
 
 """
 from __future__ import absolute_import, unicode_literals
+import six
 
 import importlib
-import six
 import threading
 
 from cached_property import cached_property
@@ -221,7 +221,7 @@ class NamedPluginFactory(object):
 
             finally:
                 # Put definitions back and clear cache.
-                self._instance_definitions = instance_definitions_orig
+                del self._instance_definitions
                 self._type_definitions.clear()
     checks.check_name = "{obj.setting}.check_configuration"
 

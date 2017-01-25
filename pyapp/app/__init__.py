@@ -36,7 +36,6 @@ Your application should have the following structure::
 from __future__ import absolute_import, print_function, unicode_literals
 
 import argparse
-
 try:
     import argcomplete
 except ImportError:
@@ -248,8 +247,8 @@ class CliApplication(object):
             """
             Run a check report.
             """
-            message_level = logging.getLevelName(opts.checks_message_level)
-            if self.run_checks(opts.out, message_level, opts.tags, opts.verbose, opts.no_color):
+            if self.run_checks(opts.out, opts.checks_message_level, opts.tags,
+                               opts.verbose, opts.no_color):
                 exit(4)
 
         self.register_handler(checks)
@@ -298,8 +297,7 @@ class CliApplication(object):
         if opts.checks_on_startup:
             out = io.StringIO()
 
-            message_level = logging.getLevelName(opts.checks_message_level)
-            serious_error = self.run_checks(out, message_level, None, True, False)
+            serious_error = self.run_checks(out, opts.checks_message_level, None, True, False)
 
             if serious_error:
                 logger.error("Check results:\n%s", out.getvalue())
