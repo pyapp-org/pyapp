@@ -32,7 +32,7 @@ class CheckRegistry(object):
                 self.registered_checks.append(func)
             return func
 
-        if callable(check):
+        if callable(check) or hasattr(check, 'checks'):
             return inner(check)
         else:
             if check:
