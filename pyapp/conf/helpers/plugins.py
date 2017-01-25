@@ -36,24 +36,9 @@ from cached_property import cached_property
 
 from pyapp import checks
 from pyapp.conf import settings
+from .bases import DefaultCache, FactoryMixin, SingletonFactoryMixin, ThreadLocalSingletonFactoryMixin
 
 __all__ = ('NamedPluginFactory', 'NamedSingletonPluginFactory', 'ThreadLocalNamedSingletonPluginFactory')
-
-
-class DefaultCache(dict):
-    """
-    Very similar to :py:class:`collections.defaultdict` (using __missing__)
-    however passes the specified key to the default factory method.
-    """
-    def __init__(self, default_factory=None, **kwargs):
-        super(DefaultCache, self).__init__(**kwargs)
-        self.default_factory = default_factory
-
-    def __missing__(self, key):
-        if not self.default_factory:
-            raise KeyError(key)
-        self[key] = value = self.default_factory(key)
-        return value
 
 
 def _import_type(type_name):
@@ -69,7 +54,7 @@ def _import_type(type_name):
     return getattr(module, type_name)
 
 
-class NamedPluginFactory(object):
+class NamedPluginFactory(FactoryMixin):
     """
     Factory object that generates a named instance from a definition in
     settings. Can optionally verify an instance type against a specified ABC
@@ -86,7 +71,7 @@ class NamedPluginFactory(object):
             )
         }
 
-    The NamedFactory is thread safe.
+    The :py:class:`NamedPluginFactory` is thread safe.
 
     """
     def __init__(self, setting, abc=None, default_name='default'):
@@ -110,17 +95,6 @@ class NamedPluginFactory(object):
         self._type_definitions_lock = threading.RLock()
 
         self._register_checks()
-
-    def __call__(self, name=None):
-        """
-        Get a named instance.
-
-        :param name: Named instance definition, default is to get the default
-            instance type.
-        :returns: New instanced of the named type.
-
-        """
-        return self.create_instance(name)
 
     @cached_property
     def _instance_definitions(self):
@@ -271,7 +245,7 @@ class NamedPluginFactory(object):
         return messages
 
 
-class NamedSingletonPluginFactory(NamedPluginFactory):
+class NamedSingletonPluginFactory(SingletonFactoryMixin, NamedPluginFactory):
     """
     :py:class:`NamedPluginFactory` that provides a single instance of an object.
 
@@ -282,29 +256,11 @@ class NamedSingletonPluginFactory(NamedPluginFactory):
     :py:class:`ThreadLocalNamedSingletonPluginFactory` is used.
 
     """
-    def __init__(self, *args, **kwargs):
-        super(NamedSingletonPluginFactory, self).__init__(*args, **kwargs)
-
-        super_create_instance = super(NamedSingletonPluginFactory, self).create_instance
-        self._instances = DefaultCache(super_create_instance)
-        self._instances_lock = threading.RLock()
-
-    def create_instance(self, name=None):
-        """
-        Get a named singleton instance.
-
-        :param name: Named instance definition; default value is defined by the
-            ``default_name`` instance argument.
-        :returns: Instance of the named type.
-
-        """
-        with self._instances_lock:
-            return self._instances[name]
 
 
-class ThreadLocalNamedSingletonPluginFactory(NamedPluginFactory):
+class ThreadLocalNamedSingletonPluginFactory(ThreadLocalSingletonFactoryMixin, NamedPluginFactory):
     """
-    :py:class:`NamedPluginFactory` that provides a single instance of an object per
+    :py:class:`NamedPluginFactory` that provides a single instance of a plugin per
     thread.
 
     This instance factory type is useful for instance types that only require
@@ -312,26 +268,3 @@ class ThreadLocalNamedSingletonPluginFactory(NamedPluginFactory):
     not thread safe.
 
     """
-    def __init__(self, *args, **kwargs):
-        super(ThreadLocalNamedSingletonPluginFactory, self).__init__(*args, **kwargs)
-        self._local = threading.local()
-
-    @property
-    def _local_cache(self):
-        try:
-            return getattr(self._local, 'cache')
-        except AttributeError:
-            super_create_instance = super(ThreadLocalNamedSingletonPluginFactory, self).create_instance
-            self._local.cache = cache = DefaultCache(super_create_instance)
-            return cache
-
-    def create_instance(self, name=None):
-        """
-        Get a named singleton instance.
-
-        :param name: Named instance definition; default value is defined by the
-            ``default_name`` instance argument.
-        :returns: Instance of the named type.
-
-        """
-        return self._local_cache[name]

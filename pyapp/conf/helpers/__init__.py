@@ -9,7 +9,7 @@ from cached_property import cached_property
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.conf.helpers.plugins import *
-from .plugins import DefaultCache
+from .bases import DefaultCache, FactoryMixin, SingletonFactoryMixin, ThreadLocalSingletonFactoryMixin
 
 __all__ = ('NamedConfiguration', 'DefaultCache',
            'NamedFactory', 'NamedSingletonFactory', 'ThreadLocalNamedSingletonFactory',
@@ -182,23 +182,15 @@ class NamedConfiguration(object):
         return messages
 
 
-class NamedFactory(NamedConfiguration):
-    def __call__(self, name=None):
-        """
-        Get a named instance.
-
-        :param name: Named configuration; default is to the name specified by
-            the `default_name` property.
-        :returns: New instanced of the named type.
-
-        """
-        return self.create_instance(name)
-
+class NamedFactory(FactoryMixin, NamedConfiguration):
+    """
+    Factory for creating instances from a named configuration.
+    """
     def create_instance(self, name=None):
         raise NotImplementedError()
 
 
-class NamedSingletonFactory(NamedFactory):
+class NamedSingletonFactory(SingletonFactoryMixin, NamedFactory):
     """"
     :py:class:`NamedFactory` that provides a single instance of an object.
 
@@ -208,18 +200,11 @@ class NamedSingletonFactory(NamedFactory):
     If your instance types are not thread safe it is recommended that the
     :py:class:`ThreadLocalNamedSingletonFactory` is used.
     """
-    def __init__(self, *args, **kwargs):
-        super(NamedSingletonFactory, self).__init__(*args, **kwargs)
-
-        super_create_instance = super(NamedSingletonFactory, self).create_instance
-        self._instances = DefaultCache(super_create_instance)
-        self._instances_lock = threading.RLock()
-
     def create_instance(self, name=None):
         raise NotImplementedError()
 
 
-class ThreadLocalNamedSingletonFactory(NamedFactory):
+class ThreadLocalNamedSingletonFactory(ThreadLocalSingletonFactoryMixin, NamedFactory):
     """
     :py:class:`NamedFactory` that provides a single instance of an object per
     thread.
@@ -229,18 +214,5 @@ class ThreadLocalNamedSingletonFactory(NamedFactory):
     not thread safe.
 
     """
-    def __init__(self, *args, **kwargs):
-        super(ThreadLocalNamedSingletonFactory, self).__init__(*args, **kwargs)
-        self._local = threading.local()
-
-    @property
-    def _local_cache(self):
-        try:
-            return getattr(self._local, 'cache')
-        except AttributeError:
-            super_create_instance = super(ThreadLocalNamedSingletonFactory, self).create_instance
-            self._local.cache = cache = DefaultCache(super_create_instance)
-            return cache
-
     def create_instance(self, name=None):
         raise NotImplementedError()

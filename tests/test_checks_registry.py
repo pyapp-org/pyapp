@@ -50,6 +50,22 @@ class TestCheckRegistry(object):
         assert my_check_func in target.registered_checks
         assert len(my_check_func._check__tags) == 2
 
+    def test_register__attached_check(self):
+        target = registry.CheckRegistry()
+
+        def my_func():
+            return 'foo'
+
+        def my_func_checks(**kwargs):
+            pass
+        my_func.checks = my_func_checks
+
+        target.register(my_func, 'foo')
+
+        assert len(target.registered_checks) == 1
+        assert my_func in target.registered_checks
+        assert len(my_func._check__tags) == 1
+
     def test_run_checks__all_successful(self):
         target = registry.CheckRegistry()
 
@@ -119,4 +135,20 @@ class TestCheckRegistry(object):
             messages.Info("Message2"),
             messages.Info("Message3"),
             messages.Info("Message4"),
+        ] == actual
+
+    def test_run_checks__attached_checks(self):
+        target = registry.CheckRegistry()
+
+        class MyClass(object):
+            def checks(self, settings, **kwargs):
+                return messages.Info("Message1"), messages.Info("Message2")
+        instance = MyClass()
+
+        target.register(instance)
+
+        actual = target.run_checks()
+        assert [
+            messages.Info("Message1"),
+            messages.Info("Message2"),
         ] == actual
