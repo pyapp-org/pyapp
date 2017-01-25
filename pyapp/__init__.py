@@ -7,6 +7,8 @@ PyApp - A python application framework
 *Let us handle the boring stuff!*
 
 """
+from __future__ import unicode_literals
+
 import logging
 import os
 

@@ -17,3 +17,6 @@ pyApp - A python application framework
    :alt: Code Health
 
 Many features inspired by Django, but modified to be more general for use outside of web applications.
+
+The development philosophy for this library is Python 3 first, with features
+back ported to Python 2.7 where possible.

@@ -33,15 +33,15 @@ Your application should have the following structure::
            default_settings.py  # The default settings file
 
 """
-from __future__ import print_function, absolute_import
+from __future__ import absolute_import, print_function, unicode_literals
 
 import argparse
-import six
 
 try:
     import argcomplete
 except ImportError:
     argcomplete = None
+import io
 import logging
 import logging.config
 import sys
@@ -296,7 +296,7 @@ class CliApplication(object):
         Run checks on startup.
         """
         if opts.checks_on_startup:
-            out = six.StringIO()
+            out = io.StringIO()
 
             message_level = logging.getLevelName(opts.checks_message_level)
             serious_error = self.run_checks(out, message_level, None, True, False)

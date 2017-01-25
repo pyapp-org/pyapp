@@ -1,6 +1,8 @@
 """
 Messages
 """
+from __future__ import unicode_literals
+
 from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 

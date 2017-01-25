@@ -5,7 +5,7 @@ Loaders are used to load settings from an external source, eg a Python module
 A loader provides key/value pairs to the settings container to merge into the
 application settings.
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import importlib
 
