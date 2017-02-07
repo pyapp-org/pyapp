@@ -8,5 +8,6 @@ Contents:
    :maxdepth: 2
 
    app
+   checks
    conf
-   factory
+   conf/helpers

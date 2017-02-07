@@ -1,4 +1,7 @@
 """
+Application
+~~~~~~~~~~~
+
 *Application with bindings for commands*
 
 Quick demo::
@@ -31,6 +34,13 @@ Your application should have the following structure::
     my_app/__init__.py          # Include a __version__ variable
            __main__.py          # This is where the quick demo is located
            default_settings.py  # The default settings file
+
+
+CliApplication
+--------------
+
+.. autoclass:: CliApplication
+    :members: register_handler, dispatch
 
 """
 from __future__ import absolute_import, print_function, unicode_literals

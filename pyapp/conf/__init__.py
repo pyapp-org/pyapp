@@ -1,4 +1,7 @@
 """
+Configuration
+~~~~~~~~~~~~~
+
 *Provides a simple woy to add settings to your application.*
 
 Management of loading of settings from different file types and merging into
@@ -30,6 +33,29 @@ are reverted.
 .. note::
     All settings must be UPPER_CASE. If a setting is not upper case it will not
     be imported into the settings object.
+
+Settings
+========
+
+.. autoclass:: Settings
+    :members: is_configured, load, configure, modify
+
+Loaders
+=======
+
+.. automodule:: pyapp.conf.loaders
+
+ModuleLoader
+------------
+
+.. autoclass:: ModuleLoader
+
+.. automodule:: pyapp.conf.loaders.file_loader
+
+FileLoader
+----------
+
+.. autoclass:: FileLoader
 
 """
 from __future__ import absolute_import, unicode_literals
