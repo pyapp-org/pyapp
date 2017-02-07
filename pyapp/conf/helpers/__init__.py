@@ -241,8 +241,6 @@ class NamedFactory(FactoryMixin, NamedConfiguration):
     """
     Factory for creating instances from a named configuration.
     """
-    def create_instance(self, name=None):
-        raise NotImplementedError()
 
 
 class NamedSingletonFactory(SingletonFactoryMixin, NamedFactory):
@@ -255,8 +253,6 @@ class NamedSingletonFactory(SingletonFactoryMixin, NamedFactory):
     If your instance types are not thread safe it is recommended that the
     :py:class:`ThreadLocalNamedSingletonFactory` is used.
     """
-    def create_instance(self, name=None):
-        raise NotImplementedError()
 
 
 class ThreadLocalNamedSingletonFactory(ThreadLocalSingletonFactoryMixin, NamedFactory):
@@ -269,5 +265,3 @@ class ThreadLocalNamedSingletonFactory(ThreadLocalSingletonFactoryMixin, NamedFa
     not thread safe.
 
     """
-    def create_instance(self, name=None):
-        raise NotImplementedError()
