@@ -1,7 +1,62 @@
+"""
+Configuration Helpers
+~~~~~~~~~~~~~~~~~~~~~
+
+The configuration helpers are a collection of tools that simplify building
+configuration structures. They also provide a set of factory objects for the
+generation of named instances from configuration.
+
+The root helper is the NamedConfiguration, this object provides a simple
+interface over configuration eg::
+
+    >>> my_values = NamedConfiguration('MY_VALUES')
+    >>> my_values.get('foo')
+    '123'
+
+    # With the following in your settings file
+    MY_VALUES = {
+        'foo': '123',
+        'bar': '456',
+    }
+
+
+Simple factories
+----------------
+
+These factory objects come in three flavours:
+
+- Basic - returns an instance for each request for a named object
+- Singleton - returns the same instance (lazily created) for each named object
+- ThreadLocalSingleton - returns an instance of each named object per thread
+
+These classes are all ABS classes that the developer must inherit from and
+provide an implementation of the ``create_instance`` method.
+
+.. autoclass:: NamedFactory
+
+.. autoclass:: NamedSingletonFactory
+
+.. autoclass:: ThreadLocalNamedSingletonFactory
+
+
+Plugin factories
+----------------
+
+Similarly to the simple factories the plugin factories also come in the same
+three flavours, however they include the additional functionality of supporting
+the creation of object instances based off configuration. The definition is
+slightly more complex in your settings file.
+
+.. autoclass:: NamedPluginFactory
+
+.. autoclass:: NamedSingletonPluginFactory
+
+.. autoclass:: ThreadLocalNamedSingletonPluginFactory
+
+"""
 from __future__ import absolute_import, unicode_literals
 
 import itertools
-import threading
 import six
 
 from cached_property import cached_property
