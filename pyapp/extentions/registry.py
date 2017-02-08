@@ -8,6 +8,8 @@ from types import ModuleType
 from pyapp.conf import settings, factory
 from pyapp.utils import cached_property
 
+__all__ = ('registry', 'load')
+
 
 class Extension(object):
     """
@@ -64,6 +66,9 @@ class ExtensionRegistry(object):
     def __init__(self):
         self._extensions = []
 
+    def __iter__(self):
+        return iter(self._extensions)
+
     def load(self, module_name):
         """
         Load a module from
@@ -88,7 +93,7 @@ class ExtensionRegistry(object):
         Returns a summary of the loaded extension modules.
         """
         module_summary = []
-        for extension in self._extensions:
+        for extension in self:
             module_summary.append(extension.summary())
         return module_summary
 

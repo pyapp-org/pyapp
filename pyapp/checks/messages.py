@@ -5,6 +5,12 @@ from __future__ import unicode_literals
 
 from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 
+__all__ = (
+    'CheckMessage',
+    'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL',
+    'Debug', 'Info', 'Warn', 'Error', 'Critical',
+)
+
 
 class CheckMessage(object):
     """

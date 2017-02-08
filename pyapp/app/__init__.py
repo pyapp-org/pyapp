@@ -264,6 +264,21 @@ class CliApplication(object):
 
         self.register_handler(checks)
 
+        # Register extension report handler
+        @add_argument('--verbose', dest='verbose', action='store_true',
+                      help="Verbose output.")
+        @add_argument('--out', dest='out', default=sys.stdout,
+                      type=argparse.FileType(mode='w'),
+                      help='File to output extension report to; default is stdout.')
+        def extensions(opts):
+            """
+            Report of installed PyApp extensions.
+            """
+            from pyapp.extentions.report import ExtensionReport
+            return ExtensionReport(opts.verbose, opts.no_color, opts.out).run()
+
+        self.register_handler(extensions)
+
     def pre_configure_logging(self, opts):
         """
         Set some default logging so setting are logged.
