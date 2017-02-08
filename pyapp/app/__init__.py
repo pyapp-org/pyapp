@@ -56,6 +56,7 @@ import logging.config
 import sys
 
 from pyapp import conf
+from pyapp import extentions
 from pyapp.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -300,6 +301,20 @@ class CliApplication(object):
             # Configure root log level
             logging.root.setLevel(opts.log_level)
 
+    def configure_extensions(self, opts):
+        """
+        Load/Configure extensions.
+        """
+        extentions.registry.load_from_settings()
+
+        # Load settings into from extensions, do not override as
+        # extensions are loaded after the main settings file so only
+        # settings that do not already exist should be loaded.
+        settings.load_from_loaders(
+            extentions.registry.settings_loaders,
+            override=False
+        )
+
     def checks_on_startup(self, opts):
         """
         Run checks on startup.
@@ -327,6 +342,7 @@ class CliApplication(object):
 
         self.pre_configure_logging(opts)
         self.configure_settings(opts)
+        self.configure_extensions(opts)
 
         if opts.handler != 'checks':
             # If checks handler don't configure logging or call the "checks on

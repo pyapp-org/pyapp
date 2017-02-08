@@ -149,7 +149,7 @@ class Settings(object):
         """
         return bool(self.SETTINGS_SOURCES)
 
-    def load(self, loader):
+    def load(self, loader, apply_method=dict.__setitem__):
         """
         Load settings from a loader instance. A loader is an iterator that yields key/value pairs.
 
@@ -165,7 +165,9 @@ class Settings(object):
         logger.info("Loading settings from: %s", loader_key)
 
         # Apply values from loader
-        self.__dict__.update(loader)
+        for key, value in loader:
+            logger.debug("Importing setting: %s", key)
+            apply_method(self.__dict__, key, value)
 
         # Store loader key to prevent circular loading
         self.SETTINGS_SOURCES.append(loader_key)
@@ -174,7 +176,21 @@ class Settings(object):
         include_settings = self.__dict__.pop('INCLUDE_SETTINGS', None)
         if include_settings:
             for source_url in include_settings:
-                self.load(factory(source_url))
+                self.load(factory(source_url), apply_method)
+
+    def load_from_loaders(self, loader_list, override=True):
+        """
+        Load settings from a list of loaders.
+
+        :param loader_list: List of loader instances.
+        :param override: If True loaders override existing items else existing
+            items are left untouched.
+
+        """
+        apply_method = dict.__setitem__ if override else dict.setdefault
+
+        for loader in loader_list:
+            self.load(loader, apply_method)
 
     def configure(self, application_settings, runtime_settings=None, additional_loaders=None,
                   env_settings_key=DEFAULT_ENV_KEY):
@@ -193,21 +209,20 @@ class Settings(object):
         """
         logger.debug("Configuring settings...")
 
-        loaders = [ModuleLoader(application_settings)]
+        loader_list = [ModuleLoader(application_settings)]
 
         # Add run time settings (which can be overridden or specified by an
         # environment variable).
         runtime_settings = runtime_settings or os.environ.get(env_settings_key)
         if runtime_settings:
-            loaders.append(ModuleLoader(runtime_settings))
+            loader_list.append(ModuleLoader(runtime_settings))
 
         # Append the additional loaders if defined
         if additional_loaders:
-            loaders.extend(additional_loaders)
+            loader_list.extend(additional_loaders)
 
         # Actually load settings from each loader
-        for loader in loaders:
-            self.load(loader)
+        self.load_from_loaders(loader_list)
 
         logger.debug("Settings loaded %s.", settings.SETTINGS_SOURCES)
 
@@ -224,7 +239,6 @@ class Settings(object):
             >>>     patch.FOO = 'foo'
             >>>     # Remove a setting
             >>>     del patch.BAR
-
 
         :rtype: ModifySettingsContext
 
