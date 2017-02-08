@@ -1,7 +1,6 @@
 from __future__ import print_function, unicode_literals
 
 import sys
-import textwrap
 
 from pyapp.extentions.registry import registry
 
@@ -37,87 +36,26 @@ class ExtensionReport(object):
 
         # Generate templates
         if self.no_color:
-            self.TEMPLATE = ("=" * self.width) + \
-                            "\n {name}\n" + \
-                            "\n Version: {version}\n" + \
-                            ("-" * self.width) + \
-                            "\n\n" + \
-                            ("=" * self.width)
+            self.BASIC_TEMPLATE = "+ {name} ({version})\n"
+            self.VERBOSE_TEMPLATE = \
+                ("=" * self.width) + \
+                "\n Name:       {name}" + \
+                "\n Version:    {version}" + \
+                "\n Package:    {package}" + \
+                "\n Settings:   {default_settings}" + \
+                "\n Has Checks: {has_checks}\n" + \
+                ("=" * self.width) + "\n\n"
 
         else:
-            self.TEMPLATE = Fore.YELLOW + ("=" * self.width) + Style.RESET_ALL + \
-                            "\n {name}\n" + \
-                            "\n Version: {version} \n" + \
-                            Fore.YELLOW + ("-" * self.width) + Style.RESET_ALL + \
-                            "\n \n" + \
-                            Fore.YELLOW + ("-" * self.width) + Style.RESET_ALL
-
-    def wrap_text(self, text, indent_width, line_sep='\n'):
-        """
-        Perform word wrapping on text
-
-        :param text: Text to wrap.
-        :type text: str
-        :indent_width indent: Size of text indent.
-        :type indent_width: int
-        :param line_sep: Line separator
-        :rtype: str
-
-        """
-        indent = ' ' * (indent_width + 1)
-        lines = textwrap.wrap(
-            text, self.width - 2,
-            initial_indent=indent, subsequent_indent=indent
-        )
-        return line_sep.join(l + (' ' * (self.width - len(l))) for l in lines)
-
-    def format_title(self, message):
-        """
-        Format the title of message.
-        """
-        # Get strings
-        level_name = logging.getLevelName(message.level)
-        msg = message.msg
-        if message.obj:
-            msg = "{} - {}".format(message.obj, msg)
-
-        if self.no_color:
-            title_style = ''
-            line_sep = "\n"
-        else:
-            title_style = COLOURS[message.level][0]
-            line_sep = Style.RESET_ALL + "\n" + title_style
-
-        return self.TITLE_TEMPLATE.format(
-            style=title_style, level=level_name,
-            title=self.wrap_text(msg, len(level_name) + 2, line_sep).lstrip()
-        )
-
-    def format_hint(self, message):
-        """
-        Format the hint of a message.
-        """
-        hint = message.hint
-
-        if hint:
-            # Normalise to a list
-            if not isinstance(hint, (list, tuple)):
-                hint = (hint,)
-
-            if self.no_color:
-                line_sep = "\n"
-                border_style = ""
-            else:
-                line_sep = Style.RESET_ALL + "\n" + Style.DIM + Fore.WHITE
-                border_style = COLOURS[message.level][1]
-
-            indent_width = len(" Hint: ")
-            return self.HINT_TEMPLATE.format(
-                border_style=border_style,
-                hint='\n\n'.join(self.wrap_text(p, indent_width, line_sep) for p in hint).lstrip()
-            )
-        else:
-            return ''
+            self.BASIC_TEMPLATE = Fore.YELLOW + "+" + Style.RESET_ALL + " {name} ({version})\n"
+            self.VERBOSE_TEMPLATE = \
+                Fore.YELLOW + ("=" * self.width) + Style.RESET_ALL + \
+                Style.BRIGHT + "\n Name:       " + Style.RESET_ALL + "{name}" + \
+                Style.BRIGHT + "\n Version:    " + Style.RESET_ALL + "{version}" + \
+                Style.BRIGHT + "\n Package:    " + Style.RESET_ALL + "{package}" + \
+                Style.BRIGHT + "\n Settings:   " + Style.RESET_ALL + "{default_settings}" + \
+                Style.BRIGHT + "\n Has Checks: " + Style.RESET_ALL + "{has_checks}\n" + \
+                Fore.YELLOW + ("=" * self.width) + Style.RESET_ALL + "\n\n"
 
     def output_result(self, extension):
         """
@@ -129,9 +67,15 @@ class ExtensionReport(object):
         format_args = dict(
             name=extension.name,
             version=extension.version or 'Unknown',
+            package=extension.package,
+            default_settings=extension.default_settings or 'None',
+            has_checks='Yes' if bool(extension.checks_module) else 'No',
         )
 
-        self.f_out.write(self.TEMPLATE.format(**format_args))
+        if self.verbose:
+            self.f_out.write(self.VERBOSE_TEMPLATE.format(**format_args))
+        else:
+            self.f_out.write(self.BASIC_TEMPLATE.format(**format_args))
 
     def run(self):
         """
