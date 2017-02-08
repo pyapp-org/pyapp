@@ -16,7 +16,9 @@ class ExtensionReport(object):
     """
     Wrapper for the generation of a check report.
     """
-    def __init__(self, verbose=False, no_color=False, f_out=sys.stdout, extension_registry=registry, width=80):
+    width = 80
+
+    def __init__(self, verbose=False, no_color=False, f_out=sys.stdout, extension_registry=registry):
         """
         Initialise check report
 
@@ -24,7 +26,6 @@ class ExtensionReport(object):
         :param no_color: Disable colourised output (if colorama is installed)
         :param f_out: File to output report to; default is ``stdout``
         :param extension_registry: Registry to source extensions from; defaults to the builtin registry.
-        :param width: Width of output.
 
         """
         self.verbose = verbose
@@ -32,7 +33,6 @@ class ExtensionReport(object):
         # Default color to be disabled if colorama is not installed.
         self.no_color = no_color if colorama else True
         self.registry = extension_registry
-        self.width = width
 
         # Generate templates
         if self.no_color:

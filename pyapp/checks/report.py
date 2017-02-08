@@ -27,7 +27,9 @@ class CheckReport(object):
     """
     Wrapper for the generation of a check report.
     """
-    def __init__(self, verbose=False, no_color=False, f_out=sys.stdout, check_registry=registry, width=80):
+    width = 80
+
+    def __init__(self, verbose=False, no_color=False, f_out=sys.stdout, check_registry=registry):
         """
         Initialise check report
 
@@ -35,7 +37,6 @@ class CheckReport(object):
         :param no_color: Disable colourised output (if colorama is installed)
         :param f_out: File to output report to; default is ``stdout``
         :param check_registry: Registry to source checks from; defaults to the builtin registry.
-        :param width: Width of output.
 
         """
         self.verbose = verbose
@@ -43,7 +44,6 @@ class CheckReport(object):
         # Default color to be disabled if colorama is not installed.
         self.no_color = no_color if colorama else True
         self.registry = check_registry
-        self.width = width
 
         # Generate templates
         if self.no_color:
