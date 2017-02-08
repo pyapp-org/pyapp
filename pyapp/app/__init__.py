@@ -56,7 +56,7 @@ import logging.config
 import sys
 
 from pyapp import conf
-from pyapp import extentions
+from pyapp import extensions
 from pyapp.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -274,7 +274,7 @@ class CliApplication(object):
             """
             Report of installed PyApp extensions.
             """
-            from pyapp.extentions.report import ExtensionReport
+            from pyapp.extensions.report import ExtensionReport
             return ExtensionReport(opts.verbose, opts.no_color, opts.out).run()
 
         self.register_handler(extensions)
@@ -320,13 +320,13 @@ class CliApplication(object):
         """
         Load/Configure extensions.
         """
-        extentions.registry.load_from_settings()
+        extensions.registry.load_from_settings()
 
         # Load settings into from extensions, do not override as
         # extensions are loaded after the main settings file so only
         # settings that do not already exist should be loaded.
         settings.load_from_loaders(
-            extentions.registry.settings_loaders,
+            extensions.registry.settings_loaders,
             override=False
         )
 

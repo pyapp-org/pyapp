@@ -2,7 +2,7 @@ from __future__ import absolute_import, unicode_literals
 
 from itertools import chain
 
-from pyapp import extentions
+from pyapp import extensions
 from pyapp.conf import settings
 from .messages import CheckMessage
 
@@ -106,5 +106,5 @@ def import_checks():
     for location in settings.CHECK_LOCATIONS:
         __import__(location)
 
-    for location in extentions.registry.check_locations:
+    for location in extensions.registry.check_locations:
         __import__(location)

@@ -1,3 +1,11 @@
+"""
+Default Settings
+~~~~~~~~~~~~~~~~
+
+.. auto
+"""
+from __future__ import unicode_literals
+
 DEBUG = False
 """
 Enable debug mode
@@ -7,7 +15,7 @@ Enable debug mode
 # Extensions
 EXT = []
 """
-List of extentions currently in use. Will cause pyapp to import any checks, 
+List of extensions currently in use. Will cause pyapp to import any checks,
 load default_configuration etc that are supplied by any extension.
 
 Should be a list of modules to import eg::

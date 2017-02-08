@@ -10,4 +10,6 @@ Contents:
    app
    checks
    conf
+   conf/default_settings
    conf/helpers
+   extensions
