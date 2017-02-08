@@ -40,7 +40,7 @@ class TestCliApplication(object):
 
         assert target.root_module is tests.sample_app
         assert target.application_settings == 'tests.sample_app.default_settings'
-        assert len(target._handlers) == 1
+        assert len(target._handlers) == 2
 
     def test_initialisation_alternate_settings(self):
         target = CliApplication(

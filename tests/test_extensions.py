@@ -1,9 +1,9 @@
-from pyapp import extentions
+from pyapp.extensions.registry import ExtensionRegistry
 
 
 class TestExtensionRegistry(object):
     def test_load_with_metadata(self):
-        target = extentions.ExtensionRegistry()
+        target = ExtensionRegistry()
 
         target.load('tests.sample_ext')
 
@@ -16,7 +16,7 @@ class TestExtensionRegistry(object):
         }]
 
     def test_load_without_metadata(self):
-        target = extentions.ExtensionRegistry()
+        target = ExtensionRegistry()
 
         target.load('tests.sample_ext_simple')
 
@@ -29,7 +29,7 @@ class TestExtensionRegistry(object):
         }]
 
     def test_load_from_settings(self):
-        target = extentions.ExtensionRegistry()
+        target = ExtensionRegistry()
 
         target.load_from_settings()
 
