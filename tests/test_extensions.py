@@ -10,6 +10,7 @@ class TestExtensionRegistry(object):
         assert target.summary() == [{
             'name': 'Sample Extension',
             'version': '3.2.1',
+            'package': 'tests.sample_ext',
             'checks': 'tests.sample_ext.checks',
             'default_settings': 'tests.sample_ext.default_settings',
         }]
@@ -22,6 +23,7 @@ class TestExtensionRegistry(object):
         assert target.summary() == [{
             'name': 'tests.sample_ext_simple',
             'version': None,
+            'package': 'tests.sample_ext_simple',
             'checks': None,
             'default_settings': None,
         }]
@@ -34,11 +36,13 @@ class TestExtensionRegistry(object):
         assert target.summary() == [{
             'name': 'Sample Extension',
             'version': '3.2.1',
+            'package': 'tests.sample_ext',
             'checks': 'tests.sample_ext.checks',
             'default_settings': 'tests.sample_ext.default_settings',
         }, {
             'name': 'tests.sample_ext_simple',
             'version': None,
+            'package': 'tests.sample_ext_simple',
             'checks': None,
             'default_settings': None,
         }]

@@ -1,8 +1,60 @@
 from __future__ import absolute_import, unicode_literals
 
 import importlib
+import six
+
+from types import ModuleType
 
 from pyapp.conf import settings, factory
+from pyapp.utils import cached_property
+
+
+class Extension(object):
+    """
+    Wrapper that provides accessors to extension module values.
+    """
+    def __init__(self, module, package):
+        self.module = module
+        self.package = package
+
+    def __eq__(self, other):
+        if isinstance(other, ModuleType):
+            return self.module == other
+        return NotImplemented
+
+    def summary(self):
+        return {
+            'name': self.name,
+            'version': self.version,
+            'package': self.package,
+            'checks': self.checks_module,
+            'default_settings': self.default_settings
+        }
+
+    def _resolve_name(self, name):
+        """
+        Return the absolute name of the module to be imported.
+        """
+        if isinstance(name, six.string_types):
+            if name.startswith('.'):
+                return self.package + name
+            return name
+
+    @cached_property
+    def name(self):
+        return self.module.__name__
+
+    @cached_property
+    def version(self):
+        return getattr(self.module, '__version__', None)
+
+    @cached_property
+    def checks_module(self):
+        return self._resolve_name(getattr(self.module, '__checks__', None))
+
+    @cached_property
+    def default_settings(self):
+        return self._resolve_name(getattr(self.module, '__default_settings__', None))
 
 
 class ExtensionRegistry(object):
@@ -10,7 +62,7 @@ class ExtensionRegistry(object):
     Registry for tracking install PyApp extensions.
     """
     def __init__(self):
-        self._extension_modules = []
+        self._extensions = []
 
     def load(self, module_name):
         """
@@ -21,8 +73,8 @@ class ExtensionRegistry(object):
 
         """
         module = importlib.import_module(module_name)
-        if module not in self._extension_modules:
-            self._extension_modules.append(module)
+        if module not in self._extensions:
+            self._extensions.append(Extension(module, module_name))
 
     def load_from_settings(self):
         """
@@ -36,13 +88,8 @@ class ExtensionRegistry(object):
         Returns a summary of the loaded extension modules.
         """
         module_summary = []
-        for extension_module in self._extension_modules:
-            module_summary.append({
-                'name': getattr(extension_module, '__name__'),
-                'version':  getattr(extension_module, '__version__', None),
-                'checks': getattr(extension_module, '__checks__', None),
-                'default_settings': getattr(extension_module, '__default_settings__', None),
-            })
+        for extension in self._extensions:
+            module_summary.append(extension.summary())
         return module_summary
 
     @property
@@ -50,19 +97,14 @@ class ExtensionRegistry(object):
         """
         Return a list of module loaders for extensions that specify default settings.
         """
-        return [
-            factory(module.__default_settings__)
-            for module in self._extension_modules if getattr(module, '__default_settings__', None)
-        ]
+        return [factory(module.default_settings) for module in self._extensions if module.default_settings]
 
     @property
     def check_locations(self):
         """
         Return a list of checks modules for extensions that specify checks.
         """
-        return [
-            module.__checks__ for module in self._extension_modules if getattr(module, '__checks__', None)
-        ]
+        return [module.checks_module for module in self._extensions if module.checks_module]
 
 # Shortcuts and global extension registry.
 registry = ExtensionRegistry()

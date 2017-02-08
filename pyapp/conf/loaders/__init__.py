@@ -48,6 +48,7 @@ class ModuleLoader(object):
         """
         :param module: Fully qualify python module path.
         :type module: str
+
         """
         assert module
 

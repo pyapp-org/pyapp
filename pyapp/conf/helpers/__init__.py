@@ -59,11 +59,10 @@ from __future__ import absolute_import, unicode_literals
 import itertools
 import six
 
-from cached_property import cached_property
-
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.conf.helpers.plugins import *
+from pyapp.utils import cached_property
 from .bases import DefaultCache, FactoryMixin, SingletonFactoryMixin, ThreadLocalSingletonFactoryMixin
 
 __all__ = ('NamedConfiguration', 'DefaultCache',
