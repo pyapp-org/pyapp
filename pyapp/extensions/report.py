@@ -2,7 +2,7 @@ from __future__ import print_function, unicode_literals
 
 import sys
 
-from pyapp.extentions.registry import registry
+from pyapp.extensions.registry import registry
 
 try:
     import colorama
