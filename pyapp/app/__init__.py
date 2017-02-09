@@ -187,7 +187,7 @@ class CliApplication(object):
             application_checks = '{}.checks'.format(root_module.__name__)
         self.application_checks = application_checks
 
-    def register_handler(self, handler=None, cli_name=None):
+    def command(self, handler=None, cli_name=None):
         """
         Decorator for registering handlers.
 
@@ -214,6 +214,9 @@ class CliApplication(object):
             return proxy
 
         return inner(handler) if handler else inner
+
+    # Renamed to command added to remain backwards compatible
+    register_handler = command
 
     def run_checks(self, output, message_level=logging.INFO, tags=None, verbose=False, no_color=False):
         """
@@ -254,6 +257,7 @@ class CliApplication(object):
         @add_argument('--out', dest='out', default=sys.stdout,
                       type=argparse.FileType(mode='w'),
                       help='File to output check report to; default is stdout.')
+        @self.command
         def checks(opts):
             """
             Run a check report.
@@ -262,22 +266,19 @@ class CliApplication(object):
                                opts.verbose, opts.no_color):
                 exit(4)
 
-        self.register_handler(checks)
-
         # Register extension report handler
         @add_argument('--verbose', dest='verbose', action='store_true',
                       help="Verbose output.")
         @add_argument('--out', dest='out', default=sys.stdout,
                       type=argparse.FileType(mode='w'),
                       help='File to output extension report to; default is stdout.')
+        @self.command
         def extensions(opts):
             """
             Report of installed PyApp extensions.
             """
             from pyapp.extensions.report import ExtensionReport
             return ExtensionReport(opts.verbose, opts.no_color, opts.out).run()
-
-        self.register_handler(extensions)
 
     def pre_configure_logging(self, opts):
         """
@@ -310,7 +311,6 @@ class CliApplication(object):
             # Set a default version if not supplied by settings
             dict_config = settings.LOGGING.copy()
             dict_config.setdefault('version', 1)
-
             logging.config.dictConfig(dict_config)
 
             # Configure root log level
@@ -330,6 +330,10 @@ class CliApplication(object):
             override=False
         )
 
+        # Indicate that everything is loaded and and initialisation
+        # can be performed.
+        extensions.registry.trigger_ready()
+
     def checks_on_startup(self, opts):
         """
         Run checks on startup.
@@ -338,7 +342,6 @@ class CliApplication(object):
             out = io.StringIO()
 
             serious_error = self.run_checks(out, opts.checks_message_level, None, True, False)
-
             if serious_error:
                 logger.error("Check results:\n%s", out.getvalue())
                 exit(4)
@@ -357,13 +360,16 @@ class CliApplication(object):
 
         self.pre_configure_logging(opts)
         self.configure_settings(opts)
-        self.configure_extensions(opts)
 
-        if opts.handler != 'checks':
+        if opts.handler == 'checks':
+            # If checks command just configure extensions.
+            self.configure_extensions(opts)
+        else:
             # If checks handler don't configure logging or call the "checks on
             # startup" process.
             self.configure_logging(opts)
             self.checks_on_startup(opts)
+            self.configure_extensions(opts)
 
         # Dispatch to handler.
         try:

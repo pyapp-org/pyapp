@@ -5,7 +5,7 @@ import six
 
 from types import ModuleType
 
-from pyapp.conf import settings, factory
+from pyapp.conf import settings, factory as loader_factory
 from pyapp.utils import cached_property
 
 __all__ = ('registry', 'load')
@@ -33,6 +33,13 @@ class Extension(object):
             'default_settings': self.default_settings
         }
 
+    def trigger_ready(self):
+        """
+        Trigger the ready callback to indicate extensions have been loaded and marked as ready.
+        """
+        if self.ready_callback:
+            self.ready_callback()
+
     def _resolve_name(self, name):
         """
         Return the absolute name of the module to be imported.
@@ -57,6 +64,10 @@ class Extension(object):
     @cached_property
     def default_settings(self):
         return self._resolve_name(getattr(self.module, '__default_settings__', None))
+
+    @cached_property
+    def ready_callback(self):
+        return getattr(self.module, 'ready', None)
 
 
 class ExtensionRegistry(object):
@@ -93,16 +104,24 @@ class ExtensionRegistry(object):
         Returns a summary of the loaded extension modules.
         """
         module_summary = []
-        for extension in self:
+        for extension in self._extensions:
             module_summary.append(extension.summary())
         return module_summary
+
+    def trigger_ready(self):
+        """
+        Trigger ready callback on all extension modules.
+        """
+        for extension in self._extensions:
+            extension.trigger_ready()
 
     @property
     def settings_loaders(self):
         """
         Return a list of module loaders for extensions that specify default settings.
         """
-        return [factory(module.default_settings) for module in self._extensions if module.default_settings]
+        return [loader_factory(module.default_settings)
+                for module in self._extensions if module.default_settings]
 
     @property
     def check_locations(self):

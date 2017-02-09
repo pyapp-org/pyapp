@@ -21,6 +21,16 @@ The ``__checks__`` and ``__default_settings__`` attributes tell PyApp to include
 Use the ``extensions`` command provided by the PyApp CLI to list the extensions (and version) installed
 in your application.
 
+Ready State
+-----------
+
+Once settings have been loaded, logging configured etc a ready callback is triggered to let the extension
+perform any initialisation that is required::
+
+    def ready(**_):
+        # Do any initialise
+        pass
+
 """
 from __future__ import absolute_import
 
