@@ -46,3 +46,15 @@ class TestExtensionRegistry(object):
             'checks': None,
             'default_settings': None,
         }]
+
+    def test_trigger_ready(self):
+        import tests.sample_ext
+
+        tests.sample_ext.set_ready = False
+
+        target = ExtensionRegistry()
+        target.load('tests.sample_ext')
+
+        target.trigger_ready()
+
+        assert tests.sample_ext.set_ready is True
