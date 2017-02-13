@@ -143,8 +143,13 @@ class CliApplication(object):
     Log formatter applied by default to root logger handler.
     """
 
+    env_settings_key = 'PYAPPSETTINGS'
+    """
+    Key used to define settings file in environment.
+    """
+
     def __init__(self, root_module, name=None, description=None, version=None,
-                 application_settings=None, application_checks=None):
+                 application_settings=None, application_checks=None, env_settings_key=None):
         self.root_module = root_module
         self.name = name
 
@@ -186,6 +191,10 @@ class CliApplication(object):
         if application_checks is None:
             application_checks = '{}.checks'.format(root_module.__name__)
         self.application_checks = application_checks
+
+        # Override default value
+        if env_settings_key is not None:
+            self.env_settings_key = env_settings_key
 
     def command(self, handler=None, cli_name=None):
         """
@@ -299,7 +308,7 @@ class CliApplication(object):
         """
         Configure settings container.
         """
-        settings.configure(self.application_settings, opts.settings)
+        settings.configure(self.application_settings, opts.settings, env_settings_key=self.env_settings_key)
 
     def configure_logging(self, opts):
         """
@@ -348,6 +357,13 @@ class CliApplication(object):
             else:
                 logger.info("Check results:\n%s", out.getvalue())
 
+    def exception_report(self, exception, opts):
+        """
+        Generate a report for any unhandled exceptions caught by the framework.
+        """
+        logger.exception("Un-handled exception caught executing handler: %s", opts.handler)
+        return False
+
     def dispatch(self, args=None):
         """
         Dispatch command to registered handler.
@@ -375,10 +391,9 @@ class CliApplication(object):
         try:
             self._handlers[opts.handler](opts)
 
-        except Exception:
-            logger.exception("Un-handled exception caught executing handler: %s", opts.handler)
-            # TODO: Generate an exception report.
-            raise
+        except Exception as ex:
+            if not self.exception_report(ex, opts):
+                raise
 
         except KeyboardInterrupt:
             print("\n\nInterrupted.", file=sys.stderr)
