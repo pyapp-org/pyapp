@@ -143,7 +143,7 @@ class CliApplication(object):
     Log formatter applied by default to root logger handler.
     """
 
-    env_settings_key = 'PYAPPSETTINGS'
+    env_settings_key = conf.DEFAULT_ENV_KEY
     """
     Key used to define settings file in environment.
     """
@@ -157,7 +157,7 @@ class CliApplication(object):
         self.parser = argparse.ArgumentParser(name, description=description)
         self.parser.add_argument('--settings', dest='settings',
                                  help='Settings to load; either a Python module or settings '
-                                      'URL. Defaults to the env variable {}'.format(conf.DEFAULT_ENV_KEY))
+                                      'URL. Defaults to the env variable {}'.format(self.env_settings_key))
         self.parser.add_argument('--nocolor', dest='no_color', action='store_true',
                                  help="Disable colour output (if colorama is installed).")
         self.parser.add_argument('--version', action='version',
