@@ -1,0 +1,12 @@
+python-targets:
+  - 2
+  - 3
+
+ignore-paths:
+  - docs
+  - sample
+  - sample_extension
+
+max-line-length: 120
+pep8:
+  full: true

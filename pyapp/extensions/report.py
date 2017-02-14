@@ -9,7 +9,7 @@ try:
 except ImportError:
     colorama = None
 else:
-    from colorama import Style, Fore, Back
+    from colorama import Style, Fore
 
 
 class ExtensionReport(object):

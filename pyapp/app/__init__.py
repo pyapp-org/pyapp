@@ -266,8 +266,8 @@ class CliApplication(object):
         @add_argument('--out', dest='out', default=sys.stdout,
                       type=argparse.FileType(mode='w'),
                       help='File to output check report to; default is stdout.')
-        @self.command
-        def checks(opts):
+        @self.command(cli_name='checks')
+        def check_report(opts):
             """
             Run a check report.
             """
@@ -281,8 +281,8 @@ class CliApplication(object):
         @add_argument('--out', dest='out', default=sys.stdout,
                       type=argparse.FileType(mode='w'),
                       help='File to output extension report to; default is stdout.')
-        @self.command
-        def extensions(opts):
+        @self.command(cli_name='extensions')
+        def extension_report(opts):
             """
             Report of installed PyApp extensions.
             """
@@ -325,7 +325,7 @@ class CliApplication(object):
             # Configure root log level
             logging.root.setLevel(opts.log_level)
 
-    def configure_extensions(self, opts):
+    def configure_extensions(self, _):
         """
         Load/Configure extensions.
         """
@@ -361,7 +361,7 @@ class CliApplication(object):
         """
         Generate a report for any unhandled exceptions caught by the framework.
         """
-        logger.exception("Un-handled exception caught executing handler: %s", opts.handler)
+        logger.exception("Un-handled exception %s caught executing handler: %s", exception, opts.handler)
         return False
 
     def dispatch(self, args=None):
