@@ -25,6 +25,16 @@ TEST_NAMED_FACTORY = {
     'steel': ('tests.factory.SteelBeam', {})
 }
 
+# Factory sample values
+TEST_NAMED_FACTORY_NO_DEFAULT = {
+    'iron': (
+        'tests.factory.IronBar', {
+            'length': 24
+        },
+    ),
+    'steel': ('tests.factory.SteelBeam', {})
+}
+
 # Config sample values
 TEST_NAMED_CONFIG = {
     'default': {

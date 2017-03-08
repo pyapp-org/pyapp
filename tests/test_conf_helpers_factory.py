@@ -212,6 +212,17 @@ class TestNamedSingletonFactory(object):
 
         assert actual1 is actual2
 
+    def test_get_specific(self):
+        """
+        Get a specific item and ensure it's not falling back to default.
+        """
+        target = conf_factory.NamedSingletonPluginFactory('TEST_NAMED_FACTORY_NO_DEFAULT')
+
+        actual1 = target('iron')
+        actual2 = target('iron')
+
+        assert actual1 is actual2
+
     def test_get_type_definition_is_cached(self, monkeypatch):
         mock_import = mock.Mock()
         mock_import.return_value = factory.Bar
@@ -234,6 +245,17 @@ class TestThreadLocalNamedSingletonPluginFactory(object):
 
         actual1 = target()
         actual2 = target()
+
+        assert actual1 is actual2
+
+    def test_get_specific(self):
+        """
+        Get a specific item and ensure it's not falling back to default.
+        """
+        target = conf_factory.ThreadLocalNamedSingletonPluginFactory('TEST_NAMED_FACTORY_NO_DEFAULT')
+
+        actual1 = target('iron')
+        actual2 = target('iron')
 
         assert actual1 is actual2
 

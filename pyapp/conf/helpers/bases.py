@@ -52,7 +52,7 @@ class SingletonFactoryMixin(FactoryMixin):
         self._instances = DefaultCache(self.create_instance)
         instances_lock = threading.RLock()
 
-        def replacement_create_instance(_, name=None):
+        def replacement_create_instance(name=None):
             with instances_lock:
                 return self._instances[name]
 
@@ -74,7 +74,7 @@ class ThreadLocalSingletonFactoryMixin(FactoryMixin):
         self._instances = threading.local()
         create_instance = self.create_instance
 
-        def replacement_create_instance(_, name=None):
+        def replacement_create_instance(name=None):
             try:
                 cache = self._instances.cache
             except AttributeError:
