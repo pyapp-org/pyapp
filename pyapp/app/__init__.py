@@ -151,7 +151,6 @@ class CliApplication(object):
     def __init__(self, root_module, name=None, description=None, version=None,
                  application_settings=None, application_checks=None, env_settings_key=None):
         self.root_module = root_module
-        self.name = name
         self.application_version = version or getattr(root_module, '__version__', 'Unknown')
 
         # Create argument parser
@@ -199,6 +198,14 @@ class CliApplication(object):
     @property
     def application_name(self):
         return self.parser.prog
+
+    @property
+    def application_summary(self):
+        description = self.parser.description
+        if description:
+            return "{} version {} - {}".format(self.application_name, self.application_version, description)
+        else:
+            return "{} version {}".format(self.application_name, self.application_version)
 
     def command(self, handler=None, cli_name=None):
         """
@@ -257,7 +264,7 @@ class CliApplication(object):
         # Note the getLevelName method returns the level code if a string level is supplied!
         message_level = logging.getLevelName(message_level)
         return CheckReport(verbose, no_color, output).run(
-            message_level, tags, "Checks for {} version {}".format(self.application_name, self.application_version))
+            message_level, tags, "Checks for {}".format(self.application_summary))
 
     def register_builtin_handlers(self):
         """
@@ -382,7 +389,7 @@ class CliApplication(object):
         self.pre_configure_logging(opts)
         self.configure_settings(opts)
 
-        logger.info("Starting %s version %s", self.application_name, self.application_version)
+        logger.info("Starting %s", self.application_summary)
 
         if opts.handler == 'checks':
             # If checks command just configure extensions.
