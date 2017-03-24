@@ -382,7 +382,7 @@ class CliApplication(object):
         self.pre_configure_logging(opts)
         self.configure_settings(opts)
 
-        logger.info("Starting %s version %s", self.parser.prog, self.parser.version)
+        logger.info("Starting %s version %s", self.application_name, self.application_version)
 
         if opts.handler == 'checks':
             # If checks command just configure extensions.
