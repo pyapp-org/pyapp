@@ -152,6 +152,7 @@ class CliApplication(object):
                  application_settings=None, application_checks=None, env_settings_key=None):
         self.root_module = root_module
         self.name = name
+        self.application_version = version or getattr(root_module, '__version__', 'Unknown')
 
         # Create argument parser
         self.parser = argparse.ArgumentParser(name, description=description)
@@ -161,8 +162,7 @@ class CliApplication(object):
         self.parser.add_argument('--nocolor', dest='no_color', action='store_true',
                                  help="Disable colour output (if colorama is installed).")
         self.parser.add_argument('--version', action='version',
-                                 version='%(prog)s version: {}'.format(
-                                     version or getattr(root_module, '__version__', 'Unknown')))
+                                 version='%(prog)s version: {}'.format(self.application_version))
 
         # Log configuration
         self.parser.add_argument('--log-level', dest='log_level', default='INFO',
@@ -195,6 +195,10 @@ class CliApplication(object):
         # Override default value
         if env_settings_key is not None:
             self.env_settings_key = env_settings_key
+
+    @property
+    def application_name(self):
+        return self.parser.prog
 
     def command(self, handler=None, cli_name=None):
         """
@@ -252,7 +256,8 @@ class CliApplication(object):
 
         # Note the getLevelName method returns the level code if a string level is supplied!
         message_level = logging.getLevelName(message_level)
-        return CheckReport(verbose, no_color, output).run(message_level, tags)
+        return CheckReport(verbose, no_color, output).run(
+            message_level, tags, "Checks for {} version {}".format(self.application_name, self.application_version))
 
     def register_builtin_handlers(self):
         """
@@ -315,7 +320,7 @@ class CliApplication(object):
         Configure the logging framework.
         """
         if settings.LOGGING:
-            logger.debug("Applying logging configuration.")
+            logger.info("Applying logging configuration.")
 
             # Set a default version if not supplied by settings
             dict_config = settings.LOGGING.copy()
@@ -376,6 +381,8 @@ class CliApplication(object):
 
         self.pre_configure_logging(opts)
         self.configure_settings(opts)
+
+        logger.info("Starting %s version %s", self.parser.prog, self.parser.version)
 
         if opts.handler == 'checks':
             # If checks command just configure extensions.

@@ -154,7 +154,7 @@ class CheckReport(object):
 
         self.f_out.write(self.MESSAGE_TEMPLATE.format(**format_args))
 
-    def run(self, message_level=logging.INFO, tags=None):
+    def run(self, message_level=logging.INFO, tags=None, header=None):
         """
         Run the report
 
@@ -162,11 +162,16 @@ class CheckReport(object):
         :type message_level: int
         :param tags: List of tags to include in report
         :type tags: list(str)
+        :param header: An optional header to prepend to report (if verbose)
+        :type header: str | unicode
         :return: Indicate if any serious message where generated.
         :rtype: bool
 
         """
         serious_message = False
+
+        if header and self.verbose:
+            self.output_result(header)
 
         # Generate report
         for messages in self.registry.run_checks_iter(tags, self.pre_callback):
@@ -180,7 +185,7 @@ class CheckReport(object):
                         message_shown = True
                         self.output_result(message)
 
-            if not (self.verbose or message_shown):  # DeMorgans law
+            if not (self.verbose or message_shown):  # DeMorgans law: !a & !b == !(a | b)
                 self.f_out.write(".\n")
 
         return serious_message
