@@ -171,7 +171,7 @@ class CheckReport(object):
         serious_message = False
 
         if header and self.verbose:
-            self.output_result(header)
+            self.f_out.write(header + '\n')
 
         # Generate report
         for messages in self.registry.run_checks_iter(tags, self.pre_callback):
