@@ -57,6 +57,7 @@ import sys
 
 from pyapp import conf
 from pyapp import extensions
+from pyapp.app import builtin_handlers
 from pyapp.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -148,10 +149,17 @@ class CliApplication(object):
     Key used to define settings file in environment.
     """
 
+    additional_handlers = (
+        builtin_handlers.extensions,
+        builtin_handlers.settings,
+    )
+    """
+    Handlers to be added when builtin handlers are registered.
+    """
+
     def __init__(self, root_module, name=None, description=None, version=None,
                  application_settings=None, application_checks=None, env_settings_key=None):
         self.root_module = root_module
-        self.name = name
         self.application_version = version or getattr(root_module, '__version__', 'Unknown')
 
         # Create argument parser
@@ -199,6 +207,14 @@ class CliApplication(object):
     @property
     def application_name(self):
         return self.parser.prog
+
+    @property
+    def application_summary(self):
+        description = self.parser.description
+        if description:
+            return "{} version {} - {}".format(self.application_name, self.application_version, description)
+        else:
+            return "{} version {}".format(self.application_name, self.application_version)
 
     def command(self, handler=None, cli_name=None):
         """
@@ -257,7 +273,7 @@ class CliApplication(object):
         # Note the getLevelName method returns the level code if a string level is supplied!
         message_level = logging.getLevelName(message_level)
         return CheckReport(verbose, no_color, output).run(
-            message_level, tags, "Checks for {} version {}".format(self.application_name, self.application_version))
+            message_level, tags, "Checks for {}".format(self.application_summary))
 
     def register_builtin_handlers(self):
         """
@@ -280,19 +296,9 @@ class CliApplication(object):
                                opts.verbose, opts.no_color):
                 exit(4)
 
-        # Register extension report handler
-        @add_argument('--verbose', dest='verbose', action='store_true',
-                      help="Verbose output.")
-        @add_argument('--out', dest='out', default=sys.stdout,
-                      type=argparse.FileType(mode='w'),
-                      help='File to output extension report to; default is stdout.')
-        @self.command(cli_name='extensions')
-        def extension_report(opts):
-            """
-            Report of installed PyApp extensions.
-            """
-            from pyapp.extensions.report import ExtensionReport
-            return ExtensionReport(opts.verbose, opts.no_color, opts.out).run()
+        # Register any additional handlers
+        for additional_handler in self.additional_handlers:
+            additional_handler(self)
 
     def pre_configure_logging(self, opts):
         """
@@ -382,7 +388,7 @@ class CliApplication(object):
         self.pre_configure_logging(opts)
         self.configure_settings(opts)
 
-        logger.info("Starting %s version %s", self.application_name, self.application_version)
+        logger.info("Starting %s", self.application_summary)
 
         if opts.handler == 'checks':
             # If checks command just configure extensions.
