@@ -57,6 +57,7 @@ import sys
 
 from pyapp import conf
 from pyapp import extensions
+from pyapp.app import builtin_handlers
 from pyapp.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -146,6 +147,14 @@ class CliApplication(object):
     env_settings_key = conf.DEFAULT_ENV_KEY
     """
     Key used to define settings file in environment.
+    """
+
+    additional_handlers = (
+        builtin_handlers.extensions,
+        builtin_handlers.settings,
+    )
+    """
+    Handlers to be added when builtin handlers are registered.
     """
 
     def __init__(self, root_module, name=None, description=None, version=None,
@@ -287,19 +296,9 @@ class CliApplication(object):
                                opts.verbose, opts.no_color):
                 exit(4)
 
-        # Register extension report handler
-        @add_argument('--verbose', dest='verbose', action='store_true',
-                      help="Verbose output.")
-        @add_argument('--out', dest='out', default=sys.stdout,
-                      type=argparse.FileType(mode='w'),
-                      help='File to output extension report to; default is stdout.')
-        @self.command(cli_name='extensions')
-        def extension_report(opts):
-            """
-            Report of installed PyApp extensions.
-            """
-            from pyapp.extensions.report import ExtensionReport
-            return ExtensionReport(opts.verbose, opts.no_color, opts.out).run()
+        # Register any additional handlers
+        for additional_handler in self.additional_handlers:
+            additional_handler(self)
 
     def pre_configure_logging(self, opts):
         """

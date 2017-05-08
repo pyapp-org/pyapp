@@ -39,7 +39,7 @@ class ExtensionReport(object):
             self.BASIC_TEMPLATE = "+ {name} ({version})\n"
             self.VERBOSE_TEMPLATE = \
                 ("=" * self.width) + \
-                "\n Name:       {name}" + \
+                "\n Name:       {name}" +  \
                 "\n Version:    {version}" + \
                 "\n Package:    {package}" + \
                 "\n Settings:   {default_settings}" + \
@@ -47,10 +47,10 @@ class ExtensionReport(object):
                 ("=" * self.width) + "\n\n"
 
         else:
-            self.BASIC_TEMPLATE = Fore.YELLOW + "+" + Style.RESET_ALL + " {name} ({version})\n"
+            self.BASIC_TEMPLATE = Fore.YELLOW + "+" + Fore.CYAN + " {name}" + Style.RESET_ALL + " ({version})\n"
             self.VERBOSE_TEMPLATE = \
                 Fore.YELLOW + ("=" * self.width) + Style.RESET_ALL + \
-                Style.BRIGHT + "\n Name:       " + Style.RESET_ALL + "{name}" + \
+                Style.BRIGHT + "\n Name:       " + Style.RESET_ALL + Fore.CYAN + "{name}" + Style.RESET_ALL + \
                 Style.BRIGHT + "\n Version:    " + Style.RESET_ALL + "{version}" + \
                 Style.BRIGHT + "\n Package:    " + Style.RESET_ALL + "{package}" + \
                 Style.BRIGHT + "\n Settings:   " + Style.RESET_ALL + "{default_settings}" + \
