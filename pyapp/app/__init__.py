@@ -150,7 +150,7 @@ class CliApplication(object):
     Key used to define settings file in environment.
     """
 
-    log_level_key = 'PYAPP_LOGLEVEL'
+    env_loglevel_key = 'PYAPP_LOGLEVEL'
     """
     Key used to define log level in environment
     """
@@ -164,7 +164,8 @@ class CliApplication(object):
     """
 
     def __init__(self, root_module, name=None, description=None, version=None,
-                 application_settings=None, application_checks=None, env_settings_key=None):
+                 application_settings=None, application_checks=None,
+                 env_settings_key=None, env_loglevel_key=None):
         self.root_module = root_module
         self.application_version = version or getattr(root_module, '__version__', 'Unknown')
 
@@ -185,10 +186,10 @@ class CliApplication(object):
 
         # Log configuration
         self.parser.add_argument('--log-level', dest='log_level',
-                                 default=os.environ.get(self.log_level_key, 'INFO'),
+                                 default=os.environ.get(self.env_loglevel_key, 'INFO'),
                                  choices=('DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'),
                                  help='Specify the log level to be used. '
-                                      'Defaults to env variable: {}'.format(key_help(self.log_level_key)))
+                                      'Defaults to env variable: {}'.format(key_help(self.env_loglevel_key)))
 
         # Global check values
         self.parser.add_argument('--checks', dest='checks_on_startup', action='store_true',
@@ -217,6 +218,8 @@ class CliApplication(object):
         # Override default value
         if env_settings_key is not None:
             self.env_settings_key = env_settings_key
+        if env_loglevel_key is not None:
+            self.env_loglevel_key = env_loglevel_key
 
     @property
     def application_name(self):
