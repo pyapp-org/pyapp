@@ -53,6 +53,7 @@ except ImportError:
 import io
 import logging
 import logging.config
+import os
 import sys
 
 from pyapp import conf
@@ -149,6 +150,11 @@ class CliApplication(object):
     Key used to define settings file in environment.
     """
 
+    log_level_key = 'PYAPP_LOGLEVEL'
+    """
+    Key used to define log level in environment
+    """
+
     additional_handlers = (
         builtin_handlers.extensions,
         builtin_handlers.settings,
@@ -162,19 +168,27 @@ class CliApplication(object):
         self.root_module = root_module
         self.application_version = version or getattr(root_module, '__version__', 'Unknown')
 
+        def key_help(key):
+            if key in os.environ:
+                return '{} [{}]'.format(key, os.environ[key])
+            return key
+
         # Create argument parser
         self.parser = argparse.ArgumentParser(name, description=description)
         self.parser.add_argument('--settings', dest='settings',
-                                 help='Settings to load; either a Python module or settings '
-                                      'URL. Defaults to the env variable {}'.format(self.env_settings_key))
+                                 help='Settings to load; either a Python module or settings URL. '
+                                      'Defaults to the env variable: {}'.format(key_help(self.env_settings_key)))
         self.parser.add_argument('--nocolor', dest='no_color', action='store_true',
                                  help="Disable colour output (if colorama is installed).")
         self.parser.add_argument('--version', action='version',
                                  version='%(prog)s version: {}'.format(self.application_version))
 
         # Log configuration
-        self.parser.add_argument('--log-level', dest='log_level', default='INFO',
-                                 choices=('DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'))
+        self.parser.add_argument('--log-level', dest='log_level',
+                                 default=os.environ.get(self.log_level_key, 'INFO'),
+                                 choices=('DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'),
+                                 help='Specify the log level to be used. '
+                                      'Defaults to env variable: {}'.format(key_help(self.log_level_key)))
 
         # Global check values
         self.parser.add_argument('--checks', dest='checks_on_startup', action='store_true',
@@ -333,8 +347,8 @@ class CliApplication(object):
             dict_config.setdefault('version', 1)
             logging.config.dictConfig(dict_config)
 
-            # Configure root log level
-            logging.root.setLevel(opts.log_level)
+        # Configure root log level
+        logging.root.setLevel(opts.log_level)
 
     def configure_extensions(self, _):
         """
@@ -402,7 +416,7 @@ class CliApplication(object):
 
         # Dispatch to handler.
         try:
-            self._handlers[opts.handler](opts)
+            exit_code = self._handlers[opts.handler](opts)
 
         except Exception as ex:
             if not self.exception_report(ex, opts):
@@ -411,3 +425,8 @@ class CliApplication(object):
         except KeyboardInterrupt:
             print("\n\nInterrupted.", file=sys.stderr)
             exit(-1)
+
+        else:
+            # Provide exit code.
+            if exit_code:
+                exit(exit_code)
