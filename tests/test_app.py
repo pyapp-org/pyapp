@@ -91,7 +91,7 @@ class TestCliApplication(object):
         with pytest.raises(Exception) as ex:
             target.dispatch(args=('angry',))
 
-        assert ex.value.message == 'Grrrr'
+        assert str(ex.value) == 'Grrrr'
 
     def test_loading_logging(self):
         import logging
