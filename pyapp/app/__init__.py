@@ -347,8 +347,8 @@ class CliApplication(object):
             dict_config.setdefault('version', 1)
             logging.config.dictConfig(dict_config)
 
-        # Configure root log level
-        logging.root.setLevel(opts.log_level)
+            # Configure root log level
+            logging.root.setLevel(opts.log_level)
 
     def configure_extensions(self, _):
         """
