@@ -27,30 +27,16 @@ factory::
 
 """
 from __future__ import absolute_import, unicode_literals
-import six
 
-import importlib
+import six
 import threading
 
 from pyapp import checks
 from pyapp.conf import settings
-from pyapp.utils import cached_property
+from pyapp.utils import cached_property, import_type
 from .bases import DefaultCache, FactoryMixin, SingletonFactoryMixin, ThreadLocalSingletonFactoryMixin
 
 __all__ = ('NamedPluginFactory', 'NamedSingletonPluginFactory', 'ThreadLocalNamedSingletonPluginFactory')
-
-
-def _import_type(type_name):
-    """
-    Import a type from a fully qualified module+type name
-
-    :type type_name: str | unicode
-    :rtype: type
-
-    """
-    module_name, type_name = type_name.rsplit('.', 1)
-    module = importlib.import_module(module_name)
-    return getattr(module, type_name)
 
 
 class NamedPluginFactory(FactoryMixin):
@@ -112,7 +98,7 @@ class NamedPluginFactory(FactoryMixin):
         except KeyError:
             raise KeyError("Setting definition `{}` not found".format(name))
 
-        type_ = _import_type(type_name)
+        type_ = import_type(type_name)
         if self.abc and not issubclass(type_, self.abc):
             raise TypeError("Setting definition `{}` is not a subclass of `{}`".format(
                 type_name, self.abc
@@ -226,7 +212,7 @@ class NamedPluginFactory(FactoryMixin):
         messages = []
 
         try:
-            _import_type(type_name)
+            import_type(type_name)
         except (ImportError, ValueError):
             messages.append(checks.Error(
                 "Unable to import type `{}`.".format(type_name),
