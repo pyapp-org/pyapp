@@ -83,7 +83,7 @@ class TestNamedFactory(object):
     def test_get_type_definition_is_cached(self, monkeypatch):
         mock_import = mock.Mock()
         mock_import.return_value = factory.Bar
-        monkeypatch.setattr(conf_factory, '_import_type', mock_import)
+        monkeypatch.setattr(conf_factory, 'import_type', mock_import)
 
         target = conf_factory.NamedPluginFactory('TEST_NAMED_FACTORY')
 
@@ -226,7 +226,7 @@ class TestNamedSingletonFactory(object):
     def test_get_type_definition_is_cached(self, monkeypatch):
         mock_import = mock.Mock()
         mock_import.return_value = factory.Bar
-        monkeypatch.setattr(conf_factory, '_import_type', mock_import)
+        monkeypatch.setattr(conf_factory, 'import_type', mock_import)
 
         target = conf_factory.NamedSingletonPluginFactory('TEST_NAMED_FACTORY')
 
@@ -262,7 +262,7 @@ class TestThreadLocalNamedSingletonPluginFactory(object):
     def test_get_type_definition_is_cached(self, monkeypatch):
         mock_import = mock.Mock()
         mock_import.return_value = factory.Bar
-        monkeypatch.setattr(conf_factory, '_import_type', mock_import)
+        monkeypatch.setattr(conf_factory, 'import_type', mock_import)
 
         target = conf_factory.ThreadLocalNamedSingletonPluginFactory('TEST_NAMED_FACTORY')
 
