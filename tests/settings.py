@@ -46,3 +46,6 @@ TEST_NAMED_CONFIG = {
         'foo': 'bar'
     }
 }
+
+# Providers
+TEST_PROVIDERS = ['tests.test_conf_helpers_providers.ProviderBaseTest']

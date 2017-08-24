@@ -42,9 +42,9 @@ provide an implementation of the ``create_instance`` method.
 Plugin factories
 ----------------
 
-Similarly to the simple factories the plugin factories also come in the same
-three flavours, however they include the additional functionality of supporting
-the creation of object instances based off configuration. The definition is
+Similar to simple factories, plugin factories also come in the same three
+flavours, however they include the additional functionality of supporting the
+creation of object instances based off configuration. The definition is
 slightly more complex in your settings file.
 
 .. autoclass:: NamedPluginFactory
@@ -52,6 +52,17 @@ slightly more complex in your settings file.
 .. autoclass:: NamedSingletonPluginFactory
 
 .. autoclass:: ThreadLocalNamedSingletonPluginFactory
+
+
+Provider factories
+------------------
+
+Extending from plugin factories providers provide an additional level of dynamic
+configuration where configuration is obtained from data storage eg a database.
+
+.. autoclass:: ProviderFactoryBase
+
+.. autoclass:: ProviderBase
 
 """
 from __future__ import absolute_import, unicode_literals
@@ -62,12 +73,14 @@ import six
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.conf.helpers.plugins import *
+from pyapp.conf.helpers.providers import *
 from pyapp.utils import cached_property
 from .bases import DefaultCache, FactoryMixin, SingletonFactoryMixin, ThreadLocalSingletonFactoryMixin
 
 __all__ = ('NamedConfiguration', 'DefaultCache',
            'NamedFactory', 'NamedSingletonFactory', 'ThreadLocalNamedSingletonFactory',
-           'NamedPluginFactory', 'NamedSingletonPluginFactory', 'ThreadLocalNamedSingletonPluginFactory')
+           'NamedPluginFactory', 'NamedSingletonPluginFactory', 'ThreadLocalNamedSingletonPluginFactory'
+           'ProviderFactoryBase', 'ProviderBase')
 
 
 class NamedConfiguration(object):

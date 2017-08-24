@@ -1,15 +1,34 @@
 """
-Providers
-~~~~~~~~~
+*Dynamic configuration based Instance factories*
 
 A provider is similar to a plugin in that they are created dynamically from
 configuration. The main difference is that a providers configuration is
 stored outside of settings. This could be in a database to provide user
-specific endpoints (eg fetching social media feeds).
+specific endpoints eg fetching social media feeds.
 
-This library provides the basic setup related to loading available providers
-etc
+This library provides the basic infrastructure for utilising providers.
 
+This sample uses SQLAlchemy to access configuration data, it is assumed
+that a config model has been created and that `provider_config` is a JSON
+field.
+
+Setup::
+
+    >>> from pyapp.conf.helpers import ProviderFactoryBase
+    >>> class FooProviderFactory(ProviderFactoryBase):
+    ...     setting = 'MY_PROVIDERS'
+    ...     def load_config(self, db_session, config_id):
+    ...         try:
+    ...             config = db_session.query(MyConfig).filter(MyConfig.id == config_id).one()
+    ...         except NoResultFound:
+    ...             raise ProviderConfigNotFound("Config not found for {}".format(config_id))
+    ...         else:
+    ...             return config.provider_ref, config.provider_config
+    >>> foo_factory = FooProviderFactory()
+
+Usage::
+
+    >>> instance = foo_factory(db_session, 1)
 Example::
 
     from pyapp.conf.helpers.providers import ProviderFactory
@@ -50,7 +69,21 @@ from pyapp.conf import settings
 from pyapp.exceptions import ProviderNotFound
 from pyapp.utils import import_type, cached_property
 
+__all__ = ('ProviderSummary', 'ProviderBase', 'ProviderFactoryBase')
+
+
 ProviderSummary = namedtuple('ProviderSummary', ('code', 'name', 'description'))
+
+
+class ProviderBase(object):
+    """
+    A specific provider type these are created by the provider factory, using stored
+    configuration.
+    """
+    name = None
+    """
+    Providers name.
+    """
 
 
 class ProviderFactoryBase(object):
@@ -91,7 +124,7 @@ class ProviderFactoryBase(object):
         return providers
 
     @cached_property
-    def provider_summary(self):
+    def provider_summaries(self):
         # type: () -> List[ProviderSummary]
         """
         Summary list of the available providers with code, name and description.
@@ -99,7 +132,7 @@ class ProviderFactoryBase(object):
         This is intended for display purposes.
         """
         return [
-            ProviderSummary(code, provider.name, provider.__doc__)
+            ProviderSummary(code, provider.name, (provider.__doc__ or '').strip())
             for code, provider in self.providers.items()
         ]
 
@@ -154,8 +187,8 @@ class ProviderFactoryBase(object):
 
         messages = []
 
-        for provider_ref in provider_refs:
-            message = self.check_instance(provider_ref, **kwargs)
+        for idx, provider_ref in enumerate(provider_refs):
+            message = self.check_instance(idx, provider_ref, **kwargs)
             if isinstance(message, checks.CheckMessage):
                 messages.append(message)
             elif message:
@@ -164,7 +197,7 @@ class ProviderFactoryBase(object):
         return messages
     checks.check_name = "{obj.setting}.check_configuration"
 
-    def check_instance(self, provider_ref, **_):
+    def check_instance(self, idx, provider_ref, **_):
         """
         Checks for individual providers.
         """
@@ -172,7 +205,7 @@ class ProviderFactoryBase(object):
             return checks.Critical(
                 "Provider definition is not a string.",
                 hint="Change definition to be a string in settings.",
-                obj='settings.{}[{}]'.format(self.setting, provider_ref)
+                obj='settings.{}[{}]'.format(self.setting, idx)
             )
 
         try:
@@ -181,17 +214,5 @@ class ProviderFactoryBase(object):
             return checks.Critical(
                 "Unable to import provider type.",
                 hint=str(ex),
-                obj='settings.{}[{}]'.format(self.setting, provider_ref)
+                obj='settings.{}[{}]'.format(self.setting, idx)
             )
-
-
-class ProviderBase(object):
-    """
-    A specific provider type, this is a singleton instance that is used to define
-    information about the provider, including which configuration variables and
-    or any other special information about how a provider is instantiated and executed.
-    """
-    name = None
-    """
-    Providers name.
-    """
