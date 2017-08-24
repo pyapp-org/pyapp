@@ -126,7 +126,6 @@ class NamedPluginFactory(FactoryMixin):
         """
         Run checks to ensure settings are valid, secondly run checks against
         individual definitions in settings.
-
         """
         settings_ = kwargs['settings']
 
@@ -187,11 +186,6 @@ class NamedPluginFactory(FactoryMixin):
     def check_instance(self, instance_definitions, name, **_):
         """
         Checks for individual instances.
-
-        :param instance_definitions:
-        :param name:
-        :return:
-
         """
         definition = instance_definitions[name]
         if not isinstance(definition, (tuple, list)):

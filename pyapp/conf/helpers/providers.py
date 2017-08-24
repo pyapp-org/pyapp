@@ -7,12 +7,45 @@ configuration. The main difference is that a providers configuration is
 stored outside of settings. This could be in a database to provide user
 specific endpoints (eg fetching social media feeds).
 
+This library provides the basic setup related to loading available providers
+etc
+
+Example::
+
+    from pyapp.conf.helpers.providers import ProviderFactory
+
+    class MyFooPlugin(
+
+    class MyFooProvider(ProviderBase):
+        name = 'Provides Foo!'
+
+
+
+    class MyProviderFactory(ProviderFactoryBase):
+        provider_list_setting = 'MY_PROVIDERS'
+
+        def load_config(db_session, config_id):
+            # Load configuration from database (using SQLAlchemy)
+            try:
+                config = db_session.query(MyProviderConfig).filter(MyProviderConfig.id == config_id).one()
+            except NoResultFound:
+                raise ProviderConfigNotFound("Config for not found for {}.".format(config_id))
+            else:
+                return config.provider_code, config.provider_config
+
+
+
+
 """
+from __future__ import unicode_literals
+
 from collections import namedtuple, OrderedDict
 
 # Typing import
-from typing import Any, Dict, List  # noqa
+import six
+from typing import Any, Dict, List, Tuple  # noqa
 
+from pyapp import checks
 from pyapp.conf import settings
 from pyapp.exceptions import ProviderNotFound
 from pyapp.utils import import_type, cached_property
@@ -20,22 +53,27 @@ from pyapp.utils import import_type, cached_property
 ProviderSummary = namedtuple('ProviderSummary', ('code', 'name', 'description'))
 
 
-class ProviderFactory(object):
+class ProviderFactoryBase(object):
     """
     Factory to instantiate and configure a provider.
     """
+    setting = None  # type: str
+    """
+    Setting that enumerates available providers.
+    """
 
-    def __init__(self, provider_list_setting=None, provider_base=None):
-        # type: (str, Any) -> None
-        """
-        Initialise factory.
+    abc = ProviderBase
+    """
+    The absolute base class that any provider should be based on.
+    """
 
-        :param provider_list_setting: Setting that lists available providers.
-        :param provider_base: A base class the providers must inherit from.
+    def __init__(self):
+        self._register_checks()
 
-        """
-        self.provider_list_setting = provider_list_setting
-        self.provider_base = provider_base
+    def __call__(self, *args, **kwargs):
+        provider_code, provider_config = self.load_config(*args, **kwargs)
+        provider = self.get_provider(provider_code)
+        return provider(**provider_config)
 
     @cached_property
     def providers(self):
@@ -46,10 +84,9 @@ class ProviderFactory(object):
         providers = OrderedDict()
 
         # Load and instantiate available providers
-        provider_refs = getattr(settings, self.provider_list_setting)
+        provider_refs = getattr(settings, self.setting)
         for provider_ref in provider_refs:
-            provider = import_type(provider_ref)
-            providers[provider_ref] = self.instantiate_provider(provider)
+            providers[provider_ref] = import_type(provider_ref)
 
         return providers
 
@@ -66,27 +103,86 @@ class ProviderFactory(object):
             for code, provider in self.providers.items()
         ]
 
-    def instantiate_provider(self, provider):
-        # type: (type) -> Any
-        """
-        Create a provider instance.
-
-        Can be overridden if your solution requires more parameters.
-        """
-        return provider()
-
     def get_provider(self, provider_code):
         # type: (str) -> Any
         """
-        Get provider instance from the supplied config.
+        Get provider type from the supplied config.
         """
         try:
             return self.providers[provider_code]
         except KeyError:
             raise ProviderNotFound("Provider `{}` was not found in the provider list.".format(provider_code))
 
-    def __call__(self, *args, **kwargs):
-        pass
+    def load_config(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Tuple[str, Dict[str, Any]]
+        """
+        Load configuration for data store.
+
+        This method should raise a ProviderConfigNotFound exception if configuration cannot be loaded
+        """
+        raise NotImplementedError()
+
+    def _register_checks(self):
+        checks.register(self)
+
+    def checks(self, **kwargs):
+        """
+        Run checks to ensure settings are valid, secondly run checks against
+        individual definitions in settings.
+
+        """
+        settings_ = kwargs['settings']
+
+        # Check settings are defined
+        if not hasattr(settings_, self.setting):
+            return checks.Critical(
+                "Provider definitions missing from settings.",
+                hint="Add a {} entry into settings.".format(self.setting),
+                obj="settings.{}".format(self.setting)
+            )
+
+        provider_refs = getattr(settings_, self.setting)
+        if provider_refs is None:
+            return  # Nothing is defined so end now.
+
+        if not isinstance(provider_refs, (list, tuple)):
+            return checks.Critical(
+                "Provider definitions defined in settings not a list/tuple instance.",
+                hint="Change setting {} to be a list or tuple in settings file.".format(self.setting),
+                obj="settings.{}".format(self.setting)
+            )
+
+        messages = []
+
+        for provider_ref in provider_refs:
+            message = self.check_instance(provider_ref, **kwargs)
+            if isinstance(message, checks.CheckMessage):
+                messages.append(message)
+            elif message:
+                messages += message
+
+        return messages
+    checks.check_name = "{obj.setting}.check_configuration"
+
+    def check_instance(self, provider_ref, **_):
+        """
+        Checks for individual providers.
+        """
+        if not isinstance(provider_ref, six.string_types):
+            return checks.Critical(
+                "Provider definition is not a string.",
+                hint="Change definition to be a string in settings.",
+                obj='settings.{}[{}]'.format(self.setting, provider_ref)
+            )
+
+        try:
+            import_type(provider_ref)
+        except ImportError as ex:
+            return checks.Critical(
+                "Unable to import provider type.",
+                hint=str(ex),
+                obj='settings.{}[{}]'.format(self.setting, provider_ref)
+            )
 
 
 class ProviderBase(object):

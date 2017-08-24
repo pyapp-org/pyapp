@@ -9,10 +9,18 @@ class InvalidConfiguration(Exception):
 
 
 class ProviderException(Exception):
-    pass
+    """
+    Exceptions raised by providers.
+    """
 
 
-class ProviderNotFound(ProviderException):
+class ProviderNotFound(KeyError, ProviderException):
     """
     Specified provider not found.
+    """
+
+
+class ProviderConfigNotFound(ProviderException):
+    """
+    Specified provider configuration could not be loaded.
     """
