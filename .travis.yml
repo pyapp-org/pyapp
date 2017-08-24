@@ -13,7 +13,7 @@ branches:
 
 install:
   - travis_retry pip install -Ur requirements-dev.txt
-  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]] || $TRAVIS_PYTHON_VERSION == '2.7' ]]; then travis_retry pip install enum32 typing ; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]] || [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then travis_retry pip install enum34 typing ; fi
 
 script:
   - py.test tests/ --cov=pyapp
