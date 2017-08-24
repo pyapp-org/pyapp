@@ -84,17 +84,7 @@ class TestProviderFactoryBase(object):
             u"Provider definition is not a string.",
             u"Change definition to be a string in settings.",
             u"settings.TEST_PROVIDERS[0]"
-        )]),
-        (['tests.wrong.ProviderBaseTest'], [checks.Critical(
-            u"Unable to import provider type.",
-            u"No module named wrong",
-            u"settings.TEST_PROVIDERS[0]"
-        )]),
-        (['tests.test_conf_helpers_providers.ProviderBaseTest', 'tests.wrong.ProviderBaseTest'], [checks.Critical(
-            u"Unable to import provider type.",
-            u"No module named wrong",
-            u"settings.TEST_PROVIDERS[1]"
-        )]),
+        )])
     ))
     def test_checks(self, provider_settings, expected):
         target = ProviderFactoryTest()
@@ -119,3 +109,15 @@ class TestProviderFactoryBase(object):
                 u"Add a TEST_PROVIDERS entry into settings.",
                 u"settings.TEST_PROVIDERS"
             )
+
+    def test_checks__invalid_import(self):
+        target = ProviderFactoryTest()
+
+        with settings.modify() as ctx:
+            ctx.TEST_PROVIDERS = ['tests.test_conf_helpers_providers.ProviderBaseTest', 'tests.wrong.ProviderBaseTest']
+
+            actual = target.checks(settings=settings)[0]
+
+            assert isinstance(actual, checks.Critical)
+            assert actual.msg == u"Unable to import provider type."
+            assert actual.obj == u"settings.TEST_PROVIDERS[1]"
