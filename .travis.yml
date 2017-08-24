@@ -14,6 +14,7 @@ branches:
 
 install:
   - travis_retry pip install -Ur requirements-dev.txt
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then travis_retry pip install enum32 typing ; fi
 
 script:
   - py.test tests/ --cov=pyapp
