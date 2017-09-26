@@ -8,6 +8,7 @@ from tests.sample_app.__main__ import app
 @pytest.mark.parametrize('args', (
     ('checks',),
     ('checks', '--verbose'),
+    ('checks', '--table'),
     ('--nocolor', 'checks'),
     ('--nocolor', 'checks', '--verbose'),
     ('--checks', 'extensions', '--verbose'),

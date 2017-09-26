@@ -56,6 +56,9 @@ import logging.config
 import os
 import sys
 
+# Type annotation imports
+from typing import List  # noqa
+
 from pyapp import conf
 from pyapp import extensions
 from pyapp.app import builtin_handlers
@@ -264,7 +267,8 @@ class CliApplication(object):
     # Renamed to command added to remain backwards compatible
     register_handler = command
 
-    def run_checks(self, output, message_level=logging.INFO, tags=None, verbose=False, no_color=False):
+    def run_checks(self, output, message_level=logging.INFO, tags=None, verbose=False, no_color=False, table=False):
+        # type: (io.StringIO, int, List[str], bool, bool, bool) -> bool
         """
         Run application checks.
 
@@ -273,10 +277,11 @@ class CliApplication(object):
         :param tags: Specific tags to run.
         :param verbose: Display verbose output.
         :param no_color: Disable coloured output.
+        :param table: Tabular output (disables verbose and colour option)
 
         """
         from pyapp.checks.registry import import_checks
-        from pyapp.checks.report import CheckReport
+        from pyapp.checks.report import CheckReport, TabularCheckReport
 
         # Import default application checks
         try:
@@ -289,8 +294,13 @@ class CliApplication(object):
 
         # Note the getLevelName method returns the level code if a string level is supplied!
         message_level = logging.getLevelName(message_level)
-        return CheckReport(verbose, no_color, output).run(
-            message_level, tags, "Checks for {}".format(self.application_summary))
+
+        # Create report instance
+        if table:
+            return TabularCheckReport(output).run(message_level, tags)
+        else:
+            return CheckReport(verbose, no_color, output).run(message_level, tags,
+                                                              "Checks for {}".format(self.application_summary))
 
     def register_builtin_handlers(self):
         """
@@ -304,13 +314,15 @@ class CliApplication(object):
         @add_argument('--out', dest='out', default=sys.stdout,
                       type=argparse.FileType(mode='w'),
                       help='File to output check report to; default is stdout.')
+        @add_argument('--table', dest='table', action='store_true',
+                      help='Output report in tabular format.')
         @self.command(cli_name='checks')
         def check_report(opts):
             """
             Run a check report.
             """
             if self.run_checks(opts.out, opts.checks_message_level, opts.tags,
-                               opts.verbose, opts.no_color):
+                               opts.verbose, opts.no_color, opts.table):
                 exit(4)
 
         # Register any additional handlers

@@ -1,8 +1,14 @@
 from __future__ import print_function, unicode_literals
 
+import csv
 import logging
 import sys
 import textwrap
+
+# Typing imports
+from typing import List, Optional  # noqa
+from io import StringIO  # noqa
+from pyapp.checks.registry import CheckRegistry, CheckMessage  # noqa
 
 from pyapp.checks.registry import registry
 from pyapp.utils import colorama
@@ -86,11 +92,12 @@ class CheckReport(object):
         return line_sep.join(l + (' ' * (self.width - len(l))) for l in lines)
 
     def format_title(self, message):
+        # type: (CheckMessage) -> str
         """
         Format the title of message.
         """
         # Get strings
-        level_name = logging.getLevelName(message.level)
+        level_name = message.level_name
         msg = message.msg
         if message.obj:
             msg = "{} - {}".format(message.obj, msg)
@@ -151,17 +158,14 @@ class CheckReport(object):
         self.f_out.write(self.MESSAGE_TEMPLATE.format(**format_args))
 
     def run(self, message_level=logging.INFO, tags=None, header=None):
+        # type: (int, List[str], str) -> bool
         """
         Run the report
 
         :param message_level: Level of message to be displayed.
-        :type message_level: int
         :param tags: List of tags to include in report
-        :type tags: list(str)
         :param header: An optional header to prepend to report (if verbose)
-        :type header: str | unicode
         :return: Indicate if any serious message where generated.
-        :rtype: bool
 
         """
         serious_message = False
@@ -170,7 +174,7 @@ class CheckReport(object):
             self.f_out.write(header + '\n')
 
         # Generate report
-        for messages in self.registry.run_checks_iter(tags, self.pre_callback):
+        for _, messages in self.registry.run_checks_iter(tags, self.pre_callback):
             message_shown = False
             if messages:
                 for message in messages:
@@ -183,5 +187,56 @@ class CheckReport(object):
 
             if not (self.verbose or message_shown):  # DeMorgans law: !a & !b == !(a | b)
                 self.f_out.write(".\n")
+
+        return serious_message
+
+
+class TabularCheckReport(object):
+    """
+    Generation of a check report that outputs tabular output.
+    """
+    def __init__(self, f_out=sys.stdout, check_registry=registry):
+        # type: (StringIO, CheckRegistry) -> None
+        """
+        Initialise report
+        """
+        self.f_out = f_out
+        self.registry = check_registry
+
+        self.writer = csv.writer(self.f_out, delimiter=str('\t'))
+
+    def output_result(self, check, message):
+        # type: (CheckReport, Optional[CheckMessage]) -> None
+        if message:
+            self.writer.writerow([check.__name__, message.level_name, message.msg])
+        else:
+            self.writer.writerow([check.__name__, 'OK', ''])
+
+    def run(self, message_level=logging.INFO, tags=None):
+        # type: (int, List[str]) -> bool
+        """
+        Run the report
+
+        :param message_level: Level of message to be displayed.
+        :param tags: List of tags to include in report
+        :return: Indicate if any serious message where generated.
+
+        """
+        serious_message = False
+
+        # Generate report
+        for check, messages in self.registry.run_checks_iter(tags):
+            message_shown = False
+            if messages:
+                for message in messages:
+                    serious_message = serious_message or message.is_serious()
+
+                    # Filter output
+                    if message.level >= message_level:
+                        message_shown = True
+                        self.output_result(check, message)
+
+            if not message_shown:
+                self.output_result(check, None)
 
         return serious_message
