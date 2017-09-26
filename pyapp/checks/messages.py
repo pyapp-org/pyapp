@@ -3,7 +3,10 @@ Messages
 """
 from __future__ import unicode_literals
 
-from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
+from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL, getLevelName
+
+# Typing imports
+from typing import Any, Union, List  # noqa
 
 __all__ = (
     'CheckMessage',
@@ -17,19 +20,17 @@ class CheckMessage(object):
     Check message base class
     """
     def __init__(self, level, msg, hint=None, obj=None):
+        # type: (int, str, Union[str, List[str]], Any) -> None
         """
         Messages returned from check functions.
 
         :param level: Importance level of message (based on logging levels)
-        :type level: int
         :param msg: Description of issue identified by check. Note that this
             message will be word wrapped to 80 characters.
-        :type msg: str
         :param hint: A hint on how to fix the issue (this can be either a
             single string or a list of strings that make up individual
             paragraphs. Note that any messages are word wrapped to 80 chars
             for display.
-        :type hint: str | list(str)
         :param obj: An object this message relates to (useful in the case of
             multiple database connections for example).
 
@@ -61,6 +62,14 @@ class CheckMessage(object):
         return "{}(level={!r}, msg={!r}, hint={!r}, obj={!r})".format(
             self.__class__.__name__, self.level, self.msg, self.hint, self.obj
         )
+
+    @property
+    def level_name(self):
+        # type: () -> str
+        """
+        Level as a string.
+        """
+        return getLevelName(self.level)
 
     def is_serious(self, level=ERROR):
         """

@@ -1,5 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 
+from collections import namedtuple
 from itertools import chain
 
 from pyapp import extensions
@@ -12,6 +13,9 @@ class Tags(object):
     Built-in tags used by pyApp.
     """
     security = 'security'
+
+
+CheckResult = namedtuple('CheckResult', 'check, messages')
 
 
 class CheckRegistry(object):
@@ -74,11 +78,11 @@ class CheckRegistry(object):
                 messages = check(**check_kwargs)
 
             if isinstance(messages, CheckMessage):
-                yield messages,  # yield tuple, comma is expected
+                yield CheckResult(check, (messages,))
             elif messages:
-                yield messages
+                yield CheckResult(check, messages)
             else:
-                yield tuple()  # empty tuple a value should be yielded for each check
+                yield CheckResult(check, tuple())
 
     def run_checks(self, tags=None):
         """
@@ -87,7 +91,7 @@ class CheckRegistry(object):
         :param tags: Iterable of tags to filter checks by.
 
         """
-        return list(chain.from_iterable(self.run_checks_iter(tags)))
+        return list(chain.from_iterable(r.messages for r in self.run_checks_iter(tags)))
 
 
 # Singleton instance of registry
