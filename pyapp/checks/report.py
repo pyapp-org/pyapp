@@ -8,8 +8,9 @@ import textwrap
 # Typing imports
 from typing import List, Optional  # noqa
 from io import StringIO  # noqa
+from pyapp.checks.registry import CheckRegistry  # noqa
 
-from pyapp.checks.registry import registry, CheckMessage, CheckRegistry
+from pyapp.checks.registry import registry, CheckMessage
 from pyapp.utils import colorama
 
 if colorama:
@@ -173,7 +174,7 @@ class CheckReport(object):
             self.f_out.write(header + '\n')
 
         # Generate report
-        for check, messages in self.registry.run_checks_iter(tags, self.pre_callback):
+        for _, messages in self.registry.run_checks_iter(tags, self.pre_callback):
             message_shown = False
             if messages:
                 for message in messages:
@@ -222,7 +223,7 @@ class TabularCheckReport(object):
 
         """
         serious_message = False
-        
+
         # Generate report
         for check, messages in self.registry.run_checks_iter(tags):
             message_shown = False
