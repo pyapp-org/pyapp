@@ -8,9 +8,9 @@ import textwrap
 # Typing imports
 from typing import List, Optional  # noqa
 from io import StringIO  # noqa
-from pyapp.checks.registry import CheckRegistry  # noqa
+from pyapp.checks.registry import CheckRegistry, CheckMessage  # noqa
 
-from pyapp.checks.registry import registry, CheckMessage
+from pyapp.checks.registry import registry
 from pyapp.utils import colorama
 
 if colorama:
