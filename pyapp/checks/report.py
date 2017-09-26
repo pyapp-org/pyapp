@@ -6,9 +6,8 @@ import sys
 import textwrap
 
 # Typing imports
-from io import StringIO
-
 from typing import List, Optional  # noqa
+from io import StringIO  # noqa
 
 from pyapp.checks.registry import registry, CheckMessage, CheckRegistry
 from pyapp.utils import colorama

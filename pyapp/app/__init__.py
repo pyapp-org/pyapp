@@ -46,10 +46,6 @@ CliApplication
 from __future__ import absolute_import, print_function, unicode_literals
 
 import argparse
-from io import StringIO
-
-from pyapp.checks.report import TabularCheckReport
-
 try:
     import argcomplete
 except ImportError:
@@ -272,7 +268,7 @@ class CliApplication(object):
     register_handler = command
 
     def run_checks(self, output, message_level=logging.INFO, tags=None, verbose=False, no_color=False, table=False):
-        # type: (StringIO, int, List[str], bool, bool, bool) -> bool
+        # type: (io.StringIO, int, List[str], bool, bool, bool) -> bool
         """
         Run application checks.
 
@@ -285,7 +281,7 @@ class CliApplication(object):
 
         """
         from pyapp.checks.registry import import_checks
-        from pyapp.checks.report import CheckReport
+        from pyapp.checks.report import CheckReport, TabularCheckReport
 
         # Import default application checks
         try:
