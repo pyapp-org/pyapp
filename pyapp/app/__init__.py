@@ -118,8 +118,9 @@ def add_argument(*args, **kwargs):
         else:
             # Add the argument to a list that will be consumed by HandlerProxy.
             if not hasattr(func, 'arguments'):
-                func.arguments = list()
-            func.arguments.append((args, kwargs))
+                func.arguments = [(args, kwargs)]
+            else:
+                func.arguments.insert(0, (args, kwargs))
         return func
     return wrapper
 
