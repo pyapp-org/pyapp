@@ -413,6 +413,7 @@ class CliApplication(object):
         if self._default_handler:
             return self._default_handler(opts)
         else:
+            print("No command specified!")
             self.parser.print_usage()
             return 1
 
