@@ -6,7 +6,7 @@ import sys
 import textwrap
 
 # Typing imports
-from typing import List, Optional  # noqa
+from typing import List, Optional, Any  # noqa
 from io import StringIO  # noqa
 from pyapp.checks.registry import CheckRegistry, CheckMessage  # noqa
 
@@ -23,6 +23,15 @@ if colorama:
         logging.INFO: (Fore.CYAN, Fore.CYAN),
         logging.DEBUG: (Fore.MAGENTA, Fore.MAGENTA),
     }
+
+
+def get_check_name(obj):
+    # type: (Any) -> str
+    """
+    Get the name of a check
+    """
+    check = obj.checks if hasattr(obj, 'checks') else obj
+    return getattr(check, 'check_name', check.__name__).format(obj=obj)
 
 
 class CheckReport(object):
@@ -68,9 +77,9 @@ class CheckReport(object):
 
     def pre_callback(self, obj):
         if self.verbose:
-            check = obj.checks if hasattr(obj, 'checks') else obj
-            name = getattr(check, 'check_name', check.__name__).format(obj=obj)
-            self.f_out.write(self.VERBOSE_CHECK_TEMPLATE.format(name=name))
+            self.f_out.write(
+                self.VERBOSE_CHECK_TEMPLATE.format(name=get_check_name(obj))
+            )
 
     def wrap_text(self, text, indent_width, line_sep='\n'):
         """
@@ -207,10 +216,11 @@ class TabularCheckReport(object):
 
     def output_result(self, check, message):
         # type: (CheckReport, Optional[CheckMessage]) -> None
+        name = get_check_name(check)
         if message:
-            self.writer.writerow([check.__name__, message.level_name, message.msg])
+            self.writer.writerow([name, message.level_name, message.msg])
         else:
-            self.writer.writerow([check.__name__, 'OK', ''])
+            self.writer.writerow([name, 'OK', ''])
 
     def run(self, message_level=logging.INFO, tags=None):
         # type: (int, List[str]) -> bool
