@@ -169,9 +169,10 @@ class CliApplication(object):
 
     def __init__(self, root_module, name=None, description=None, version=None,
                  application_settings=None, application_checks=None,
-                 env_settings_key=None, env_loglevel_key=None):
+                 env_settings_key=None, env_loglevel_key=None, default_handler=None):
         self.root_module = root_module
         self.application_version = version or getattr(root_module, '__version__', 'Unknown')
+        self._default_handler = default_handler
 
         def key_help(key):
             if key in os.environ:
@@ -405,6 +406,17 @@ class CliApplication(object):
         logger.exception("Un-handled exception %s caught executing handler: %s", exception, opts.handler)
         return False
 
+    def default_handler(self, opts):
+        """
+        Handler called if no handler is specified
+        """
+        if self._default_handler:
+            return self._default_handler(opts)
+        else:
+            print("No command specified!")
+            self.parser.print_usage()
+            return 1
+
     def dispatch(self, args=None):
         """
         Dispatch command to registered handler.
@@ -430,9 +442,15 @@ class CliApplication(object):
             self.checks_on_startup(opts)
             self.configure_extensions(opts)
 
+        # Handle case where a handler is not supplied.
+        if not opts.handler:
+            handler = self.default_handler
+        else:
+            handler = self._handlers[opts.handler]
+
         # Dispatch to handler.
         try:
-            exit_code = self._handlers[opts.handler](opts)
+            exit_code = handler(opts)
 
         except Exception as ex:
             if not self.exception_report(ex, opts):
