@@ -57,7 +57,7 @@ import os
 import sys
 
 # Type annotation imports
-from typing import List  # noqa
+from typing import List, Callable, Any  # noqa
 
 from pyapp import conf
 from pyapp import extensions
@@ -417,6 +417,17 @@ class CliApplication(object):
             self.parser.print_usage()
             return 1
 
+    @staticmethod
+    def call_handler(handler, *args, **kwargs):
+        # type: (Callable, Any) -> int
+        """
+        Actually call the handler and return the status code.
+
+        This allows for this method to be modified to provide additional
+        functionality.
+        """
+        return handler(*args, **kwargs)
+
     def dispatch(self, args=None):
         """
         Dispatch command to registered handler.
@@ -450,7 +461,7 @@ class CliApplication(object):
 
         # Dispatch to handler.
         try:
-            exit_code = handler(opts)
+            exit_code = self.call_handler(handler, opts)
 
         except Exception as ex:
             if not self.exception_report(ex, opts):
