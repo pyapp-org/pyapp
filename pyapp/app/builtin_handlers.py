@@ -11,7 +11,7 @@ def extensions(app):
     @add_argument('--out', dest='out', default=sys.stdout,
                   type=argparse.FileType(mode='w'),
                   help='File to output extension report to; default is stdout.')
-    def _handler(opts):
+    def _handler(opts, **_):
         """
         Report of installed PyApp extensions.
         """
@@ -28,7 +28,7 @@ def settings(app):
     @add_argument('--out', dest='out', default=sys.stdout,
                   type=argparse.FileType(mode='w'),
                   help='File to output settings report to; default is stdout.')
-    def _handler(opts):
+    def _handler(opts, **_):
         """
         Report of current settings.
         """

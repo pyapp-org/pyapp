@@ -319,7 +319,7 @@ class CliApplication(object):
         @add_argument('--table', dest='table', action='store_true',
                       help='Output report in tabular format.')
         @self.command(cli_name='checks')
-        def check_report(opts):
+        def check_report(opts, **_):
             """
             Run a check report.
             """
@@ -406,7 +406,7 @@ class CliApplication(object):
         logger.exception("Un-handled exception %s caught executing handler: %s", exception, opts.handler)
         return False
 
-    def default_handler(self, opts):
+    def default_handler(self, opts, **_):
         """
         Handler called if no handler is specified
         """
