@@ -164,16 +164,18 @@ class Settings(object):
 
         logger.info("Loading settings from: %s", loader_key)
 
+        target = self.__dict__
+
         # Apply values from loader
         for key, value in loader:
             logger.debug("Importing setting: %s", key)
-            apply_method(self.__dict__, key, value)
+            apply_method(target, key, value)
 
         # Store loader key to prevent circular loading
         self.SETTINGS_SOURCES.append(loader_key)
 
         # Handle instances of INCLUDE entries
-        include_settings = self.__dict__.pop('INCLUDE_SETTINGS', None)
+        include_settings = target.pop('INCLUDE_SETTINGS', None)
         if include_settings:
             for source_url in include_settings:
                 self.load(factory(source_url), apply_method)
@@ -244,5 +246,6 @@ class Settings(object):
 
         """
         return ModifySettingsContext(self)
+
 
 settings = Settings()
