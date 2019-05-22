@@ -55,7 +55,8 @@ import logging.config
 import os
 import sys
 
-from typing import List, Callable, Any
+from types import ModuleType
+from typing import Callable, Any, Optional, Dict, Sequence, Union
 
 from pyapp import conf
 from pyapp import extensions
@@ -65,12 +66,15 @@ from pyapp.conf import settings
 logger = logging.getLogger(__name__)
 
 
+Handler = Callable[[argparse.Namespace], Optional[int]]
+
+
 class HandlerProxy:
     """
     Proxy object that wraps a handler.
     """
 
-    def __init__(self, handler: Callable, sub_parser: argparse.ArgumentParser):
+    def __init__(self, handler: Handler, sub_parser: argparse.ArgumentParser):
         """
         Initialise proxy
 
@@ -86,10 +90,10 @@ class HandlerProxy:
         self.__module__ = handler.__module__
 
         # Add any existing arguments
-        if hasattr(handler, "arguments"):
-            for args, kwargs in handler.arguments:
+        if hasattr(handler, "arguments__"):
+            for args, kwargs in handler.arguments__:
                 self.add_argument(*args, **kwargs)
-            del handler.arguments
+            del handler.arguments__
 
     def __call__(self, *args, **kwargs):
         return self.handler(*args, **kwargs)
@@ -111,15 +115,15 @@ def add_argument(*args, **kwargs):
 
     """
 
-    def wrapper(func):
+    def wrapper(func: Union[Handler, HandlerProxy]):
         if isinstance(func, HandlerProxy):
             func.add_argument(*args, **kwargs)
         else:
             # Add the argument to a list that will be consumed by HandlerProxy.
-            if not hasattr(func, "arguments"):
-                func.arguments = [(args, kwargs)]
+            if not hasattr(func, "arguments__"):
+                func.arguments__ = [(args, kwargs)]
             else:
-                func.arguments.insert(0, (args, kwargs))
+                func.arguments__.insert(0, (args, kwargs))
         return func
 
     return wrapper
@@ -169,7 +173,7 @@ class CliApplication:
 
     def __init__(
         self,
-        root_module: module,
+        root_module: ModuleType,
         name: str = None,
         description: str = None,
         version: str = None,
@@ -207,7 +211,7 @@ class CliApplication:
         self.parser.add_argument(
             "--version",
             action="version",
-            version=f"%(prog)s version: {self.application.version}",
+            version=f"%(prog)s version: {self.application_version}",
         )
 
         # Log configuration
@@ -268,11 +272,11 @@ class CliApplication:
         if description:
             return f"{self.application_name} version {self.application_version} - {description}"
         else:
-            return f"{self.application_name} version {self.application_versiion}"
+            return f"{self.application_name} version {self.application_version}"
 
     def command(
         self,
-        handler: Callable[[Dict[str, Any]], Optional[int]] = None,
+        handler: Handler = None,
         cli_name: str = None,
     ) -> HandlerProxy:
         """
@@ -313,7 +317,7 @@ class CliApplication:
         verbose: bool = False,
         no_color: bool = False,
         table: bool = False,
-    ):
+    ) -> bool:
         """
         Run application checks.
 
@@ -420,7 +424,8 @@ class CliApplication:
             env_settings_key=self.env_settings_key,
         )
 
-    def configure_logging(self, opts):
+    @staticmethod
+    def configure_logging(opts):
         """
         Configure the logging framework.
         """
@@ -435,7 +440,8 @@ class CliApplication:
             # Configure root log level
             logging.root.setLevel(opts.log_level)
 
-    def configure_extensions(self, _):
+    @staticmethod
+    def configure_extensions(_):
         """
         Load/Configure extensions.
         """
@@ -450,7 +456,7 @@ class CliApplication:
         # can be performed.
         extensions.registry.trigger_ready()
 
-    def checks_on_startup(self, opts):
+    def checks_on_startup(self, opts: argparse.Namespace):
         """
         Run checks on startup.
         """
@@ -466,7 +472,8 @@ class CliApplication:
             else:
                 logger.info("Check results:\n%s", out.getvalue())
 
-    def exception_report(self, exception, opts):
+    @staticmethod
+    def exception_report(exception: BaseException, opts: argparse.Namespace):
         """
         Generate a report for any unhandled exceptions caught by the framework.
         """
@@ -477,7 +484,7 @@ class CliApplication:
         )
         return False
 
-    def default_handler(self, opts, **_):
+    def default_handler(self, opts: argparse.Namespace, **_):
         """
         Handler called if no handler is specified
         """
@@ -489,7 +496,7 @@ class CliApplication:
             return 1
 
     @staticmethod
-    def call_handler(handler: Callale, *args, **kwargs) -> int:
+    def call_handler(handler: Handler, *args, **kwargs) -> int:
         """
         Actually call the handler and return the status code.
 

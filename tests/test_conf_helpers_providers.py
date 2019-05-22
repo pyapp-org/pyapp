@@ -5,7 +5,7 @@ from pyapp.conf import settings
 from pyapp.conf.helpers import providers
 
 
-class ProviderBaseTest(providers.ProviderBase):
+class ProviderBaseTest:
     """
     Description.
     """

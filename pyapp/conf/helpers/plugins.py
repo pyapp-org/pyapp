@@ -108,14 +108,12 @@ class NamedPluginFactory(FactoryMixin):
         try:
             type_name, kwargs = self._instance_definitions[name]
         except KeyError:
-            raise KeyError("Setting definition `{}` not found".format(name))
+            raise KeyError(f"Setting definition `{name}` not found")
 
         type_ = import_type(type_name)
         if self.abc and not issubclass(type_, self.abc):
             raise TypeError(
-                "Setting definition `{}` is not a subclass of `{}`".format(
-                    type_name, self.abc
-                )
+                f"Setting definition `{type_name}` is not a subclass of `{self.abc}`"
             )
 
         return type_, kwargs

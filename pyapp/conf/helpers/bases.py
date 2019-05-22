@@ -1,4 +1,7 @@
+import abc
 import threading
+
+from typing import Any
 
 
 class DefaultCache(dict):

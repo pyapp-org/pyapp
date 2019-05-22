@@ -3,24 +3,22 @@ import logging
 import sys
 import textwrap
 
-from typing import List, Optional, Any
+from colorama import Style, Fore, Back
 from io import StringIO
-from pyapp.checks.registry import CheckRegistry, CheckMessage
+from typing import Sequence, Optional, Any
 
+from pyapp.checks.registry import CheckRegistry, CheckMessage
 from pyapp.checks.registry import registry
 from pyapp.utils import colorama
 
-if colorama:
-    from colorama import Style, Fore, Back
-
-    COLOURS = {
-        # Type: (Title, Border),
-        logging.CRITICAL: (Fore.WHITE + Back.RED, Fore.RED),
-        logging.ERROR: (Fore.RED, Fore.RED),
-        logging.WARNING: (Fore.YELLOW, Fore.YELLOW),
-        logging.INFO: (Fore.CYAN, Fore.CYAN),
-        logging.DEBUG: (Fore.MAGENTA, Fore.MAGENTA),
-    }
+COLOURS = {
+    # Type: (Title, Border),
+    logging.CRITICAL: (Fore.WHITE + Back.RED, Fore.RED),
+    logging.ERROR: (Fore.RED, Fore.RED),
+    logging.WARNING: (Fore.YELLOW, Fore.YELLOW),
+    logging.INFO: (Fore.CYAN, Fore.CYAN),
+    logging.DEBUG: (Fore.MAGENTA, Fore.MAGENTA),
+}
 
 
 def get_check_name(obj: Any) -> str:
@@ -111,16 +109,13 @@ class CheckReport:
                 self.VERBOSE_CHECK_TEMPLATE.format(name=get_check_name(obj))
             )
 
-    def wrap_text(self, text: str, indent_width: str, line_sep: str = "\n") -> str:
+    def wrap_text(self, text: str, indent_width: int, line_sep: str = "\n") -> str:
         """
         Perform word wrapping on text
 
         :param text: Text to wrap.
-        :type text: str
-        :indent_width indent: Size of text indent.
-        :type indent_width: int
+        :param indent_width: Size of text indent.
         :param line_sep: Line separator
-        :rtype: str
 
         """
         indent = " " * (indent_width + 1)

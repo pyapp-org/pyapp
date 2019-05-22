@@ -62,6 +62,8 @@ import logging
 import os
 import warnings
 
+from typing import Sequence
+
 from . import default_settings
 from .loaders import factory, ModuleLoader
 
@@ -136,7 +138,7 @@ class Settings:
         self.SETTINGS_SOURCES = []
 
     def __repr__(self):
-        sources = self.SETTINGS_SOURCES or "UN-Configured"
+        sources = self.SETTINGS_SOURCES or "UN-CONFIGURED"
         return f"{self.__class__.__name__}({sources})"
 
     @property
@@ -146,13 +148,15 @@ class Settings:
         """
         return bool(self.SETTINGS_SOURCES)
 
-    def load(self, loader, apply_method=dict.__setitem__):
+    def load(self, loader, apply_method=None):
         """
         Load settings from a loader instance. A loader is an iterator that yields key/value pairs.
 
         See :py:class:`pyapp.conf.loaders.ModuleLoader` as an example.
 
         """
+        apply_method = apply_method or self.__dict__.__setitem__
+
         loader_key = str(loader)
         if loader_key in self.SETTINGS_SOURCES:
             warnings.warn(
@@ -163,23 +167,21 @@ class Settings:
 
         logger.info("Loading settings from: %s", loader_key)
 
-        target = self.__dict__
-
         # Apply values from loader
         for key, value in loader:
             logger.debug("Importing setting: %s", key)
-            apply_method(target, key, value)
+            apply_method(key, value)
 
         # Store loader key to prevent circular loading
         self.SETTINGS_SOURCES.append(loader_key)
 
         # Handle instances of INCLUDE entries
-        include_settings = target.pop("INCLUDE_SETTINGS", None)
+        include_settings = self.__dict__.pop("INCLUDE_SETTINGS", None)
         if include_settings:
             for source_url in include_settings:
                 self.load(factory(source_url), apply_method)
 
-    def load_from_loaders(self, loader_list, override=True):
+    def load_from_loaders(self, loader_list: Sequence[ModuleLoader], override=True):
         """
         Load settings from a list of loaders.
 
@@ -188,7 +190,7 @@ class Settings:
             items are left untouched.
 
         """
-        apply_method = dict.__setitem__ if override else dict.setdefault
+        apply_method = None if override else self.__dict__.setdefault
 
         for loader in loader_list:
             self.load(loader, apply_method)
