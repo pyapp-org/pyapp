@@ -158,7 +158,7 @@ class Settings:
             warnings.warn(
                 f"Settings already loaded: {loader_key}", category=ImportWarning
             )
-            logger.warn("Settings already loaded: %s", loader_key)
+            logger.warning("Settings already loaded: %s", loader_key)
             return  # Prevent circular loading
 
         logger.info("Loading settings from: %s", loader_key)

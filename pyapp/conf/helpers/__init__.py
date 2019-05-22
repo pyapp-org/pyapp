@@ -65,25 +65,36 @@ configuration where configuration is obtained from data storage eg a database.
 .. autoclass:: ProviderBase
 
 """
-from __future__ import absolute_import, unicode_literals
-
 import itertools
-import six
+
+from typing import Dict, Any, Sequence
 
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.conf.helpers.plugins import *
 from pyapp.conf.helpers.providers import *
 from pyapp.utils import cached_property
-from .bases import DefaultCache, FactoryMixin, SingletonFactoryMixin, ThreadLocalSingletonFactoryMixin
+from .bases import (
+    DefaultCache,
+    FactoryMixin,
+    SingletonFactoryMixin,
+    ThreadLocalSingletonFactoryMixin,
+)
 
-__all__ = ('NamedConfiguration', 'DefaultCache',
-           'NamedFactory', 'NamedSingletonFactory', 'ThreadLocalNamedSingletonFactory',
-           'NamedPluginFactory', 'NamedSingletonPluginFactory', 'ThreadLocalNamedSingletonPluginFactory'
-           'ProviderFactoryBase', 'ProviderBase')
+__all__ = (
+    "NamedConfiguration",
+    "DefaultCache",
+    "NamedFactory",
+    "NamedSingletonFactory",
+    "ThreadLocalNamedSingletonFactory",
+    "NamedPluginFactory",
+    "NamedSingletonPluginFactory",
+    "ThreadLocalNamedSingletonPluginFactory" "ProviderFactoryBase",
+    "ProviderBase",
+)
 
 
-class NamedConfiguration(object):
+class NamedConfiguration:
     """
     Factory object that obtains a `dict` of values from settings.
 
@@ -97,11 +108,20 @@ class NamedConfiguration(object):
         }
 
     """
+
     defaults = {}
     required_keys = []
     optional_keys = []
+    default_name = "default"
 
-    def __init__(self, setting, defaults=None, required_keys=None, optional_keys=None, default_name='default'):
+    def __init__(
+        self,
+        setting: str,
+        defaults: Dict[str, Any] = None,
+        required_keys: Sequence[str] = None,
+        optional_keys: Sequence[str] = None,
+        default_name: str = None,
+    ):
         """
         Initialise a named configuration.
 
@@ -122,9 +142,8 @@ class NamedConfiguration(object):
             default instance type if a value is not supplied.
 
         """
-        assert isinstance(setting, six.string_types) and setting.isupper()
+        assert isinstance(setting, str) and setting.isupper()
         self.setting = setting
-        self.default_name = default_name
 
         if defaults is not None:
             self.defaults = defaults
@@ -132,18 +151,22 @@ class NamedConfiguration(object):
             self.required_keys = required_keys
         if optional_keys is not None:
             self.optional_keys = optional_keys
+        if default_name is not None:
+            self.default_name = default_name
 
-        self._args = set(itertools.chain(self.required_keys, self.optional_keys, self.defaults))
+        self._args = set(
+            itertools.chain(self.required_keys, self.optional_keys, self.defaults)
+        )
 
     @cached_property
-    def _config_definitions(self):
+    def _config_definitions(self) -> Dict[str, Any]:
         return getattr(settings, self.setting, {})
 
-    def _get_config_definition(self, name):
+    def _get_config_definition(self, name: str) -> Dict[str, Any]:
         try:
             kwargs = self._config_definitions[name]
         except KeyError:
-            raise KeyError("Setting definition `{}` not found".format(name))
+            raise KeyError(f"Setting definition `{name}` not found")
 
         config = self.defaults.copy()
         if self._args:
@@ -152,12 +175,11 @@ class NamedConfiguration(object):
             config.update(kwargs)
         return config
 
-    def get(self, name=None):
+    def get(self, name: str = None) -> Dict[str, Any]:
         """
         Get named configuration from settings
 
         :param name: Name of value or default value.
-        :return:
 
         """
         return self._get_config_definition(name or self.default_name)
@@ -168,14 +190,14 @@ class NamedConfiguration(object):
         individual definitions in settings.
 
         """
-        settings_ = kwargs['settings']
+        settings_ = kwargs["settings"]
 
         # Check settings are defined
         if not hasattr(settings_, self.setting):
             return checks.Critical(
                 "Config definitions missing from settings.",
-                hint="Add a {} entry into settings.".format(self.setting),
-                obj="settings.{}".format(self.setting)
+                hint=f"Add a {self.setting} entry into settings.",
+                obj=f"settings.{self.setting}",
             )
 
         config_definitions = getattr(settings_, self.setting)
@@ -185,19 +207,21 @@ class NamedConfiguration(object):
         if not isinstance(config_definitions, dict):
             return checks.Critical(
                 "Config definitions defined in settings not a dict instance.",
-                hint="Change setting {} to be a dict in settings file.".format(self.setting),
-                obj="settings.{}".format(self.setting)
+                hint=f"Change setting {self.setting} to be a dict in settings file.",
+                obj=f"settings.{self.setting}",
             )
 
         messages = []
 
         # Check default is defined
         if self.default_name not in config_definitions:
-            messages.append(checks.Warn(
-                "Default definition not defined.",
-                hint="Add a `{}` entry.".format(self.default_name,),
-                obj="settings.{}".format(self.setting)
-            ))
+            messages.append(
+                checks.Warn(
+                    "Default definition not defined.",
+                    hint=f"Add a `{self.default_name}` entry.",
+                    obj=f"settings.{self.setting}",
+                )
+            )
 
         # Check instance definitions
         for name in config_definitions:
@@ -208,6 +232,7 @@ class NamedConfiguration(object):
                 messages += message
 
         return messages
+
     checks.check_name = "{obj.setting}.check_configuration"
 
     def check_definition(self, config_definitions, name, **_):
@@ -224,7 +249,7 @@ class NamedConfiguration(object):
             return checks.Critical(
                 "Config definition entry is not a dict.",
                 hint="Change definition to be a dict in settings.",
-                obj='settings.{}[{}]'.format(self.setting, name)
+                obj=f"settings.{self.setting}[{name}]",
             )
 
         messages = []
@@ -232,19 +257,23 @@ class NamedConfiguration(object):
         # Check required definitions exist
         for key in self.required_keys:
             if key not in definition:
-                messages.append(checks.Critical(
-                    "Config definition entry does not contain `{}` value.".format(key),
-                    obj='settings.{}[{}]'.format(self.setting, name)
-                ))
+                messages.append(
+                    checks.Critical(
+                        f"Config definition entry does not contain `{key}` value.",
+                        obj=f"settings.{self.setting}[{name}]",
+                    )
+                )
 
         # Check for un-known values
         if self._args:
             for key in definition:
                 if key not in self._args:
-                    messages.append(checks.Warn(
-                        "Config definition entry contains unknown value `{}`.".format(key),
-                        obj='settings.{}[{}][{}]'.format(self.setting, name, key)
-                    ))
+                    messages.append(
+                        checks.Warn(
+                            f"Config definition entry contains unknown value `{key}`.",
+                            obj=f"settings.{self.setting}[{name}][{key}]",
+                        )
+                    )
 
         return messages
 

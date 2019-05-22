@@ -8,13 +8,14 @@ from types import ModuleType
 from pyapp.conf import settings, factory as loader_factory
 from pyapp.utils import cached_property
 
-__all__ = ('registry', 'load')
+__all__ = ("registry", "load")
 
 
 class Extension(object):
     """
     Wrapper that provides accessors to extension module values.
     """
+
     def __init__(self, module, package):
         self.module = module
         self.package = package
@@ -26,11 +27,11 @@ class Extension(object):
 
     def summary(self):
         return {
-            'name': self.name,
-            'version': self.version,
-            'package': self.package,
-            'checks': self.checks_module,
-            'default_settings': self.default_settings
+            "name": self.name,
+            "version": self.version,
+            "package": self.package,
+            "checks": self.checks_module,
+            "default_settings": self.default_settings,
         }
 
     def trigger_ready(self):
@@ -45,7 +46,7 @@ class Extension(object):
         Return the absolute name of the module to be imported.
         """
         if isinstance(name, six.string_types):
-            if name.startswith('.'):
+            if name.startswith("."):
                 return self.package + name
             return name
 
@@ -55,25 +56,26 @@ class Extension(object):
 
     @cached_property
     def version(self):
-        return getattr(self.module, '__version__', None)
+        return getattr(self.module, "__version__", None)
 
     @cached_property
     def checks_module(self):
-        return self._resolve_name(getattr(self.module, '__checks__', None))
+        return self._resolve_name(getattr(self.module, "__checks__", None))
 
     @cached_property
     def default_settings(self):
-        return self._resolve_name(getattr(self.module, '__default_settings__', None))
+        return self._resolve_name(getattr(self.module, "__default_settings__", None))
 
     @cached_property
     def ready_callback(self):
-        return getattr(self.module, 'ready', None)
+        return getattr(self.module, "ready", None)
 
 
 class ExtensionRegistry(object):
     """
     Registry for tracking install PyApp extensions.
     """
+
     def __init__(self):
         self._extensions = []
 
@@ -120,15 +122,21 @@ class ExtensionRegistry(object):
         """
         Return a list of module loaders for extensions that specify default settings.
         """
-        return [loader_factory(module.default_settings)
-                for module in self._extensions if module.default_settings]
+        return [
+            loader_factory(module.default_settings)
+            for module in self._extensions
+            if module.default_settings
+        ]
 
     @property
     def check_locations(self):
         """
         Return a list of checks modules for extensions that specify checks.
         """
-        return [module.checks_module for module in self._extensions if module.checks_module]
+        return [
+            module.checks_module for module in self._extensions if module.checks_module
+        ]
+
 
 # Shortcuts and global extension registry.
 registry = ExtensionRegistry()

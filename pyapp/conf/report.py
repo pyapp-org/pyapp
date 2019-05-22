@@ -14,6 +14,7 @@ class SettingsReport(object):
     """
     Report of all settings in use.
     """
+
     width = 80
 
     def __init__(self, verbose=False, no_color=False, f_out=sys.stdout, settings=None):
@@ -37,16 +38,21 @@ class SettingsReport(object):
             self.BASIC_TEMPLATE = "{key:20} : {ppsetting}\n"
 
         else:
-            self.BASIC_TEMPLATE = Fore.YELLOW + "{key:20} : " + Fore.CYAN + "{ppsetting}" + Style.RESET_ALL + "\n"
+            self.BASIC_TEMPLATE = (
+                Fore.YELLOW
+                + "{key:20} : "
+                + Fore.CYAN
+                + "{ppsetting}"
+                + Style.RESET_ALL
+                + "\n"
+            )
 
     def output_result(self, key, setting):
         """
         Output a result to output file.
         """
         format_args = dict(
-            key=key,
-            setting=setting,
-            ppsetting=pprint.pformat(setting, 2)
+            key=key, setting=setting, ppsetting=pprint.pformat(setting, 2)
         )
 
         self.f_out.write(self.BASIC_TEMPLATE.format(**format_args))
