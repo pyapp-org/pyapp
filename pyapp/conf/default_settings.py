@@ -4,15 +4,16 @@ Default Settings
 
 .. auto
 """
-from __future__ import unicode_literals
 
 DEBUG = False
 """
 Enable debug mode
 """
 
+
 ###############################################################################
 # Extensions
+
 EXT = []
 """
 List of extensions currently in use. Will cause pyapp to import any checks,
@@ -26,6 +27,7 @@ Should be a list of modules to import eg::
     )
     
 """
+
 
 ###############################################################################
 # Logging
@@ -56,6 +58,7 @@ The following configuration is applied by default::
     }
 
 """
+
 
 ###############################################################################
 # Checks

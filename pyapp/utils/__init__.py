@@ -1,9 +1,6 @@
-from __future__ import unicode_literals
-
 import importlib
 
-# Typing imports
-from typing import Any  # noqa
+from typing import Any
 
 # Try to load colorama
 try:
@@ -12,8 +9,7 @@ except ImportError:
     colorama = None
     
 
-def is_iterable(obj):
-    # type: (Any) -> bool
+def is_iterable(obj: Any) -> bool:
     """
     Determine if an object is iterable.
     """
@@ -25,7 +21,7 @@ def is_iterable(obj):
         return True
 
 
-class CachedProperty(object):
+class CachedProperty:
     """
     A property that is only computed once per instance and then replaces
     itself with an ordinary attribute. Deleting the attribute resets the
@@ -43,11 +39,11 @@ class CachedProperty(object):
 cached_property = CachedProperty
 
 
-def import_type(type_name):
-    # type: (str) -> type
+def import_type(type_name: str) -> type:
     """
     Import a type from a fully qualified module+type name
     """
     module_name, type_name = type_name.rsplit('.', 1)
     mod = importlib.import_module(module_name)
     return getattr(mod, type_name)
+

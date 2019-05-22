@@ -1,11 +1,9 @@
-from __future__ import unicode_literals
-
 from pyapp.checks import Warn, register, Tags
 
 
 W001 = Warn(
     "You should not have DEBUG set to True in deployment.",
-    hint='Ensure DEBUG is set to False for deployment in settings.',
+    hint="Ensure DEBUG is set to False for deployment in settings.",
 )
 
 

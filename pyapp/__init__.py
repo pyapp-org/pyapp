@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 ######################################
 PyApp - A python application framework
@@ -7,13 +6,10 @@ PyApp - A python application framework
 *Let us handle the boring stuff!*
 
 """
-from __future__ import unicode_literals
-
 import logging
 import os
 
 from pkg_resources import get_distribution, DistributionNotFound
-
 
 # Configure a default null handler for logging.
 logging.getLogger(__name__).addHandler(logging.NullHandler())

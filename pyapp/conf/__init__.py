@@ -58,8 +58,6 @@ FileLoader
 .. autoclass:: FileLoader
 
 """
-from __future__ import absolute_import, unicode_literals
-
 import logging
 import os
 import warnings
@@ -69,23 +67,21 @@ from .loaders import factory, ModuleLoader
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_ENV_KEY = 'PYAPP_SETTINGS'
+DEFAULT_ENV_KEY = "PYAPP_SETTINGS"
 
 
-class ModifySettingsContext(object):
+class ModifySettingsContext:
     """
     Context object used to make temporary modifications to settings.
 
     This is designed for usage with test cases.
 
     """
-    def __init__(self, settings_container):
-        self.__dict__.update(
-            _container=settings_container,
-            _roll_back=[]
-        )
 
-    def __enter__(self):
+    def __init__(self, settings_container):
+        self.__dict__.update(_container=settings_container, _roll_back=[])
+
+    def __enter__(self) -> "ModifySettingsContext":
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -126,24 +122,25 @@ class ModifySettingsContext(object):
             pass
 
 
-class Settings(object):
+class Settings:
     """
     Settings container
     """
+
     def __init__(self, base_settings=default_settings):
         # Copy values from base settings file.
-        self.__dict__.update((k, getattr(base_settings, k)) for k in dir(base_settings))
+        self.__dict__.update(
+            (k, getattr(base_settings, k)) for k in dir(base_settings) if k.upper()
+        )
 
         self.SETTINGS_SOURCES = []
 
     def __repr__(self):
-        return '{cls}({sources})'.format(
-            cls=self.__class__.__name__,
-            sources=self.SETTINGS_SOURCES or 'UN-CONFIGURED'
-        )
+        sources = self.SETTINGS_SOURCES or "UN-Configured"
+        return f"{self.__class__.__name__}({sources})"
 
     @property
-    def is_configured(self):
+    def is_configured(self) -> bool:
         """
         Settings have been configured.
         """
@@ -158,7 +155,9 @@ class Settings(object):
         """
         loader_key = str(loader)
         if loader_key in self.SETTINGS_SOURCES:
-            warnings.warn("Settings already loaded: {}".format(loader_key), category=ImportWarning)
+            warnings.warn(
+                f"Settings already loaded: {loader_key}", category=ImportWarning
+            )
             logger.warn("Settings already loaded: %s", loader_key)
             return  # Prevent circular loading
 
@@ -175,7 +174,7 @@ class Settings(object):
         self.SETTINGS_SOURCES.append(loader_key)
 
         # Handle instances of INCLUDE entries
-        include_settings = target.pop('INCLUDE_SETTINGS', None)
+        include_settings = target.pop("INCLUDE_SETTINGS", None)
         if include_settings:
             for source_url in include_settings:
                 self.load(factory(source_url), apply_method)
@@ -194,8 +193,13 @@ class Settings(object):
         for loader in loader_list:
             self.load(loader, apply_method)
 
-    def configure(self, application_settings, runtime_settings=None, additional_loaders=None,
-                  env_settings_key=DEFAULT_ENV_KEY):
+    def configure(
+        self,
+        application_settings,
+        runtime_settings=None,
+        additional_loaders=None,
+        env_settings_key=DEFAULT_ENV_KEY,
+    ):
         """
         Configure the settings object
 

@@ -43,9 +43,8 @@ CliApplication
     :members: register_handler, dispatch
 
 """
-from __future__ import absolute_import, print_function, unicode_literals
-
 import argparse
+
 try:
     import argcomplete
 except ImportError:
@@ -56,8 +55,7 @@ import logging.config
 import os
 import sys
 
-# Type annotation imports
-from typing import List, Callable, Any  # noqa
+from typing import List, Callable, Any
 
 from pyapp import conf
 from pyapp import extensions
@@ -67,16 +65,16 @@ from pyapp.conf import settings
 logger = logging.getLogger(__name__)
 
 
-class HandlerProxy(object):
+class HandlerProxy:
     """
     Proxy object that wraps a handler.
     """
-    def __init__(self, handler, sub_parser):
+
+    def __init__(self, handler: Callable, sub_parser: argparse.ArgumentParser):
         """
         Initialise proxy
 
         :param handler: Callable object that accepts a single argument.
-        :type sub_parser: argparse.ArgumentParser
 
         """
         self.handler = handler
@@ -88,7 +86,7 @@ class HandlerProxy(object):
         self.__module__ = handler.__module__
 
         # Add any existing arguments
-        if hasattr(handler, 'arguments'):
+        if hasattr(handler, "arguments"):
             for args, kwargs in handler.arguments:
                 self.add_argument(*args, **kwargs)
             del handler.arguments
@@ -96,7 +94,7 @@ class HandlerProxy(object):
     def __call__(self, *args, **kwargs):
         return self.handler(*args, **kwargs)
 
-    def add_argument(self, *args, **kwargs):
+    def add_argument(self, *args, **kwargs) -> "HandlerProxy":
         """
         Add argument to proxy
         """
@@ -112,20 +110,22 @@ def add_argument(*args, **kwargs):
     decorator :meth:`CliApplication.register_handler` has been used.
 
     """
+
     def wrapper(func):
         if isinstance(func, HandlerProxy):
             func.add_argument(*args, **kwargs)
         else:
             # Add the argument to a list that will be consumed by HandlerProxy.
-            if not hasattr(func, 'arguments'):
+            if not hasattr(func, "arguments"):
                 func.arguments = [(args, kwargs)]
             else:
                 func.arguments.insert(0, (args, kwargs))
         return func
+
     return wrapper
 
 
-class CliApplication(object):
+class CliApplication:
     """
     :param root_module: The root module for this application (used for
         discovery of other modules)
@@ -139,12 +139,15 @@ class CliApplication(object):
         `root_module.checks` if it exists.
 
     """
+
     default_log_handler = logging.StreamHandler(sys.stderr)
     """
     Log handler applied by default to root logger.
     """
 
-    default_log_formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+    default_log_formatter = logging.Formatter(
+        "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+    )
     """
     Log formatter applied by default to root logger handler.
     """
@@ -154,70 +157,99 @@ class CliApplication(object):
     Key used to define settings file in environment.
     """
 
-    env_loglevel_key = 'PYAPP_LOGLEVEL'
+    env_loglevel_key = "PYAPP_LOGLEVEL"
     """
     Key used to define log level in environment
     """
 
-    additional_handlers = (
-        builtin_handlers.extensions,
-        builtin_handlers.settings,
-    )
+    additional_handlers = (builtin_handlers.extensions, builtin_handlers.settings)
     """
     Handlers to be added when builtin handlers are registered.
     """
 
-    def __init__(self, root_module, name=None, description=None, version=None,
-                 application_settings=None, application_checks=None,
-                 env_settings_key=None, env_loglevel_key=None, default_handler=None):
+    def __init__(
+        self,
+        root_module: module,
+        name: str = None,
+        description: str = None,
+        version: str = None,
+        application_settings: str = None,
+        application_checks: str = None,
+        env_settings_key: str = None,
+        env_loglevel_key: str = None,
+        default_handler=None,
+    ):
         self.root_module = root_module
-        self.application_version = version or getattr(root_module, '__version__', 'Unknown')
+        self.application_version = version or getattr(
+            root_module, "__version__", "Unknown"
+        )
         self._default_handler = default_handler
 
         def key_help(key):
             if key in os.environ:
-                return '{} [{}]'.format(key, os.environ[key])
+                return f"{key} [{os.environ[key]}]"
             return key
 
         # Create argument parser
         self.parser = argparse.ArgumentParser(name, description=description)
-        self.parser.add_argument('--settings', dest='settings',
-                                 help='Settings to load; either a Python module or settings URL. '
-                                      'Defaults to the env variable: {}'.format(key_help(self.env_settings_key)))
-        self.parser.add_argument('--nocolor', dest='no_color', action='store_true',
-                                 help="Disable colour output (if colorama is installed).")
-        self.parser.add_argument('--version', action='version',
-                                 version='%(prog)s version: {}'.format(self.application_version))
+        self.parser.add_argument(
+            "--settings",
+            dest="settings",
+            help="Settings to load; either a Python module or settings URL. "
+            "Defaults to the env variable: {}".format(key_help(self.env_settings_key)),
+        )
+        self.parser.add_argument(
+            "--nocolor",
+            dest="no_color",
+            action="store_true",
+            help="Disable colour output (if colorama is installed).",
+        )
+        self.parser.add_argument(
+            "--version",
+            action="version",
+            version=f"%(prog)s version: {self.application.version}",
+        )
 
         # Log configuration
-        self.parser.add_argument('--log-level', dest='log_level',
-                                 default=os.environ.get(self.env_loglevel_key, 'INFO'),
-                                 choices=('DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'),
-                                 help='Specify the log level to be used. '
-                                      'Defaults to env variable: {}'.format(key_help(self.env_loglevel_key)))
+        self.parser.add_argument(
+            "--log-level",
+            dest="log_level",
+            default=os.environ.get(self.env_loglevel_key, "INFO"),
+            choices=("DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"),
+            help="Specify the log level to be used. "
+            "Defaults to env variable: {}".format(key_help(self.env_loglevel_key)),
+        )
 
         # Global check values
-        self.parser.add_argument('--checks', dest='checks_on_startup', action='store_true',
-                                 help='Run checks on startup, any serious error will result '
-                                      'in the application terminating.')
-        self.parser.add_argument('--checks-level', dest='checks_message_level', default='INFO',
-                                 choices=('DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'),
-                                 help='Minimum level of check message to display')
+        self.parser.add_argument(
+            "--checks",
+            dest="checks_on_startup",
+            action="store_true",
+            help="Run checks on startup, any serious error will result "
+            "in the application terminating.",
+        )
+        self.parser.add_argument(
+            "--checks-level",
+            dest="checks_message_level",
+            default="INFO",
+            choices=("DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"),
+            help="Minimum level of check message to display",
+        )
 
         # Create sub parsers
-        self.sub_parsers = self.parser.add_subparsers(dest='handler')
+        self.sub_parsers = self.parser.add_subparsers(dest="handler")
 
         self._handlers = {}
         self.register_builtin_handlers()
 
         # Determine application settings
         if application_settings is None:
-            application_settings = '{}.default_settings'.format(root_module.__name__)
+            application_settings = "{}.default_settings".format(root_module.__name__)
         self.application_settings = application_settings
 
         # Determine application checks
         if application_checks is None:
-            application_checks = '{}.checks'.format(root_module.__name__)
+            application_checks = "{}.checks".format(root_module.__name__)
         self.application_checks = application_checks
 
         # Override default value
@@ -227,18 +259,22 @@ class CliApplication(object):
             self.env_loglevel_key = env_loglevel_key
 
     @property
-    def application_name(self):
+    def application_name(self) -> str:
         return self.parser.prog
 
     @property
-    def application_summary(self):
+    def application_summary(self) -> str:
         description = self.parser.description
         if description:
-            return "{} version {} - {}".format(self.application_name, self.application_version, description)
+            return f"{self.application_name} version {self.application_version} - {description}"
         else:
-            return "{} version {}".format(self.application_name, self.application_version)
+            return f"{self.application_name} version {self.application_versiion}"
 
-    def command(self, handler=None, cli_name=None):
+    def command(
+        self,
+        handler: Callable[[Dict[str, Any]], Optional[int]] = None,
+        cli_name: str = None,
+    ) -> HandlerProxy:
         """
         Decorator for registering handlers.
 
@@ -247,9 +283,9 @@ class CliApplication(object):
         :param handler: Handler function
         :param cli_name: Optional name to use for CLI; defaults to the
             function name.
-        :rtype: HandlerProxy
 
         """
+
         def inner(func):
             name = cli_name or func.__name__
 
@@ -269,8 +305,15 @@ class CliApplication(object):
     # Renamed to command added to remain backwards compatible
     register_handler = command
 
-    def run_checks(self, output, message_level=logging.INFO, tags=None, verbose=False, no_color=False, table=False):
-        # type: (io.StringIO, int, List[str], bool, bool, bool) -> bool
+    def run_checks(
+        self,
+        output: io.StringIO,
+        message_level: int = logging.INFO,
+        tags: Sequence[str] = None,
+        verbose: bool = False,
+        no_color: bool = False,
+        table: bool = False,
+    ):
         """
         Run application checks.
 
@@ -301,30 +344,51 @@ class CliApplication(object):
         if table:
             return TabularCheckReport(output).run(message_level, tags)
         else:
-            return CheckReport(verbose, no_color, output).run(message_level, tags,
-                                                              "Checks for {}".format(self.application_summary))
+            return CheckReport(verbose, no_color, output).run(
+                message_level, tags, f"Checks for {self.application_summary}"
+            )
 
     def register_builtin_handlers(self):
         """
         Register any built in handlers.
         """
         # Register the checks handler
-        @add_argument('-t', '--tag', dest='tags', action='append',
-                      help="Run checks associated with a tag.")
-        @add_argument('--verbose', dest='verbose', action='store_true',
-                      help="Verbose output.")
-        @add_argument('--out', dest='out', default=sys.stdout,
-                      type=argparse.FileType(mode='w'),
-                      help='File to output check report to; default is stdout.')
-        @add_argument('--table', dest='table', action='store_true',
-                      help='Output report in tabular format.')
-        @self.command(cli_name='checks')
+        @add_argument(
+            "-t",
+            "--tag",
+            dest="tags",
+            action="append",
+            help="Run checks associated with a tag.",
+        )
+        @add_argument(
+            "--verbose", dest="verbose", action="store_true", help="Verbose output."
+        )
+        @add_argument(
+            "--out",
+            dest="out",
+            default=sys.stdout,
+            type=argparse.FileType(mode="w"),
+            help="File to output check report to; default is stdout.",
+        )
+        @add_argument(
+            "--table",
+            dest="table",
+            action="store_true",
+            help="Output report in tabular format.",
+        )
+        @self.command(cli_name="checks")
         def check_report(opts, **_):
             """
             Run a check report.
             """
-            if self.run_checks(opts.out, opts.checks_message_level, opts.tags,
-                               opts.verbose, opts.no_color, opts.table):
+            if self.run_checks(
+                opts.out,
+                opts.checks_message_level,
+                opts.tags,
+                opts.verbose,
+                opts.no_color,
+                opts.table,
+            ):
                 exit(4)
 
         # Register any additional handlers
@@ -350,7 +414,11 @@ class CliApplication(object):
         """
         Configure settings container.
         """
-        settings.configure(self.application_settings, opts.settings, env_settings_key=self.env_settings_key)
+        settings.configure(
+            self.application_settings,
+            opts.settings,
+            env_settings_key=self.env_settings_key,
+        )
 
     def configure_logging(self, opts):
         """
@@ -361,7 +429,7 @@ class CliApplication(object):
 
             # Set a default version if not supplied by settings
             dict_config = settings.LOGGING.copy()
-            dict_config.setdefault('version', 1)
+            dict_config.setdefault("version", 1)
             logging.config.dictConfig(dict_config)
 
             # Configure root log level
@@ -376,10 +444,7 @@ class CliApplication(object):
         # Load settings into from extensions, do not override as
         # extensions are loaded after the main settings file so only
         # settings that do not already exist should be loaded.
-        settings.load_from_loaders(
-            extensions.registry.settings_loaders,
-            override=False
-        )
+        settings.load_from_loaders(extensions.registry.settings_loaders, override=False)
 
         # Indicate that everything is loaded and and initialisation
         # can be performed.
@@ -392,7 +457,9 @@ class CliApplication(object):
         if opts.checks_on_startup:
             out = io.StringIO()
 
-            serious_error = self.run_checks(out, opts.checks_message_level, None, True, False)
+            serious_error = self.run_checks(
+                out, opts.checks_message_level, None, True, False
+            )
             if serious_error:
                 logger.error("Check results:\n%s", out.getvalue())
                 exit(4)
@@ -403,7 +470,11 @@ class CliApplication(object):
         """
         Generate a report for any unhandled exceptions caught by the framework.
         """
-        logger.exception("Un-handled exception %s caught executing handler: %s", exception, opts.handler)
+        logger.exception(
+            "Un-handled exception %s caught executing handler: %s",
+            exception,
+            opts.handler,
+        )
         return False
 
     def default_handler(self, opts, **_):
@@ -418,8 +489,7 @@ class CliApplication(object):
             return 1
 
     @staticmethod
-    def call_handler(handler, *args, **kwargs):
-        # type: (Callable, Any) -> int
+    def call_handler(handler: Callale, *args, **kwargs) -> int:
         """
         Actually call the handler and return the status code.
 
@@ -428,7 +498,7 @@ class CliApplication(object):
         """
         return handler(*args, **kwargs)
 
-    def dispatch(self, args=None):
+    def dispatch(self, args: Dict[str, str] = None) -> None:
         """
         Dispatch command to registered handler.
         """
@@ -443,7 +513,7 @@ class CliApplication(object):
 
         logger.info("Starting %s", self.application_summary)
 
-        if opts.handler == 'checks':
+        if opts.handler == "checks":
             # If checks command just configure extensions.
             self.configure_extensions(opts)
         else:

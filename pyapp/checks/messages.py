@@ -1,26 +1,30 @@
 """
 Messages
 """
-from __future__ import unicode_literals
-
 from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL, getLevelName
-
-# Typing imports
-from typing import Any, Union, List  # noqa
+from typing import Any, Union, List
 
 __all__ = (
-    'CheckMessage',
-    'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL',
-    'Debug', 'Info', 'Warn', 'Error', 'Critical',
+    "CheckMessage",
+    "DEBUG",
+    "INFO",
+    "WARNING",
+    "ERROR",
+    "CRITICAL",
+    "Debug",
+    "Info",
+    "Warn",
+    "Error",
+    "Critical",
 )
 
 
-class CheckMessage(object):
+class CheckMessage:
     """
     Check message base class
     """
-    def __init__(self, level, msg, hint=None, obj=None):
-        # type: (int, str, Union[str, List[str]], Any) -> None
+
+    def __init__(self, level: int, msg: str, hint: str = None, obj: Any = None):
         """
         Messages returned from check functions.
 
@@ -41,22 +45,23 @@ class CheckMessage(object):
         self.obj = obj
 
     def __eq__(self, other):
-        return (
-            isinstance(other, self.__class__) and
-            all(getattr(self, attr) == getattr(other, attr)
-                for attr in ('level', 'msg', 'hint', 'obj'))
-        )
+        if isinstance(other, self.__class__):
+            return all(
+                getattr(self, attr) == getattr(other, attr)
+                for attr in ("level", "msg", "hint", "obj")
+            )
+        return NotImplemented
 
     def __ne__(self, other):
         return not self == other
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.obj is None:
             obj = "?"
         else:
             obj = str(self.obj)
-        hint = "\n\tHINT: {}".format(self.hint) if self.hint else ''
-        return "{}: {}{}".format(obj, self.msg, hint)
+        hint = f"\n\tHINT: {self.hint}" if self.hint else ""
+        return f"{obj}: {self.msg}{hint}"
 
     def __repr__(self):
         return "{}(level={!r}, msg={!r}, hint={!r}, obj={!r})".format(
@@ -64,8 +69,7 @@ class CheckMessage(object):
         )
 
     @property
-    def level_name(self):
-        # type: () -> str
+    def level_name(self) -> str:
         """
         Level as a string.
         """
@@ -82,37 +86,42 @@ class Debug(CheckMessage):
     """
     Debug check message
     """
+
     def __init__(self, *args, **kwargs):
-        super(Debug, self).__init__(DEBUG, *args, **kwargs)
+        super().__init__(DEBUG, *args, **kwargs)
 
 
 class Info(CheckMessage):
     """
     Info check message
     """
+
     def __init__(self, *args, **kwargs):
-        super(Info, self).__init__(INFO, *args, **kwargs)
+        super().__init__(INFO, *args, **kwargs)
 
 
 class Warn(CheckMessage):
     """
     Warning check message
     """
+
     def __init__(self, *args, **kwargs):
-        super(Warn, self).__init__(WARNING, *args, **kwargs)
+        super().__init__(WARNING, *args, **kwargs)
 
 
 class Error(CheckMessage):
     """
     Error check message
     """
+
     def __init__(self, *args, **kwargs):
-        super(Error, self).__init__(ERROR, *args, **kwargs)
+        super().__init__(ERROR, *args, **kwargs)
 
 
 class Critical(CheckMessage):
     """
     Critical check message
     """
+
     def __init__(self, *args, **kwargs):
-        super(Critical, self).__init__(CRITICAL, *args, **kwargs)
+        super().__init__(CRITICAL, *args, **kwargs)
