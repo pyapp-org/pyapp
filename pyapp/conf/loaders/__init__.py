@@ -7,13 +7,15 @@ application settings.
 """
 import importlib
 
+from typing import Iterator, Tuple, Any, Dict, Type
 from urllib.parse import urlparse, ParseResult
 
 from pyapp.exceptions import InvalidConfiguration
+from .base import Loader
 from .file_loader import FileLoader
 
 
-class ModuleLoader:
+class ModuleLoader(Loader):
     """
     Load configuration from an importable module.
 
@@ -29,7 +31,7 @@ class ModuleLoader:
     scheme = "python"
 
     @classmethod
-    def from_url(cls, parse_result: ParseResult) -> "ModuleLoader":
+    def from_url(cls, parse_result: ParseResult) -> Loader:
         """
         Create an instance of :class:`ModuleLoader` from :class:`urllib.parse.ParseResult`.
         """
@@ -40,11 +42,9 @@ class ModuleLoader:
         :param module: Fully qualify python module path.
 
         """
-        assert module
-
         self.module = module
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Tuple[str, Any]]:
         try:
             mod = importlib.import_module(self.module)
         except ImportError as ex:
@@ -57,13 +57,17 @@ class ModuleLoader:
 
 
 class SettingsLoaderRegistry:
+    """
+    Registry of settings loaders
+    """
     def __init__(self):
-        self.loaders = {
-            FileLoader.scheme: FileLoader,
-            ModuleLoader.scheme: ModuleLoader,
-        }
+        self.loaders: Dict[str, Type[Loader]] = {}
 
-    def register(self, loader=None, scheme=None):
+        # Register builtin loaders
+        self.register(ModuleLoader)
+        self.register(FileLoader)
+
+    def register(self, loader: Type[Loader] = None, scheme: str = None):
         """
         Register a new loader, this method can be used as decorator
 
@@ -73,17 +77,18 @@ class SettingsLoaderRegistry:
         """
 
         def inner(obj):
-            loader_scheme = scheme or getattr(obj, "scheme", None)
-            assert loader_scheme, "Scheme has not been defined."
-            assert hasattr(
-                obj, "from_url"
-            ), "Settings loaders must implement a from_url method"
-            self.loaders[loader_scheme] = obj
+            loader_schemes = scheme or getattr(obj, "scheme", None)
+            if isinstance(loader_schemes, str):
+                loader_schemes = (loader_schemes,)
+
+            for loader_scheme in loader_schemes:
+                self.loaders[loader_scheme] = obj
+
             return obj
 
         return inner(loader) if loader else inner
 
-    def factory(self, settings_url: str) -> ModuleLoader:
+    def factory(self, settings_url: str) -> Loader:
         """
         Factory method that returns a factory suitable for opening the settings uri reference.
 
