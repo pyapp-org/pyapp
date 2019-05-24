@@ -4,14 +4,12 @@ from pyapp.conf import settings
 import sample
 
 app = CliApplication(
-    sample,
-    name='PyApp Sample',
-    description="Sample pyApp application."
+    sample, name="PyApp Sample", description="Sample pyApp application."
 )
 
 
-@app.register_handler
-@add_argument('--verbose', action='store_true')
+@app.command
+@add_argument("--verbose", action="store_true")
 def do_foo(opts):
     """
     Perform a foo operation.
@@ -26,5 +24,5 @@ def do_foo(opts):
     print(settings.FOO_MESSAGE)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.dispatch()

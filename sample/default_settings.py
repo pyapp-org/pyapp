@@ -1,9 +1,5 @@
-FOO_MESSAGE = 'Message from foo...'
+FOO_MESSAGE = "Message from foo..."
 
-EXT = [
-    'sample_extension',
-]
+EXT = ["sample_extension"]
 
-CHECK_LOCATIONS = [
-    'sample.alt_checks'
-]
+CHECK_LOCATIONS = ["sample.alt_checks"]

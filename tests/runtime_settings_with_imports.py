@@ -1,6 +1,4 @@
-INCLUDE_SETTINGS = [
-    'python:tests.runtime_settings'
-]
+INCLUDE_SETTINGS = ["python:tests.runtime_settings"]
 
 # Test only upper values are included
-TEST_VALUE = 'bar'
+TEST_VALUE = "bar"

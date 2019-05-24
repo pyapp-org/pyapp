@@ -54,13 +54,14 @@ class TestCheckRegistry(object):
         target = registry.CheckRegistry()
 
         def my_func():
-            return 'foo'
+            return "foo"
 
         def my_func_checks(**kwargs):
             pass
+
         my_func.checks = my_func_checks
 
-        target.register(my_func, 'foo')
+        target.register(my_func, "foo")
 
         assert len(target.registered_checks) == 1
         assert my_func in target.registered_checks
@@ -104,32 +105,29 @@ class TestCheckRegistry(object):
     def test_run_checks__filter_by_tag(self):
         target = registry.CheckRegistry()
 
-        @target.register('foo')
+        @target.register("foo")
         def check_1(settings, **kwargs):
             return messages.Info("Message1")
 
-        @target.register('foo', 'bar')
+        @target.register("foo", "bar")
         def check_2(settings, **kwargs):
             return messages.Info("Message2")
 
-        @target.register('bar')
+        @target.register("bar")
         def check_3(settings, **kwargs):
             return messages.Info("Message3"), messages.Info("Message4")
 
-        actual = target.run_checks(['foo'])
-        assert [
-            messages.Info("Message1"),
-            messages.Info("Message2"),
-        ] == actual
+        actual = target.run_checks(["foo"])
+        assert [messages.Info("Message1"), messages.Info("Message2")] == actual
 
-        actual = target.run_checks(['bar'])
+        actual = target.run_checks(["bar"])
         assert [
             messages.Info("Message2"),
             messages.Info("Message3"),
             messages.Info("Message4"),
         ] == actual
 
-        actual = target.run_checks(['foo', 'bar'])
+        actual = target.run_checks(["foo", "bar"])
         assert [
             messages.Info("Message1"),
             messages.Info("Message2"),
@@ -143,12 +141,10 @@ class TestCheckRegistry(object):
         class MyClass(object):
             def checks(self, settings, **kwargs):
                 return messages.Info("Message1"), messages.Info("Message2")
+
         instance = MyClass()
 
         target.register(instance)
 
         actual = target.run_checks()
-        assert [
-            messages.Info("Message1"),
-            messages.Info("Message2"),
-        ] == actual
+        assert [messages.Info("Message1"), messages.Info("Message2")] == actual

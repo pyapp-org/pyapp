@@ -55,8 +55,7 @@ import logging.config
 import os
 import sys
 
-from types import ModuleType
-from typing import Callable, Any, Optional, Dict, Sequence, Union
+from typing import Callable, Optional, Dict, Sequence, Union
 
 from pyapp import conf
 from pyapp import extensions
@@ -173,8 +172,9 @@ class CliApplication:
 
     def __init__(
         self,
-        root_module: ModuleType,
+        root_module,
         name: str = None,
+        *,
         description: str = None,
         version: str = None,
         application_settings: str = None,
@@ -274,11 +274,7 @@ class CliApplication:
         else:
             return f"{self.application_name} version {self.application_version}"
 
-    def command(
-        self,
-        handler: Handler = None,
-        cli_name: str = None,
-    ) -> HandlerProxy:
+    def command(self, handler: Handler = None, cli_name: str = None) -> HandlerProxy:
         """
         Decorator for registering handlers.
 
@@ -290,7 +286,7 @@ class CliApplication:
 
         """
 
-        def inner(func):
+        def inner(func: Handler) -> HandlerProxy:
             name = cli_name or func.__name__
 
             # Setup sub parser
@@ -305,9 +301,6 @@ class CliApplication:
             return proxy
 
         return inner(handler) if handler else inner
-
-    # Renamed to command added to remain backwards compatible
-    register_handler = command
 
     def run_checks(
         self,
