@@ -70,7 +70,7 @@ class TestSettingsLoaderRegistry(object):
             (
                 "file:///path/to/sample.json",
                 loaders.FileLoader,
-                "file:///path/to/sample.json",
+                "file:///path/to/sample.json?content-type=application/json",
             ),
         ),
     )

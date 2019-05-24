@@ -53,7 +53,7 @@ class TestCliApplication(object):
 
         target = CliApplication(tests.sample_app)
 
-        @target.register_handler(cli_name="sample")
+        @target.command(cli_name="sample")
         @add_argument("--foo", dest="foo")
         def sample_handler(opts):
             closure["opts"] = opts

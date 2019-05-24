@@ -7,11 +7,10 @@ Application
 Quick demo::
 
     >>> import sample
-    >>> from pyapp.app import CliApplication, add_argument
+    >>> from pyapp.app import CliApplication, argument
     >>> app = CliApplication(sample)
-
-    >>> @add_argument('--verbose', target='verbose', action='store_true')
-    >>> @app.register_handler()
+    >>> @argument('--verbose', target='verbose', action='store_true')
+    >>> @app.command()
     >>> def hello(opts):
     ...     if opts.verbose:
     ...         print("Being verbose!")
@@ -44,11 +43,7 @@ CliApplication
 
 """
 import argparse
-
-try:
-    import argcomplete
-except ImportError:
-    argcomplete = None
+import argcomplete
 import io
 import logging
 import logging.config
@@ -91,13 +86,13 @@ class HandlerProxy:
         # Add any existing arguments
         if hasattr(handler, "arguments__"):
             for args, kwargs in handler.arguments__:
-                self.add_argument(*args, **kwargs)
+                self.argument(*args, **kwargs)
             del handler.arguments__
 
     def __call__(self, *args, **kwargs):
         return self.handler(*args, **kwargs)
 
-    def add_argument(self, *args, **kwargs) -> "HandlerProxy":
+    def argument(self, *args, **kwargs) -> "HandlerProxy":
         """
         Add argument to proxy
         """
@@ -105,12 +100,12 @@ class HandlerProxy:
         return self
 
 
-def add_argument(*args, **kwargs):
+def argument(*args, **kwargs):
     """
     Decorator for adding arguments to a handler.
 
     This decorator can be used before or after the handler registration
-    decorator :meth:`CliApplication.register_handler` has been used.
+    decorator :meth:`CliApplication.command` has been used.
 
     """
 
@@ -200,13 +195,13 @@ class CliApplication:
             "--settings",
             dest="settings",
             help="Settings to load; either a Python module or settings URL. "
-            "Defaults to the env variable: {}".format(key_help(self.env_settings_key)),
+            f"Defaults to the env variable: {key_help(self.env_settings_key)}",
         )
         self.parser.add_argument(
             "--nocolor",
             dest="no_color",
             action="store_true",
-            help="Disable colour output (if colorama is installed).",
+            help="Disable colour output.",
         )
         self.parser.add_argument(
             "--version",
@@ -274,15 +269,14 @@ class CliApplication:
         else:
             return f"{self.application_name} version {self.application_version}"
 
-    def command(self, handler: Handler = None, cli_name: str = None) -> HandlerProxy:
+    def command(self, handler: Handler = None, cli_name: str = None, doc: str = None) -> HandlerProxy:
         """
         Decorator for registering handlers.
-
-        The description for help is taken from the handlers doc string.
 
         :param handler: Handler function
         :param cli_name: Optional name to use for CLI; defaults to the
             function name.
+        :param doc: Description for help; default is taken from the handlers doc string.
 
         """
 
@@ -290,9 +284,9 @@ class CliApplication:
             name = cli_name or func.__name__
 
             # Setup sub parser
-            doc = func.__doc__
+            description = doc or func.__doc__
             sub_parser = self.sub_parsers.add_parser(
-                name, help=doc.strip() if doc else None
+                name, help=description.strip() if description else None
             )
 
             # Create proxy instance
@@ -350,34 +344,31 @@ class CliApplication:
         Register any built in handlers.
         """
         # Register the checks handler
-        @add_argument(
+        @argument(
             "-t",
             "--tag",
             dest="tags",
             action="append",
             help="Run checks associated with a tag.",
         )
-        @add_argument(
+        @argument(
             "--verbose", dest="verbose", action="store_true", help="Verbose output."
         )
-        @add_argument(
+        @argument(
             "--out",
             dest="out",
             default=sys.stdout,
             type=argparse.FileType(mode="w"),
             help="File to output check report to; default is stdout.",
         )
-        @add_argument(
+        @argument(
             "--table",
             dest="table",
             action="store_true",
             help="Output report in tabular format.",
         )
-        @self.command(cli_name="checks")
+        @self.command(cli_name="checks", doc="Run a check report")
         def check_report(opts, **_):
-            """
-            Run a check report.
-            """
             if self.run_checks(
                 opts.out,
                 opts.checks_message_level,
@@ -503,9 +494,7 @@ class CliApplication:
         Dispatch command to registered handler.
         """
         # Enable auto complete if available
-        if argcomplete:
-            argcomplete.autocomplete(self.parser)
-
+        argcomplete.autocomplete(self.parser)
         opts = self.parser.parse_args(args)
 
         self.pre_configure_logging(opts)
