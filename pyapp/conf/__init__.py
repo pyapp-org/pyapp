@@ -76,7 +76,36 @@ class ModifySettingsContext:
     """
     Context object used to make temporary modifications to settings.
 
-    This is designed for usage with test cases.
+    The main use-case for this feature is within test cases.
+
+    Settings can be added/replaced/removed and when the context is exited the
+    changes are reverted.
+
+    ..note:
+
+        Changes made to an item (eg dictionary) are not reverted at this time,
+        to make changes to these items replace them with a clone.
+
+    Example::
+
+        >>> # Directly add settings (you shouldn't normally do this!)
+        >>> settings.EXISTING_SETTING = "Foo"
+        >>> settings.LIST_SETTING = ["Item A", "Item B"]
+        >>> # Make some changes
+        >>> with settings.modify() as modify:
+        ...     # Add a new setting
+        ...     modify.NEW_SETTING = 10
+        ...     assert settings.NEW_SETTING == 10
+        ...     # Remove an existing setting
+        ...     del modify.EXISTING_SETTING
+        ...     assert not hasattr(settings, "EXISTING_SETTING")
+        ...     # Clone a list
+        ...     modify.LIST_SETTING = modify.LIST_SETTING.clone()
+        ...     modify.LIST_SETTING.append("New Item")
+        >>> # Compare with initial state
+        >>> assert not hasattr(settings, "NEW_SETTING")
+        >>> assert settings.EXISTING_SETTING == "Foo"
+        >>> assert settings.LIST_SETTING == ["Item A", "Item B"]
 
     """
 
@@ -144,7 +173,7 @@ class Settings:
     @property
     def is_configured(self) -> bool:
         """
-        Settings have been configured.
+        Settings have been configured (or some initial settings have been loaded).
         """
         return bool(self.SETTINGS_SOURCES)
 
