@@ -22,3 +22,9 @@ class ProviderConfigNotFound(ProviderException):
     """
     Specified provider configuration could not be loaded.
     """
+
+
+class UnsupportedContentType(Exception):
+    """
+    Content type of the file is not supported
+    """
