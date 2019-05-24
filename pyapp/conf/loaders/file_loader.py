@@ -28,7 +28,9 @@ class FileLoader(Loader):
         content_type = content_type_from_url(parse_result)
         return cls(parse_result.path, content_type)
 
-    def __init__(self, path: Union[str, Path], content_type: str, *, encoding: str = "UTF8"):
+    def __init__(
+        self, path: Union[str, Path], content_type: str, *, encoding: str = "UTF8"
+    ):
         """
         :param path: Path to file; can be either absolute or relative to PWD.
         :param content_type: Content type of the file

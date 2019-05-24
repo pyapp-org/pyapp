@@ -60,6 +60,7 @@ class SettingsLoaderRegistry:
     """
     Registry of settings loaders
     """
+
     def __init__(self):
         self.loaders: Dict[str, Type[Loader]] = {}
 

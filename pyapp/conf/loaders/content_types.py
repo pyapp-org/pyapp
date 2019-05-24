@@ -12,7 +12,7 @@ def content_type_from_url(parse_result: ParseResult) -> str:
     Determine a content type from a parse result.
     """
     # Check for an explicit type
-    file_type = parse_qs(parse_result.query).get('type')
+    file_type = parse_qs(parse_result.query).get("type")
     if not file_type:
         # Fallback to guessing based off the file name
         file_type, _ = mimetypes.guess_type(parse_result.path)
@@ -27,9 +27,10 @@ class ContentTypeParserRegistry:
     """
     Registry of content type parsers.
     """
+
     def __init__(self):
         self.content_parsers: Dict[str, ContentTypeParser] = {
-            'application/json': json.load,
+            "application/json": json.load
         }
 
     def parse_file(self, fp, content_type: str) -> Dict[str, Any]:
@@ -45,7 +46,9 @@ class ContentTypeParserRegistry:
 
         return content_parser(fp)
 
-    def register(self, content_types: Union[str, Sequence[str]], parser: ContentTypeParser) -> None:
+    def register(
+        self, content_types: Union[str, Sequence[str]], parser: ContentTypeParser
+    ) -> None:
         """
         Register a content type parser.
         """
