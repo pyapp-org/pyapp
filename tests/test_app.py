@@ -2,7 +2,7 @@ import mock
 import pytest
 import tests.sample_app
 
-from pyapp.app import HandlerProxy, add_argument, CliApplication
+from pyapp.app import HandlerProxy, argument, CliApplication
 
 
 class TestHandlerProxy(object):
@@ -22,8 +22,8 @@ class TestHandlerProxy(object):
         assert target() == "Success"
 
     def test_with_arguments(self):
-        @add_argument("--foo", dest="foo", help="Foo option")
-        @add_argument("--bar", dest="bar", help="Bar option")
+        @argument("--foo", dest="foo", help="Foo option")
+        @argument("--bar", dest="bar", help="Bar option")
         def sample_handler():
             pass
 
@@ -54,7 +54,7 @@ class TestCliApplication(object):
         target = CliApplication(tests.sample_app)
 
         @target.command(cli_name="sample")
-        @add_argument("--foo", dest="foo")
+        @argument("--foo", dest="foo")
         def sample_handler(opts):
             closure["opts"] = opts
 

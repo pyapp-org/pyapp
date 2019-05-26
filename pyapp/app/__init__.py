@@ -42,8 +42,8 @@ CliApplication
     :members: register_handler, dispatch
 
 """
-import argparse
 import argcomplete
+import argparse
 import io
 import logging
 import logging.config
@@ -109,9 +109,9 @@ def argument(*args, **kwargs):
 
     """
 
-    def wrapper(func: Union[Handler, HandlerProxy]):
+    def wrapper(func: Union[Handler, HandlerProxy]) -> Union[Handler, HandlerProxy]:
         if isinstance(func, HandlerProxy):
-            func.add_argument(*args, **kwargs)
+            func.argument(*args, **kwargs)
         else:
             # Add the argument to a list that will be consumed by HandlerProxy.
             if not hasattr(func, "arguments__"):
@@ -125,16 +125,12 @@ def argument(*args, **kwargs):
 
 class CliApplication:
     """
-    :param root_module: The root module for this application (used for
-        discovery of other modules)
+    :param root_module: The root module for this application (used for discovery of other modules)
     :param name: Name of your application; defaults to `sys.argv[0]`
     :param description: A description of your application for `--help`.
-    :param version: Specify a specific version; defaults to
-        `getattr(root_module, '__version__')`
-    :param application_settings: The default settings for this application;
-        defaults to `root_module.default_settings`
-    :param application_checks: Location of application checks file; defaults to
-        `root_module.checks` if it exists.
+    :param version: Specify a specific version; defaults to `getattr(root_module, '__version__')`
+    :param application_settings: The default settings for this application; defaults to `root_module.default_settings`
+    :param application_checks: Location of application checks file; defaults to `root_module.checks` if it exists.
 
     """
 
@@ -216,7 +212,7 @@ class CliApplication:
             default=os.environ.get(self.env_loglevel_key, "INFO"),
             choices=("DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"),
             help="Specify the log level to be used. "
-            "Defaults to env variable: {}".format(key_help(self.env_loglevel_key)),
+            f"Defaults to env variable: {key_help(self.env_loglevel_key)}",
         )
 
         # Global check values
@@ -243,12 +239,12 @@ class CliApplication:
 
         # Determine application settings
         if application_settings is None:
-            application_settings = "{}.default_settings".format(root_module.__name__)
+            application_settings = f"{root_module.__name__}.default_settings"
         self.application_settings = application_settings
 
         # Determine application checks
         if application_checks is None:
-            application_checks = "{}.checks".format(root_module.__name__)
+            application_checks = f"{root_module.__name__}.checks"
         self.application_checks = application_checks
 
         # Override default value
@@ -257,12 +253,24 @@ class CliApplication:
         if env_loglevel_key is not None:
             self.env_loglevel_key = env_loglevel_key
 
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.root_module!r})'
+
+    def __str__(self) -> str:
+        return self.application_summary
+
     @property
     def application_name(self) -> str:
+        """
+        Name of the application
+        """
         return self.parser.prog
 
     @property
     def application_summary(self) -> str:
+        """
+        Summary of the application, name version and description.
+        """
         description = self.parser.description
         if description:
             return f"{self.application_name} version {self.application_version} - {description}"
@@ -468,7 +476,7 @@ class CliApplication:
         )
         return False
 
-    def default_handler(self, opts: argparse.Namespace, **_):
+    def default_handler(self, opts: argparse.Namespace, **_) -> int:
         """
         Handler called if no handler is specified
         """
@@ -496,6 +504,8 @@ class CliApplication:
         # Enable auto complete if available
         argcomplete.autocomplete(self.parser)
         opts = self.parser.parse_args(args)
+
+        _set_running_application(self)
 
         self.pre_configure_logging(opts)
         self.configure_settings(opts)
@@ -534,3 +544,15 @@ class CliApplication:
             # Provide exit code.
             if exit_code:
                 exit(exit_code)
+
+
+CURRENT_APP: CliApplication = None
+
+
+def _set_running_application(app: CliApplication):
+    global CURRENT_APP
+    CURRENT_APP = app
+
+
+def get_running_application() -> CliApplication:
+    return CURRENT_APP

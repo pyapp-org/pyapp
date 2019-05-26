@@ -3,13 +3,13 @@ import sys
 
 
 def extensions(app):
-    from pyapp.app import add_argument
+    from pyapp.app import argument
 
     # Register extension report handler
-    @add_argument(
+    @argument(
         "--verbose", dest="verbose", action="store_true", help="Verbose output."
     )
-    @add_argument(
+    @argument(
         "--out",
         dest="out",
         default=sys.stdout,
@@ -28,10 +28,10 @@ def extensions(app):
 
 
 def settings(app):
-    from pyapp.app import add_argument
+    from pyapp.app import argument
 
     # Register settings report handler
-    @add_argument(
+    @argument(
         "--out",
         dest="out",
         default=sys.stdout,
