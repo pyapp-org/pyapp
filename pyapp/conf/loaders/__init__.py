@@ -40,7 +40,6 @@ class ModuleLoader(Loader):
     def __init__(self, module: str):
         """
         :param module: Fully qualify python module path.
-
         """
         self.module = module
 
@@ -68,17 +67,16 @@ class SettingsLoaderRegistry:
         self.register(ModuleLoader)
         self.register(FileLoader)
 
-    def register(self, loader: Type[Loader] = None, scheme: str = None):
+    def register(self, loader: Type[Loader] = None):
         """
         Register a new loader, this method can be used as decorator
 
         :param loader: Loader to register
-        :param scheme: Scheme to register this loader for, if supplied scheme must be a attribute of the loader
 
         """
 
         def inner(obj):
-            loader_schemes = scheme or getattr(obj, "scheme", None)
+            loader_schemes = getattr(obj, "scheme", None)
             if isinstance(loader_schemes, str):
                 loader_schemes = (loader_schemes,)
 
