@@ -37,7 +37,7 @@ class TestDefaultCache:
         assert target["eek"] == actual
 
 
-class TestNamedFactory(object):
+class TestNamedFactory:
     def test_get_default(self):
         target = conf_factory.NamedPluginFactory("TEST_NAMED_FACTORY")
 
@@ -201,7 +201,7 @@ class TestNamedFactory(object):
         assert message.obj == "settings.FACTORY[default]"
 
 
-class TestNamedSingletonFactory(object):
+class TestNamedSingletonFactory:
     def test_get_default(self):
         target = conf_factory.NamedSingletonPluginFactory("TEST_NAMED_FACTORY")
 

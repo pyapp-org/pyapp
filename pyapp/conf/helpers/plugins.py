@@ -86,7 +86,7 @@ class NamedPluginFactory(FactoryMixin):
         assert isinstance(setting, str) and setting.isupper()
         self.setting = setting
         self.abc = abc
-        self.default_name = default_name
+        self.default_name = default_name or "default"
 
         self._type_definitions = DefaultCache(self._get_type_definition)
         self._type_definitions_lock = threading.RLock()

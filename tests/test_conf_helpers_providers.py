@@ -20,7 +20,7 @@ class ProviderFactoryTest(providers.ProviderFactoryBase):
     setting = "TEST_PROVIDERS"
 
     def __init__(self, ref=None, config=None):
-        super().__init__()
+        super().__init__(self.setting)
         self.ref = ref
         self.config = config or {}
 

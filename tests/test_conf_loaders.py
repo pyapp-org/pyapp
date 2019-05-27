@@ -1,6 +1,7 @@
 import pytest
 
 from pyapp.conf import loaders
+from pyapp.conf.loaders import Loader
 from pyapp.exceptions import InvalidConfiguration
 
 
@@ -22,12 +23,12 @@ class TestModuleLoader(object):
         assert str(target) == "python:tests.unknown.settings"
 
 
-class TestSettingsLoaderRegistry(object):
+class TestSettingsLoaderRegistry:
     def test_register__as_decorator(self):
         target = loaders.SettingsLoaderRegistry()
 
         @target.register
-        class SimpleSettings(object):
+        class SimpleSettings(Loader):
             scheme = "eek"
 
             @classmethod
@@ -46,7 +47,9 @@ class TestSettingsLoaderRegistry(object):
     def test_register__as_method(self):
         target = loaders.SettingsLoaderRegistry()
 
-        class SimpleSettings(object):
+        class SimpleSettings(Loader):
+            scheme = "eek"
+
             @classmethod
             def from_url(cls, settings_url):
                 return cls(settings_url)
@@ -57,7 +60,7 @@ class TestSettingsLoaderRegistry(object):
             def __iter__(self):
                 return {"SIMPLE": self.settings_url}.items()
 
-        target.register(SimpleSettings, scheme="eek")
+        target.register(SimpleSettings)
 
         assert "eek" in target.loaders
         assert isinstance(target.factory("eek:sample"), SimpleSettings)
@@ -70,7 +73,7 @@ class TestSettingsLoaderRegistry(object):
             (
                 "file:///path/to/sample.json",
                 loaders.FileLoader,
-                "file:///path/to/sample.json?content-type=application/json",
+                "file:///path/to/sample.json?type=application/json",
             ),
         ),
     )
