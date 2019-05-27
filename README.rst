@@ -16,6 +16,10 @@ pyApp - A python application framework
    :target: https://codecov.io/gh/timsavage/pyapp
    :alt: Test Coverage
 
+.. image:: https://api.codeclimate.com/v1/badges/e7435637488d1ac363e2/maintainability
+   :target: https://codeclimate.com/github/timsavage/pyapp/maintainability
+   :alt: Maintainability
+
 
 Many features inspired by Django, but modified to be more general for use outside of web applications.
 

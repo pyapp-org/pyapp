@@ -4,6 +4,13 @@ plugins:
   bandit:
     enabled: true
 
+  radon:
+    enabled: true
+
+  SonarPython:
+    enabled: true
+
+
 exclude_patterns:
   # Ignore tests
   - "tests/"
