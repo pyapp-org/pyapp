@@ -1,20 +1,9 @@
-engines:
-  duplication:
-    enabled: true
-    config:
-      languages:
-      - python
+version: "2"
 
-  fixme:
+plugins:
+  bandit:
     enabled: true
 
-  radon:
-    enabled: true
-
-ratings:
-  paths:
-  - "**.py"
-
-exclude_paths:
-# Ignore tests
-- tests/*
+exclude_patterns:
+  # Ignore tests
+  - "tests/"
