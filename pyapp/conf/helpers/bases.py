@@ -1,6 +1,7 @@
-from __future__ import unicode_literals
-
+import abc
 import threading
+
+from typing import Any
 
 
 class DefaultCache(dict):
@@ -8,19 +9,20 @@ class DefaultCache(dict):
     Very similar to :py:class:`collections.defaultdict` (using __missing__)
     however passes the specified key to the default factory method.
     """
+
     def __init__(self, default_factory=None, **kwargs):
-        super(DefaultCache, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.default_factory = default_factory
 
-    def __missing__(self, key):
+    def __missing__(self, key: Any):
         if not self.default_factory:
             raise KeyError(key)
         self[key] = value = self.default_factory(key)
         return value
 
 
-class FactoryMixin(object):
-    def __call__(self, name=None):
+class FactoryMixin:
+    def __call__(self, name: str = None):
         """
         Get a named instance.
 
@@ -31,8 +33,9 @@ class FactoryMixin(object):
         """
         return self.create_instance(name)
 
-    def create_instance(self, name=None):
-        raise NotImplementedError()
+    @abc.abstractmethod
+    def create_instance(self, name: str = None):
+        pass
 
 
 class SingletonFactoryMixin(FactoryMixin):
@@ -46,6 +49,7 @@ class SingletonFactoryMixin(FactoryMixin):
     :py:class:`ThreadLocalSingletonFactoryMixin` is used.
 
     """
+
     def __init__(self, *args, **kwargs):
         super(SingletonFactoryMixin, self).__init__(*args, **kwargs)
 
@@ -68,6 +72,7 @@ class ThreadLocalSingletonFactoryMixin(FactoryMixin):
     not thread safe.
 
     """
+
     def __init__(self, *args, **kwargs):
         super(ThreadLocalSingletonFactoryMixin, self).__init__(*args, **kwargs)
 

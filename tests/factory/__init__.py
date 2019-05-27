@@ -14,7 +14,7 @@ class Bar(BarABC):
         self.length = length
 
     def __str__(self):
-        return 'Bar'
+        return "Bar"
 
     def is_long(self):
         return self.length > 30
@@ -22,9 +22,9 @@ class Bar(BarABC):
 
 class IronBar(Bar):
     def __str__(self):
-        return 'Iron Bar'
+        return "Iron Bar"
 
 
 class SteelBeam(object):
     def __str__(self):
-        return 'Steel Beam'
+        return "Steel Beam"

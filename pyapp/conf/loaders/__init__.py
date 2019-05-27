@@ -5,21 +5,17 @@ Loaders are used to load settings from an external source, eg a Python module
 A loader provides key/value pairs to the settings container to merge into the
 application settings.
 """
-from __future__ import absolute_import, unicode_literals
-
 import importlib
 
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    # Fallback for Python 2
-    from urlparse import urlparse
+from typing import Iterator, Tuple, Any, Dict, Type, Union, Callable
+from urllib.parse import urlparse, ParseResult
 
 from pyapp.exceptions import InvalidConfiguration
+from .base import Loader
 from .file_loader import FileLoader
 
 
-class ModuleLoader(object):
+class ModuleLoader(Loader):
     """
     Load configuration from an importable module.
 
@@ -31,73 +27,78 @@ class ModuleLoader(object):
         >>> settings = dict(loader)
 
     """
-    scheme = 'python'
+
+    scheme = "python"
 
     @classmethod
-    def from_url(cls, parse_result):
+    def from_url(cls, parse_result: ParseResult) -> Loader:
         """
         Create an instance of :class:`ModuleLoader` from :class:`urllib.parse.ParseResult`.
-
-        :type parse_result: urllib.parse.ParseResult
-        :rtype: ModuleLoader
-
         """
         return cls(parse_result.path)
 
-    def __init__(self, module):
+    def __init__(self, module: str):
         """
         :param module: Fully qualify python module path.
-        :type module: str
-
         """
-        assert module
-
         self.module = module
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Tuple[str, Any]]:
         try:
             mod = importlib.import_module(self.module)
         except ImportError as ex:
-            raise InvalidConfiguration("Unable to load module: {}\n{}".format(self, ex))
+            raise InvalidConfiguration(f"Unable to load module: {self}\n{ex}")
 
         return ((k, getattr(mod, k)) for k in dir(mod) if k.isupper())
 
     def __str__(self):
-        return "{}:{}".format(self.scheme, self.module)
+        return f"{self.scheme}:{self.module}"
 
 
-class SettingsLoaderRegistry(object):
+LoaderType = Type[Loader]
+
+
+class SettingsLoaderRegistry:
+    """
+    Registry of settings loaders
+    """
+
     def __init__(self):
-        self.loaders = {
-            FileLoader.scheme: FileLoader,
-            ModuleLoader.scheme: ModuleLoader,
-        }
+        self.loaders: Dict[str, LoaderType] = {}
 
-    def register(self, loader=None, scheme=None):
+        # Register builtin loaders
+        self.register(ModuleLoader)
+        self.register(FileLoader)
+
+    def register(
+        self, loader: LoaderType = None
+    ) -> Union[LoaderType, Callable[[LoaderType], LoaderType]]:
         """
         Register a new loader, this method can be used as decorator
 
         :param loader: Loader to register
-        :param scheme: Scheme to register this loader for, if supplied scheme must be a attribute of the loader
 
         """
-        def inner(obj):
-            loader_scheme = scheme or getattr(obj, 'scheme', None)
-            assert loader_scheme, "Scheme has not been defined."
-            assert hasattr(obj, 'from_url'), "Settings loaders must implement a from_url method"
-            self.loaders[loader_scheme] = obj
+
+        def inner(obj: LoaderType = None):
+            loader_schemes = getattr(obj, "scheme")
+            if isinstance(loader_schemes, str):
+                loader_schemes = (loader_schemes,)
+
+            for loader_scheme in loader_schemes:
+                self.loaders[loader_scheme] = obj
+
             return obj
 
         return inner(loader) if loader else inner
 
-    def factory(self, settings_url):
+    def factory(self, settings_url: str) -> Loader:
         """
         Factory method that returns a factory suitable for opening the settings uri reference.
 
         The URI scheme (identifier prior to the first `:`) is used to determine the correct loader.
 
         :param settings_url: URI that references a settings source.
-        :type settings_url: str
         :return: Loader instance
         :raises: ValueError
 
@@ -110,7 +111,9 @@ class SettingsLoaderRegistry(object):
         try:
             return self.loaders[result.scheme].from_url(result)
         except KeyError:
-            raise InvalidConfiguration("Unknown scheme `{}` in settings URI: {}".format(result.scheme, result))
+            raise InvalidConfiguration(
+                f"Unknown scheme `{result.scheme}` in settings URI: {result}"
+            )
 
 
 # Singleton instance

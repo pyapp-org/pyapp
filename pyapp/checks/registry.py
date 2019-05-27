@@ -1,24 +1,24 @@
-from __future__ import absolute_import, unicode_literals
-
 from collections import namedtuple
 from itertools import chain
+from typing import NamedTuple
 
 from pyapp import extensions
 from pyapp.conf import settings
 from .messages import CheckMessage
 
 
-class Tags(object):
+class Tags:
     """
     Built-in tags used by pyApp.
     """
-    security = 'security'
+
+    security = "security"
 
 
-CheckResult = namedtuple('CheckResult', 'check, messages')
+CheckResult = namedtuple("CheckResult", "check, messages")
 
 
-class CheckRegistry(object):
+class CheckRegistry:
     def __init__(self):
         self.registered_checks = []
 
@@ -31,17 +31,18 @@ class CheckRegistry(object):
         Calling this method a second time allows for additional tags to be added.
 
         """
+
         def inner(func):
-            setattr(func, '_check__tags', tags)
+            setattr(func, "_check__tags", tags)
             if func not in self.registered_checks:
                 self.registered_checks.append(func)
             return func
 
-        if callable(check) or hasattr(check, 'checks'):
+        if callable(check) or hasattr(check, "checks"):
             return inner(check)
         else:
             if check:
-                tags += (check, )
+                tags += (check,)
             return inner
 
     def checks_by_tags(self, tags=None):
@@ -52,12 +53,15 @@ class CheckRegistry(object):
 
         if tags:
             tags = set(tags)
-            return (check for check in checks
-                    if set(getattr(check, '_check__tags', [])) & tags)
+            return (
+                check
+                for check in checks
+                if set(getattr(check, "_check__tags", [])) & tags
+            )
         else:
             return iter(checks)
 
-    def run_checks_iter(self, tags=None, pre_callback=None): 
+    def run_checks_iter(self, tags=None, pre_callback=None):
         """
         Iterate through all registered checks and run each to return messages.
 
@@ -65,14 +69,14 @@ class CheckRegistry(object):
         :param pre_callback: Callback triggered before each check is executed.
 
         """
-        check_kwargs = {'settings': settings}
+        check_kwargs = {"settings": settings}
 
         for check in self.checks_by_tags(tags):
             if pre_callback:
                 pre_callback(check)
 
             # Detect attached checks (or a class with checks)
-            if hasattr(check, 'checks'):
+            if hasattr(check, "checks"):
                 messages = check.checks(**check_kwargs)
             else:
                 messages = check(**check_kwargs)

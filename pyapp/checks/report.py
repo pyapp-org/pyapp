@@ -1,46 +1,48 @@
-from __future__ import print_function, unicode_literals
-
 import csv
 import logging
 import sys
 import textwrap
 
-# Typing imports
-from typing import List, Optional, Any  # noqa
-from io import StringIO  # noqa
-from pyapp.checks.registry import CheckRegistry, CheckMessage  # noqa
+from colorama import Style, Fore, Back
+from io import StringIO
+from typing import Sequence, Optional, Any
 
+from pyapp.checks.registry import CheckRegistry, CheckMessage
 from pyapp.checks.registry import registry
 from pyapp.utils import colorama
 
-if colorama:
-    from colorama import Style, Fore, Back
-    COLOURS = {
-        # Type: (Title, Border),
-        logging.CRITICAL: (Fore.WHITE + Back.RED, Fore.RED),
-        logging.ERROR: (Fore.RED, Fore.RED),
-        logging.WARNING: (Fore.YELLOW, Fore.YELLOW),
-        logging.INFO: (Fore.CYAN, Fore.CYAN),
-        logging.DEBUG: (Fore.MAGENTA, Fore.MAGENTA),
-    }
+COLOURS = {
+    # Type: (Title, Border),
+    logging.CRITICAL: (Fore.WHITE + Back.RED, Fore.RED),
+    logging.ERROR: (Fore.RED, Fore.RED),
+    logging.WARNING: (Fore.YELLOW, Fore.YELLOW),
+    logging.INFO: (Fore.CYAN, Fore.CYAN),
+    logging.DEBUG: (Fore.MAGENTA, Fore.MAGENTA),
+}
 
 
-def get_check_name(obj):
-    # type: (Any) -> str
+def get_check_name(obj: Any) -> str:
     """
     Get the name of a check
     """
-    check = obj.checks if hasattr(obj, 'checks') else obj
-    return getattr(check, 'check_name', check.__name__).format(obj=obj)
+    check = obj.checks if hasattr(obj, "checks") else obj
+    return getattr(check, "check_name", check.__name__).format(obj=obj)
 
 
-class CheckReport(object):
+class CheckReport:
     """
     Wrapper for the generation of a check report.
     """
+
     width = 80
 
-    def __init__(self, verbose=False, no_color=False, f_out=sys.stdout, check_registry=registry):
+    def __init__(
+        self,
+        verbose: bool = False,
+        no_color: bool = False,
+        f_out=sys.stdout,
+        check_registry=registry,
+    ):
         """
         Initialise check report
 
@@ -61,19 +63,45 @@ class CheckReport(object):
             self.VERBOSE_CHECK_TEMPLATE = "+ {name}\n"
             self.TITLE_TEMPLATE = " {level}: {title}"
             self.HINT_TEMPLATE = ("-" * self.width) + "\n HINT: {hint}\n"
-            self.MESSAGE_TEMPLATE = ("=" * self.width) + "\n{title}\n{hint}" + ("=" * self.width) + '\n\n'
+            self.MESSAGE_TEMPLATE = (
+                ("=" * self.width) + "\n{title}\n{hint}" + ("=" * self.width) + "\n\n"
+            )
 
         else:
-            self.VERBOSE_CHECK_TEMPLATE = Fore.YELLOW + "+ " + Fore.CYAN + "{name}\n" + Style.RESET_ALL
-            self.TITLE_TEMPLATE = "{style} " + Style.BRIGHT + "{level}:" + Style.NORMAL + " {title}" + Style.RESET_ALL
-            self.HINT_TEMPLATE = \
-                "{border_style}" + ("-" * self.width) + Style.RESET_ALL + \
-                "\n" + Style.BRIGHT + " HINT: " + Style.DIM + Fore.WHITE + " {hint}" + Style.RESET_ALL + "\n"
-            self.MESSAGE_TEMPLATE = \
-                "{border_style}" + ("=" * self.width) + Style.RESET_ALL + \
-                "\n{title}\n{hint}" + \
-                "{border_style}" + ("=" * self.width) + Style.RESET_ALL + \
-                "\n\n"
+            self.VERBOSE_CHECK_TEMPLATE = (
+                Fore.YELLOW + "+ " + Fore.CYAN + "{name}\n" + Style.RESET_ALL
+            )
+            self.TITLE_TEMPLATE = (
+                "{style} "
+                + Style.BRIGHT
+                + "{level}:"
+                + Style.NORMAL
+                + " {title}"
+                + Style.RESET_ALL
+            )
+            self.HINT_TEMPLATE = (
+                "{border_style}"
+                + ("-" * self.width)
+                + Style.RESET_ALL
+                + "\n"
+                + Style.BRIGHT
+                + " HINT: "
+                + Style.DIM
+                + Fore.WHITE
+                + " {hint}"
+                + Style.RESET_ALL
+                + "\n"
+            )
+            self.MESSAGE_TEMPLATE = (
+                "{border_style}"
+                + ("=" * self.width)
+                + Style.RESET_ALL
+                + "\n{title}\n{hint}"
+                + "{border_style}"
+                + ("=" * self.width)
+                + Style.RESET_ALL
+                + "\n\n"
+            )
 
     def pre_callback(self, obj):
         if self.verbose:
@@ -81,27 +109,22 @@ class CheckReport(object):
                 self.VERBOSE_CHECK_TEMPLATE.format(name=get_check_name(obj))
             )
 
-    def wrap_text(self, text, indent_width, line_sep='\n'):
+    def wrap_text(self, text: str, indent_width: int, line_sep: str = "\n") -> str:
         """
         Perform word wrapping on text
 
         :param text: Text to wrap.
-        :type text: str
-        :indent_width indent: Size of text indent.
-        :type indent_width: int
+        :param indent_width: Size of text indent.
         :param line_sep: Line separator
-        :rtype: str
 
         """
-        indent = ' ' * (indent_width + 1)
+        indent = " " * (indent_width + 1)
         lines = textwrap.wrap(
-            text, self.width - 2,
-            initial_indent=indent, subsequent_indent=indent
+            text, self.width - 2, initial_indent=indent, subsequent_indent=indent
         )
-        return line_sep.join(l + (' ' * (self.width - len(l))) for l in lines)
+        return line_sep.join(l + (" " * (self.width - len(l))) for l in lines)
 
-    def format_title(self, message):
-        # type: (CheckMessage) -> str
+    def format_title(self, message: CheckMessage) -> str:
         """
         Format the title of message.
         """
@@ -109,21 +132,22 @@ class CheckReport(object):
         level_name = message.level_name
         msg = message.msg
         if message.obj:
-            msg = "{} - {}".format(message.obj, msg)
+            msg = f"{message.obj} - {msg}"
 
         if self.no_color:
-            title_style = ''
+            title_style = ""
             line_sep = "\n"
         else:
             title_style = COLOURS[message.level][0]
             line_sep = Style.RESET_ALL + "\n" + title_style
 
         return self.TITLE_TEMPLATE.format(
-            style=title_style, level=level_name,
-            title=self.wrap_text(msg, len(level_name) + 2, line_sep).lstrip()
+            style=title_style,
+            level=level_name,
+            title=self.wrap_text(msg, len(level_name) + 2, line_sep).lstrip(),
         )
 
-    def format_hint(self, message):
+    def format_hint(self, message: CheckMessage) -> str:
         """
         Format the hint of a message.
         """
@@ -144,10 +168,12 @@ class CheckReport(object):
             indent_width = len(" Hint: ")
             return self.HINT_TEMPLATE.format(
                 border_style=border_style,
-                hint='\n\n'.join(self.wrap_text(p, indent_width, line_sep) for p in hint).lstrip()
+                hint="\n\n".join(
+                    self.wrap_text(p, indent_width, line_sep) for p in hint
+                ).lstrip(),
             )
         else:
-            return ''
+            return ""
 
     def output_result(self, message):
         """
@@ -166,8 +192,12 @@ class CheckReport(object):
 
         self.f_out.write(self.MESSAGE_TEMPLATE.format(**format_args))
 
-    def run(self, message_level=logging.INFO, tags=None, header=None):
-        # type: (int, List[str], str) -> bool
+    def run(
+        self,
+        message_level: int = logging.INFO,
+        tags: Sequence[str] = None,
+        header: str = None,
+    ) -> bool:
         """
         Run the report
 
@@ -180,7 +210,7 @@ class CheckReport(object):
         serious_message = False
 
         if header and self.verbose:
-            self.f_out.write(header + '\n')
+            self.f_out.write(header + "\n")
 
         # Generate report
         for _, messages in self.registry.run_checks_iter(tags, self.pre_callback):
@@ -194,36 +224,40 @@ class CheckReport(object):
                         message_shown = True
                         self.output_result(message)
 
-            if not (self.verbose or message_shown):  # DeMorgans law: !a & !b == !(a | b)
+            if not (
+                self.verbose or message_shown
+            ):  # DeMorgans law: !a & !b == !(a | b)
                 self.f_out.write(".\n")
 
         return serious_message
 
 
-class TabularCheckReport(object):
+class TabularCheckReport:
     """
     Generation of a check report that outputs tabular output.
     """
-    def __init__(self, f_out=sys.stdout, check_registry=registry):
-        # type: (StringIO, CheckRegistry) -> None
+
+    def __init__(
+        self, f_out: StringIO = sys.stdout, check_registry: CheckRegistry = registry
+    ):
         """
         Initialise report
         """
         self.f_out = f_out
         self.registry = check_registry
 
-        self.writer = csv.writer(self.f_out, delimiter=str('\t'))
+        self.writer = csv.writer(self.f_out, delimiter=str("\t"))
 
-    def output_result(self, check, message):
-        # type: (CheckReport, Optional[CheckMessage]) -> None
+    def output_result(self, check: CheckReport, message: Optional[CheckMessage]):
         name = get_check_name(check)
         if message:
             self.writer.writerow([name, message.level_name, message.msg])
         else:
-            self.writer.writerow([name, 'OK', ''])
+            self.writer.writerow([name, "OK", ""])
 
-    def run(self, message_level=logging.INFO, tags=None):
-        # type: (int, List[str]) -> bool
+    def run(
+        self, message_level: int = logging.INFO, tags: Sequence[str] = None
+    ) -> bool:
         """
         Run the report
 

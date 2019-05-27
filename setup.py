@@ -1,3 +1,3 @@
 from setuptools import setup
 
-setup(setup_requires=['pbr>=3.0', 'setuptools>=17.1'], pbr=True)
+setup(version="4.0.0beta1")
