@@ -254,7 +254,7 @@ class CliApplication:
             self.env_loglevel_key = env_loglevel_key
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.root_module!r})'
+        return f"{type(self).__name__}({self.root_module!r})"
 
     def __str__(self) -> str:
         return self.application_summary
@@ -277,7 +277,9 @@ class CliApplication:
         else:
             return f"{self.application_name} version {self.application_version}"
 
-    def command(self, handler: Handler = None, cli_name: str = None, doc: str = None) -> HandlerProxy:
+    def command(
+        self, handler: Handler = None, cli_name: str = None, doc: str = None
+    ) -> HandlerProxy:
         """
         Decorator for registering handlers.
 

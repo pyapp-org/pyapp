@@ -1,4 +1,4 @@
-from pyapp.app import CliApplication, add_argument
+from pyapp.app import CliApplication, argument
 from pyapp.conf import settings
 
 import sample
@@ -9,7 +9,7 @@ app = CliApplication(
 
 
 @app.command
-@add_argument("--verbose", action="store_true")
+@argument("--verbose", action="store_true")
 def do_foo(opts):
     """
     Perform a foo operation.

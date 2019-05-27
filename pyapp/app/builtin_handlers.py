@@ -6,9 +6,7 @@ def extensions(app):
     from pyapp.app import argument
 
     # Register extension report handler
-    @argument(
-        "--verbose", dest="verbose", action="store_true", help="Verbose output."
-    )
+    @argument("--verbose", dest="verbose", action="store_true", help="Verbose output.")
     @argument(
         "--out",
         dest="out",

@@ -109,7 +109,7 @@ class ModifySettingsContext:
 
     """
 
-    def __init__(self, settings_container):
+    def __init__(self, settings_container: "Settings"):
         self.__dict__.update(_container=settings_container, _roll_back=[])
 
     def __enter__(self) -> "ModifySettingsContext":
