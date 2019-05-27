@@ -15,7 +15,7 @@ install:
 
 script:
   - bandit -ll -r pyapp
-  - coverage run --include pyapp python setup.py test
+  - coverage run setup.py test
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
