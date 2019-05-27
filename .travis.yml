@@ -1,9 +1,8 @@
 language: python
 sudo: false
 python:
-  - "2.7"
-  - "3.5"
   - "3.6"
+  - "3.7"
   - "pypy"
 
 branches:
@@ -12,7 +11,7 @@ branches:
     - development
 
 install:
-  - travis_retry pip install -Ur requirements-dev.txt bandit
+  - travis_retry pip install bandit pytest pytest-cov mock
 
 script:
   - bandit -ll -r pyapp
