@@ -11,11 +11,11 @@ branches:
     - development
 
 install:
-  - travis_retry pip install bandit pytest pytest-cov mock
+  - travis_retry pip install bandit coverage
 
 script:
   - bandit -ll -r pyapp
-  - py.test tests/ --cov=pyapp
+  - coverage run --include pyapp python setup.py test
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
