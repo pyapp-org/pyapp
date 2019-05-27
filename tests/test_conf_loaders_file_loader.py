@@ -14,7 +14,7 @@ class TestFileLoader(object):
 
         actual = dict(target)
 
-        assert str(target) == "file://{}".format(file)
+        assert str(target) == f"file://{file}?type=application/json"
         assert actual == {"UPPER_CASE": "foo"}
 
     def test__missing_file(self):
@@ -24,7 +24,7 @@ class TestFileLoader(object):
         with pytest.raises(InvalidConfiguration):
             dict(target)
 
-        assert str(target) == "file://{}".format(file)
+        assert str(target) == f"file://{file}?type=application/json"
 
     def test__invalid_file(self):
         file = path.join(FIXTURES, "settings-invalid-file.json")
@@ -33,7 +33,7 @@ class TestFileLoader(object):
         with pytest.raises(InvalidConfiguration):
             dict(target)
 
-        assert str(target) == "file://{}".format(file)
+        assert str(target) == f"file://{file}?type=application/json"
 
     def test__invalid_container(self):
         file = path.join(FIXTURES, "settings-invalid-container.json")
@@ -42,4 +42,4 @@ class TestFileLoader(object):
         with pytest.raises(InvalidConfiguration):
             dict(target)
 
-        assert str(target) == "file://{}".format(file)
+        assert str(target) == f"file://{file}?type=application/json"

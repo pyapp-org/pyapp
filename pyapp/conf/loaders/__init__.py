@@ -7,7 +7,7 @@ application settings.
 """
 import importlib
 
-from typing import Iterator, Tuple, Any, Dict, Type
+from typing import Iterator, Tuple, Any, Dict, Type, Union, Callable
 from urllib.parse import urlparse, ParseResult
 
 from pyapp.exceptions import InvalidConfiguration
@@ -55,19 +55,24 @@ class ModuleLoader(Loader):
         return f"{self.scheme}:{self.module}"
 
 
+LoaderType = Type[Loader]
+
+
 class SettingsLoaderRegistry:
     """
     Registry of settings loaders
     """
 
     def __init__(self):
-        self.loaders: Dict[str, Type[Loader]] = {}
+        self.loaders: Dict[str, LoaderType] = {}
 
         # Register builtin loaders
         self.register(ModuleLoader)
         self.register(FileLoader)
 
-    def register(self, loader: Type[Loader] = None):
+    def register(
+        self, loader: LoaderType = None
+    ) -> Union[LoaderType, Callable[[LoaderType], LoaderType]]:
         """
         Register a new loader, this method can be used as decorator
 
@@ -75,8 +80,8 @@ class SettingsLoaderRegistry:
 
         """
 
-        def inner(obj):
-            loader_schemes = getattr(obj, "scheme", None)
+        def inner(obj: LoaderType = None):
+            loader_schemes = getattr(obj, "scheme")
             if isinstance(loader_schemes, str):
                 loader_schemes = (loader_schemes,)
 
