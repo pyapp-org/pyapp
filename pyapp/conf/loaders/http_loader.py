@@ -18,9 +18,14 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
 
     This is based off `urllib.request.urlretrieve`.
     """
-    context = ssl.SSLContext if url.scheme.startswith("https") else None
+    if url.scheme not in ("http", "https"):
+        raise InvalidConfiguration("Illegal scheme.")
 
-    with contextlib.closing(urlopen(url, context=context)) as fp:
+    context = ssl.SSLContext if url.scheme == "https" else None
+
+    with contextlib.closing(
+        urlopen(url, context=context)  # nosec - There is a check above for SSL
+    ) as fp:
         bs = 1024 * 8
         size = -1
         read = 0
