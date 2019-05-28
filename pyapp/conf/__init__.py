@@ -65,7 +65,7 @@ import warnings
 from typing import Sequence
 
 from . import default_settings
-from .loaders import factory, ModuleLoader
+from .loaders import factory, ModuleLoader, Loader
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +166,7 @@ class Settings:
 
         self.SETTINGS_SOURCES = []
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         sources = self.SETTINGS_SOURCES or "UN-CONFIGURED"
         return f"{self.__class__.__name__}({sources})"
 
@@ -177,7 +177,7 @@ class Settings:
         """
         return bool(self.SETTINGS_SOURCES)
 
-    def load(self, loader, apply_method=None):
+    def load(self, loader: Loader, apply_method=None):
         """
         Load settings from a loader instance. A loader is an iterator that yields key/value pairs.
 
@@ -226,22 +226,18 @@ class Settings:
 
     def configure(
         self,
-        application_settings,
-        runtime_settings=None,
-        additional_loaders=None,
-        env_settings_key=DEFAULT_ENV_KEY,
+        application_settings: str,
+        runtime_settings: str = None,
+        additional_loaders: Sequence[Loader] = None,
+        env_settings_key: str = DEFAULT_ENV_KEY,
     ):
         """
         Configure the settings object
 
         :param application_settings: Your applications default settings file.
-        :type application_settings: str | unicode
         :param runtime_settings: Settings defined for the current runtime (eg from the command line)
-        :type runtime_settings: str | unicode
         :param additional_loaders: Additional loaders to execute
-        :type additional_loaders: list()
         :param env_settings_key: Environment variable key used to override the runtime_settings.
-        :type env_settings_key: str | unicode
 
         """
         logger.debug("Configuring settings...")
@@ -263,7 +259,7 @@ class Settings:
 
         logger.debug("Settings loaded %s.", settings.SETTINGS_SOURCES)
 
-    def modify(self):
+    def modify(self) -> ModifySettingsContext:
         """
         Apply changes to settings file using a context manager that will roll back the changes on exit of
         a with block. Designed to simplify test cases.

@@ -104,7 +104,7 @@ class NamedPluginFactory(FactoryMixin):
         """
         return self._instance_definitions.keys()
 
-    def _get_type_definition(self, name):
+    def _get_type_definition(self, name: str):
         try:
             type_name, kwargs = self._instance_definitions[name]
         except KeyError:
