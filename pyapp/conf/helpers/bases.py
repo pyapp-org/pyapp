@@ -35,7 +35,9 @@ class FactoryMixin:
 
     @abc.abstractmethod
     def create_instance(self, name: str = None):
-        pass
+        """
+        Create an instance based on a named setting.
+        """
 
 
 class SingletonFactoryMixin(FactoryMixin):
