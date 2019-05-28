@@ -1,6 +1,5 @@
 import importlib
 
-from types import ModuleType
 from typing import Optional, Callable, Sequence, List, Dict
 
 from pyapp.conf import settings, factory as loader_factory
@@ -18,11 +17,6 @@ class Extension:
     def __init__(self, module, package):
         self.module = module
         self.package = package
-
-    def __eq__(self, other):
-        if isinstance(other, ModuleType):
-            return self.module == other
-        return NotImplemented
 
     def summary(self) -> Dict[str, str]:
         return {
