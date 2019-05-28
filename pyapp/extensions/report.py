@@ -1,15 +1,11 @@
-from __future__ import print_function, unicode_literals
-
 import sys
 
-from pyapp.extensions.registry import registry
-from pyapp.utils import colorama
+from colorama import Style, Fore
 
-if colorama:
-    from colorama import Style, Fore
+from .registry import registry, Extension
 
 
-class ExtensionReport(object):
+class ExtensionReport:
     """
     Wrapper for the generation of a check report.
     """
@@ -27,15 +23,14 @@ class ExtensionReport(object):
         Initialise check report
 
         :param verbose: Enable verbose output
-        :param no_color: Disable colourised output (if colorama is installed)
+        :param no_color: Disable colourised output
         :param f_out: File to output report to; default is ``stdout``
         :param extension_registry: Registry to source extensions from; defaults to the builtin registry.
 
         """
         self.verbose = verbose
         self.f_out = f_out
-        # Default color to be disabled if colorama is not installed.
-        self.no_color = no_color if colorama else True
+        self.no_color = no_color
         self.registry = extension_registry
 
         # Generate templates
@@ -93,12 +88,9 @@ class ExtensionReport(object):
                 + "\n\n"
             )
 
-    def output_result(self, extension):
+    def output_result(self, extension: Extension):
         """
         Output a result to output file.
-
-        :type extension: pyapp.extensions.register.Extension
-
         """
         format_args = dict(
             name=extension.name,

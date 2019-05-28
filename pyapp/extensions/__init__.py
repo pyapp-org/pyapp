@@ -32,6 +32,4 @@ perform any initialisation that is required::
         pass
 
 """
-from __future__ import absolute_import
-
 from .registry import *
