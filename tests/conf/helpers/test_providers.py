@@ -42,7 +42,7 @@ class TestProviderFactoryBase:
         assert len(actual) == 1
         assert actual == [
             providers.ProviderSummary(
-                "tests.test_conf_helpers_providers.ProviderBaseTest",
+                "tests.conf.helpers.test_providers.ProviderBaseTest",
                 "Test Provider",
                 "Description.",
             )
@@ -51,7 +51,7 @@ class TestProviderFactoryBase:
     def test_get_provider(self):
         target = ProviderFactoryTest()
         actual = target.get_provider(
-            "tests.test_conf_helpers_providers.ProviderBaseTest"
+            "tests.conf.helpers.test_providers.ProviderBaseTest"
         )
 
         assert actual is ProviderBaseTest
@@ -64,7 +64,7 @@ class TestProviderFactoryBase:
 
     def test_get_instance(self):
         target = ProviderFactoryTest(
-            "tests.test_conf_helpers_providers.ProviderBaseTest", {"foo": "bar"}
+            "tests.conf.helpers.test_providers.ProviderBaseTest", {"foo": "bar"}
         )
 
         actual = target()
@@ -91,7 +91,7 @@ class TestProviderFactoryBase:
                     u"settings.TEST_PROVIDERS",
                 ),
             ),
-            (["tests.test_conf_helpers_providers.ProviderBaseTest"], []),
+            (["tests.conf.helpers.test_providers.ProviderBaseTest"], []),
             (
                 [123],
                 [
@@ -133,7 +133,7 @@ class TestProviderFactoryBase:
 
         with settings.modify() as ctx:
             ctx.TEST_PROVIDERS = [
-                "tests.test_conf_helpers_providers.ProviderBaseTest",
+                "tests.conf.helpers.test_providers.ProviderBaseTest",
                 "tests.wrong.ProviderBaseTest",
             ]
 

@@ -5,7 +5,7 @@ from pyapp.conf import settings
 from pyapp.conf import helpers
 
 
-class TestNamedConfiguration(object):
+class TestNamedConfiguration:
     def test_get_default(self):
         target = helpers.NamedConfiguration("TEST_NAMED_CONFIG")
 

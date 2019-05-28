@@ -1,7 +1,7 @@
 from pyapp.extensions.registry import ExtensionRegistry
 
 
-class TestExtensionRegistry(object):
+class TestExtensionRegistry:
     def test_load_with_metadata(self):
         target = ExtensionRegistry()
 

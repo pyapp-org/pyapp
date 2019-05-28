@@ -8,8 +8,8 @@ from pyapp.conf.helpers import plugins as conf_factory
 from tests import factory
 
 
-def factory_test(key):
-    return "Factory[{}]".format(key)
+def factory_test(key: str) -> str:
+    return f"Factory[{key}]"
 
 
 class TestDefaultCache:

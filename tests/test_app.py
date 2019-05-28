@@ -5,7 +5,7 @@ import tests.sample_app
 from pyapp.app import HandlerProxy, argument, CliApplication
 
 
-class TestHandlerProxy(object):
+class TestHandlerProxy:
     def test_basic_usage(self):
         def sample_handler():
             return "Success"
@@ -33,7 +33,7 @@ class TestHandlerProxy(object):
         assert mock_parser.add_argument.call_count == 2
 
 
-class TestCliApplication(object):
+class TestCliApplication:
     def test_initialisation(self):
         target = CliApplication(tests.sample_app)
 

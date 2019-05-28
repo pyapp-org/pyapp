@@ -5,7 +5,7 @@ from pyapp.conf.loaders import Loader
 from pyapp.exceptions import InvalidConfiguration
 
 
-class TestModuleLoader(object):
+class TestModuleLoader:
     def test__module_exists(self):
         target = loaders.ModuleLoader("tests.settings")
 
@@ -41,7 +41,7 @@ class TestSettingsLoaderRegistry:
             def __iter__(self):
                 return {"SIMPLE": self.settings_url}.items()
 
-        assert "eek" in target.loaders
+        assert "eek" in target
         assert isinstance(target.factory("eek:sample"), SimpleSettings)
 
     def test_register__as_method(self):
@@ -62,7 +62,7 @@ class TestSettingsLoaderRegistry:
 
         target.register(SimpleSettings)
 
-        assert "eek" in target.loaders
+        assert "eek" in target
         assert isinstance(target.factory("eek:sample"), SimpleSettings)
 
     @pytest.mark.parametrize(
@@ -80,7 +80,7 @@ class TestSettingsLoaderRegistry:
     def test_factory__loaders_correctly_resolved(
         self, settings_uri, expected, str_value
     ):
-        target = loaders.SettingsLoaderRegistry()
+        target = loaders.registry
 
         actual = target.factory(settings_uri)
 
@@ -92,7 +92,7 @@ class TestSettingsLoaderRegistry:
         (("py:sample.settings", "Unknown scheme `py` in settings URI:"),),
     )
     def test_factory__invalid_settings_uri(self, settings_uri, expected):
-        target = loaders.SettingsLoaderRegistry()
+        target = loaders.registry
 
         with pytest.raises(InvalidConfiguration) as e:
             target.factory(settings_uri)

@@ -3,6 +3,8 @@ import mock
 
 from urllib.parse import urlparse
 
+from yarl import URL
+
 from pyapp.conf.loaders import content_types
 
 
@@ -17,9 +19,7 @@ from pyapp.conf.loaders import content_types
     ),
 )
 def test_content_type_from_url__known_types(url: str, expected: str):
-    result = urlparse(url)
-
-    actual = content_types.content_type_from_url(result)
+    actual = content_types.content_type_from_url(URL(url))
 
     assert actual == expected
 
