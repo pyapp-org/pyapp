@@ -23,8 +23,7 @@ pyApp - A python application framework
 
 Many features inspired by Django, but modified to be more general for use outside of web applications.
 
-PyApp wit the release of 4.0 supports Python 3.6+ all previous versions are no longer supported.
-This change allows for the user of F-Strings, and removal of any compatibility code.
+PyApp with the release of 4.0 supports Python 3.6+ all previous versions are no longer supported.
 
 So what do we handle?
 =====================
