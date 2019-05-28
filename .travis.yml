@@ -32,7 +32,7 @@ script:
   - bandit -ll -r pyapp
   - coverage run setup.py test
 after_script:
-  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT --input-type coverage.py
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT -t coverage.py
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
