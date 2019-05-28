@@ -14,6 +14,12 @@ class Loader(abc.ABC, Iterable[Tuple[str, Any]]):
     Scheme that this loader provides handling of.
     """
 
+    def __enter__(self) -> "Loader":
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     @classmethod
     @abc.abstractmethod
     def from_url(cls, url: URL) -> "Loader":

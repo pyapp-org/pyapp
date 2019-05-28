@@ -197,9 +197,10 @@ class Settings:
         logger.info("Loading settings from: %s", loader_key)
 
         # Apply values from loader
-        for key, value in loader:
-            logger.debug("Importing setting: %s", key)
-            apply_method(key, value)
+        with loader:
+            for key, value in loader:
+                logger.debug("Importing setting: %s", key)
+                apply_method(key, value)
 
         # Store loader key to prevent circular loading
         self.SETTINGS_SOURCES.append(loader_key)
@@ -210,7 +211,9 @@ class Settings:
             for source_url in include_settings:
                 self.load(factory(source_url), apply_method)
 
-    def load_from_loaders(self, loader_list: Sequence[ModuleLoader], override=True):
+    def load_from_loaders(
+        self, loader_list: Sequence[ModuleLoader], override: bool = True
+    ):
         """
         Load settings from a list of loaders.
 

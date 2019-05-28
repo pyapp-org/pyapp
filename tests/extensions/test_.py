@@ -1,4 +1,4 @@
-from pyapp.extensions.registry import ExtensionRegistry
+from pyapp.extensions.registry import ExtensionRegistry, registry
 
 
 class TestExtensionRegistry:
