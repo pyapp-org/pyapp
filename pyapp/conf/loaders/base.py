@@ -20,3 +20,10 @@ class Loader(abc.ABC, Iterable[Tuple[str, Any]]):
         """
         Create an instance of a `Loader` using the results of the parsed file URL.
         """
+
+    def close(self):
+        """
+        Called by framework when this loader is no longer required.
+
+        This allows any open handles to be closed or caches to be cleared.
+        """

@@ -13,6 +13,7 @@ from urllib.parse import urlparse, ParseResult
 from pyapp.exceptions import InvalidConfiguration
 from .base import Loader
 from .file_loader import FileLoader
+from .http_loader import HttpLoader
 
 
 class ModuleLoader(Loader):
@@ -58,17 +59,10 @@ class ModuleLoader(Loader):
 LoaderType = Type[Loader]
 
 
-class SettingsLoaderRegistry:
+class SettingsLoaderRegistry(Dict[str, LoaderType]):
     """
     Registry of settings loaders
     """
-
-    def __init__(self):
-        self.loaders: Dict[str, LoaderType] = {}
-
-        # Register builtin loaders
-        self.register(ModuleLoader)
-        self.register(FileLoader)
 
     def register(
         self, loader: LoaderType = None
@@ -79,18 +73,17 @@ class SettingsLoaderRegistry:
         :param loader: Loader to register
 
         """
-
-        def inner(obj: LoaderType = None):
-            loader_schemes = getattr(obj, "scheme")
+        if loader is None:
+            return self.register
+        else:
+            loader_schemes = getattr(loader, "scheme")
             if isinstance(loader_schemes, str):
                 loader_schemes = (loader_schemes,)
 
             for loader_scheme in loader_schemes:
-                self.loaders[loader_scheme] = obj
+                self[loader_scheme] = loader
 
-            return obj
-
-        return inner(loader) if loader else inner
+            return loader
 
     def factory(self, settings_url: str) -> Loader:
         """
@@ -109,7 +102,7 @@ class SettingsLoaderRegistry:
             return ModuleLoader.from_url(result)
 
         try:
-            return self.loaders[result.scheme].from_url(result)
+            return self[result.scheme].from_url(result)
         except KeyError:
             raise InvalidConfiguration(
                 f"Unknown scheme `{result.scheme}` in settings URI: {result}"
@@ -117,6 +110,11 @@ class SettingsLoaderRegistry:
 
 
 # Singleton instance
-registry = SettingsLoaderRegistry()
+registry = SettingsLoaderRegistry({
+    "python": ModuleLoader,
+    "file": FileLoader,
+    "http": HttpLoader,
+    "https": HttpLoader,
+})
 register = registry.register
 factory = registry.factory
