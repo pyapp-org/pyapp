@@ -89,6 +89,7 @@ class ExtensionRegistry(List[Extension]):
     """
     Registry for tracking install PyApp extensions.
     """
+
     def load(self, module_name: str):
         """
         Load a module
@@ -128,7 +129,8 @@ class ExtensionRegistry(List[Extension]):
         """
         return tuple(
             loader_factory(module.default_settings)
-            for module in self if module.default_settings
+            for module in self
+            if module.default_settings
         )
 
     @property

@@ -14,7 +14,13 @@ class SettingsReport:
 
     width = 80
 
-    def __init__(self, verbose: bool = False, no_color: bool = False, f_out: TextIO = sys.stdout, settings: str = None):
+    def __init__(
+        self,
+        verbose: bool = False,
+        no_color: bool = False,
+        f_out: TextIO = sys.stdout,
+        settings: str = None,
+    ):
         """
         Initialise check report
 

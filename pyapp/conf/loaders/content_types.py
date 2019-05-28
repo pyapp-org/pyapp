@@ -24,14 +24,15 @@ def content_type_from_url(parse_result: ParseResult) -> str:
     """
     # Check for an explicit type
     file_type = parse_qs(parse_result.query).get("type")
-    if not file_type:
+    if file_type:
+        file_type = file_type[0]
+    else:
         # Fallback to guessing based off the file name
         file_type, _ = mimetypes.guess_type(parse_result.path, strict=False)
-
-    if not file_type:
-        # Try non-official source
-        extension = Path(parse_result.path).suffix
-        file_type = UNOFFICIAL_CONTENT_TYPES.get(extension)
+        if not file_type:
+            # Try non-official source
+            extension = Path(parse_result.path).suffix
+            file_type = UNOFFICIAL_CONTENT_TYPES.get(extension)
 
     return file_type
 
@@ -39,16 +40,10 @@ def content_type_from_url(parse_result: ParseResult) -> str:
 ContentTypeParser = Callable[[TextIO], Dict[str, Any]]
 
 
-class ContentTypeParserRegistry:
+class ContentTypeParserRegistry(Dict[str, ContentTypeParser]):
     """
     Registry of content type parsers.
     """
-
-    def __init__(self):
-        self.content_parsers: Dict[str, ContentTypeParser] = {
-            "application/json": json_load,
-            "application/x-yaml": yaml_load,
-        }
 
     def parse_file(self, fp, content_type: str) -> Dict[str, Any]:
         """
@@ -57,7 +52,7 @@ class ContentTypeParserRegistry:
         :raises: UnsupportedContentType
 
         """
-        content_parser = self.content_parsers.get(content_type)
+        content_parser = self.get(content_type)
         if not content_parser:
             raise UnsupportedContentType(f"No parser for `{content_type}`")
 
@@ -73,7 +68,9 @@ class ContentTypeParserRegistry:
             content_types = (content_types,)
 
         for content_type in content_types:
-            self.content_parsers[content_type] = parser
+            self[content_type] = parser
 
 
-registry = ContentTypeParserRegistry()
+registry = ContentTypeParserRegistry(
+    {"application/json": json_load, "application/x-yaml": yaml_load}
+)
