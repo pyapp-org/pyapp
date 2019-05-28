@@ -2,12 +2,6 @@ import importlib
 
 from typing import Any
 
-# Try to load colorama
-try:
-    import colorama
-except ImportError:
-    colorama = None
-
 
 def is_iterable(obj: Any) -> bool:
     """

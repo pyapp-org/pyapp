@@ -9,7 +9,6 @@ from typing import Sequence, Optional, Any
 
 from pyapp.checks.registry import CheckRegistry, CheckMessage
 from pyapp.checks.registry import registry
-from pyapp.utils import colorama
 
 COLOURS = {
     # Type: (Title, Border),
@@ -54,8 +53,7 @@ class CheckReport:
         """
         self.verbose = verbose
         self.f_out = f_out
-        # Default color to be disabled if colorama is not installed.
-        self.no_color = no_color if colorama else True
+        self.no_color = no_color
         self.registry = check_registry
 
         # Generate templates
