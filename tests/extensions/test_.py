@@ -2,7 +2,7 @@ from pyapp.extensions.registry import ExtensionRegistry
 
 
 class TestExtensionRegistry:
-    def test_load_with_metadata(self):
+    def test_load__with_metadata(self):
         target = ExtensionRegistry()
 
         target.load("tests.sample_ext")
@@ -17,7 +17,7 @@ class TestExtensionRegistry:
             },
         )
 
-    def test_load_without_metadata(self):
+    def test_load__without_metadata(self):
         target = ExtensionRegistry()
 
         target.load("tests.sample_ext_simple")
@@ -32,7 +32,7 @@ class TestExtensionRegistry:
             },
         )
 
-    def test_load_from_settings(self):
+    def test_load__from_settings(self):
         target = ExtensionRegistry()
 
         target.load_from_settings()
