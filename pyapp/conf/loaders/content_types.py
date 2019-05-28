@@ -2,7 +2,7 @@ import mimetypes
 
 from pathlib import Path
 from typing import Dict, Any, Callable, TextIO, Union, Sequence
-from urllib.parse import ParseResult, parse_qs
+from yarl import URL
 
 # Supported content types
 from json import load as json_load
@@ -18,20 +18,18 @@ from pyapp.exceptions import UnsupportedContentType
 UNOFFICIAL_CONTENT_TYPES = {".yaml": "application/x-yaml", ".yml": "application/x-yaml"}
 
 
-def content_type_from_url(parse_result: ParseResult) -> str:
+def content_type_from_url(url: URL) -> str:
     """
     Determine a content type from a parse result.
     """
     # Check for an explicit type
-    file_type = parse_qs(parse_result.query).get("type")
-    if file_type:
-        file_type = file_type[0]
-    else:
+    file_type = url.query.get("type")
+    if not file_type:
         # Fallback to guessing based off the file name
-        file_type, _ = mimetypes.guess_type(parse_result.path, strict=False)
+        file_type, _ = mimetypes.guess_type(url.path, strict=False)
         if not file_type:
             # Try non-official source
-            extension = Path(parse_result.path).suffix
+            extension = Path(url.path).suffix
             file_type = UNOFFICIAL_CONTENT_TYPES.get(extension)
 
     return file_type

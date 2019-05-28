@@ -4,21 +4,21 @@ import tempfile
 
 from typing import TextIO, Tuple
 from urllib.error import ContentTooShortError
-from urllib.parse import ParseResult
 from urllib.request import urlopen
+from yarl import URL
 
 from pyapp.exceptions import InvalidConfiguration
 from .base import Loader
 from .content_types import registry, content_type_from_url
 
 
-def retrieve_file(url: str) -> Tuple[TextIO, str]:
+def retrieve_file(url: URL) -> Tuple[TextIO, str]:
     """
     Fetch a file from a URL (handling SSL).
 
     This is based off `urllib.request.urlretrieve`.
     """
-    context = ssl.SSLContext if url.startswith("https") else None
+    context = ssl.SSLContext if url.scheme.startswith("https") else None
 
     with contextlib.closing(urlopen(url, context=context)) as fp:
         bs = 1024 * 8
@@ -56,7 +56,7 @@ class HttpLoader(Loader):
 
     Usage::
 
-        >>> loader = HttpLoader('https://hostname/path/to/settings.json')
+        >>> loader = HttpLoader(URL("https://hostname/path/to/settings.json"))
         >>> settings = dict(loader)
 
     """
@@ -64,13 +64,13 @@ class HttpLoader(Loader):
     scheme = ("http", "https")
 
     @classmethod
-    def from_url(cls, parse_result: ParseResult) -> Loader:
+    def from_url(cls, url: URL) -> Loader:
         """
         Create an instance of :class:`HttpLoader` from :class:`urllib.parse.ParseResult`.
         """
-        return HttpLoader(parse_result.geturl())
+        return HttpLoader(url)
 
-    def __init__(self, url: str):
+    def __init__(self, url: URL):
         self.url = url
         self._fp = None
         self.content_type = None
@@ -103,7 +103,7 @@ class HttpLoader(Loader):
         return ((k, v) for k, v in data.items() if k.isupper())
 
     def __str__(self):
-        return self.url
+        return str(self.url)
 
     def close(self):
         """

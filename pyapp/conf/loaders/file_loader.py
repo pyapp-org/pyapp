@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Union
-from urllib.parse import ParseResult
+from yarl import URL
 
 from pyapp.exceptions import InvalidConfiguration
 from .base import Loader
@@ -21,12 +21,12 @@ class FileLoader(Loader):
     scheme = "file"
 
     @classmethod
-    def from_url(cls, parse_result: ParseResult) -> Loader:
+    def from_url(cls, url: URL) -> Loader:
         """
         Create an instance of :class:`FileLoader` from :class:`urllib.parse.ParseResult`.
         """
-        content_type = content_type_from_url(parse_result)
-        return cls(parse_result.path, content_type)
+        content_type = content_type_from_url(url)
+        return cls(url.path, content_type)
 
     def __init__(
         self, path: Union[str, Path], content_type: str, *, encoding: str = "UTF8"

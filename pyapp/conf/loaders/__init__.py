@@ -7,8 +7,8 @@ application settings.
 """
 import importlib
 
-from typing import Iterator, Tuple, Any, Dict, Type, Union, Callable
-from urllib.parse import urlparse, ParseResult
+from typing import Iterator, Tuple, Any, Dict, Type, Union
+from yarl import URL
 
 from pyapp.exceptions import InvalidConfiguration
 from .base import Loader
@@ -32,11 +32,11 @@ class ModuleLoader(Loader):
     scheme = "python"
 
     @classmethod
-    def from_url(cls, parse_result: ParseResult) -> Loader:
+    def from_url(cls, url: URL) -> Loader:
         """
         Create an instance of :class:`ModuleLoader` from :class:`urllib.parse.ParseResult`.
         """
-        return cls(parse_result.path)
+        return cls(url.path)
 
     def __init__(self, module: str):
         """
@@ -64,28 +64,23 @@ class SettingsLoaderRegistry(Dict[str, LoaderType]):
     Registry of settings loaders
     """
 
-    def register(
-        self, loader: LoaderType = None
-    ) -> Union[LoaderType, Callable[[LoaderType], LoaderType]]:
+    def register(self, loader: LoaderType) -> LoaderType:
         """
         Register a new loader, this method can be used as decorator
 
         :param loader: Loader to register
 
         """
-        if loader is None:
-            return self.register
-        else:
-            loader_schemes = getattr(loader, "scheme")
-            if isinstance(loader_schemes, str):
-                loader_schemes = (loader_schemes,)
+        loader_schemes = getattr(loader, "scheme")
+        if isinstance(loader_schemes, str):
+            loader_schemes = (loader_schemes,)
 
-            for loader_scheme in loader_schemes:
-                self[loader_scheme] = loader
+        for loader_scheme in loader_schemes:
+            self[loader_scheme] = loader
 
-            return loader
+        return loader
 
-    def factory(self, settings_url: str) -> Loader:
+    def factory(self, settings_url: Union[str, URL]) -> Loader:
         """
         Factory method that returns a factory suitable for opening the settings uri reference.
 
@@ -96,25 +91,27 @@ class SettingsLoaderRegistry(Dict[str, LoaderType]):
         :raises: ValueError
 
         """
-        result = urlparse(settings_url)
-        if not result.scheme:
+        url = URL(settings_url)
+        if not url.scheme:
             # If no scheme is defined assume python module
-            return ModuleLoader.from_url(result)
+            return ModuleLoader.from_url(url)
 
         try:
-            return self[result.scheme].from_url(result)
+            return self[url.scheme].from_url(url)
         except KeyError:
             raise InvalidConfiguration(
-                f"Unknown scheme `{result.scheme}` in settings URI: {result}"
+                f"Unknown scheme `{url.scheme}` in settings URI: {url}"
             )
 
 
 # Singleton instance
-registry = SettingsLoaderRegistry({
-    "python": ModuleLoader,
-    "file": FileLoader,
-    "http": HttpLoader,
-    "https": HttpLoader,
-})
+registry = SettingsLoaderRegistry(
+    {
+        "python": ModuleLoader,
+        "file": FileLoader,
+        "http": HttpLoader,
+        "https": HttpLoader,
+    }
+)
 register = registry.register
 factory = registry.factory
