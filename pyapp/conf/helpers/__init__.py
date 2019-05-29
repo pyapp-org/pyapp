@@ -62,8 +62,6 @@ configuration where configuration is obtained from data storage eg a database.
 
 .. autoclass:: ProviderFactoryBase
 
-.. autoclass:: ProviderBase
-
 """
 import itertools
 
