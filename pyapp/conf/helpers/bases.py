@@ -1,7 +1,8 @@
 import abc
 import threading
 
-from typing import Any
+from abc import ABCMeta
+from typing import Any, Generic, TypeVar
 
 
 class DefaultCache(dict):
@@ -9,6 +10,8 @@ class DefaultCache(dict):
     Very similar to :py:class:`collections.defaultdict` (using __missing__)
     however passes the specified key to the default factory method.
     """
+
+    __slots__ = ('default_factory',)
 
     def __init__(self, default_factory=None, **kwargs):
         super().__init__(**kwargs)
@@ -21,26 +24,23 @@ class DefaultCache(dict):
         return value
 
 
-class FactoryMixin:
-    def __call__(self, name: str = None):
-        """
-        Get a named instance.
+FT = TypeVar("FT")
 
-        :param name: Named configuration; default is to the name specified by
-            the `default_name` property.
-        :returns: New instanced of the named type.
 
-        """
-        return self.create_instance(name)
+class FactoryMixin(Generic[FT], metaclass=ABCMeta):
+    """
+    Mixing to provide a factory interface
+    """
+    __slots__ = ()
 
     @abc.abstractmethod
-    def create_instance(self, name: str = None):
+    def create(self, name: str = None) -> FT:
         """
         Create an instance based on a named setting.
         """
 
 
-class SingletonFactoryMixin(FactoryMixin):
+class SingletonFactoryMixin(FactoryMixin[FT], metaclass=ABCMeta):
     """"
     Mixin that provides a single named instance.
 
@@ -51,21 +51,22 @@ class SingletonFactoryMixin(FactoryMixin):
     :py:class:`ThreadLocalSingletonFactoryMixin` is used.
 
     """
+    __slots__ = ('_instances',)
 
     def __init__(self, *args, **kwargs):
-        super(SingletonFactoryMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-        self._instances = DefaultCache(self.create_instance)
+        self._instances = DefaultCache(self.create)
         instances_lock = threading.RLock()
 
-        def replacement_create_instance(name=None):
+        def create_wrapper(name: str = None) -> FT:
             with instances_lock:
                 return self._instances[name]
 
-        self.create_instance = replacement_create_instance
+        self.create = create_wrapper
 
 
-class ThreadLocalSingletonFactoryMixin(FactoryMixin):
+class ThreadLocalSingletonFactoryMixin(FactoryMixin[FT], metaclass=ABCMeta):
     """
     Mixin that provides a single named instance per thread.
 
@@ -74,18 +75,19 @@ class ThreadLocalSingletonFactoryMixin(FactoryMixin):
     not thread safe.
 
     """
+    __slots__ = ('_instances',)
 
     def __init__(self, *args, **kwargs):
-        super(ThreadLocalSingletonFactoryMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._instances = threading.local()
-        create_instance = self.create_instance
+        create = self.create
 
-        def replacement_create_instance(name=None):
+        def create_wrapper(name: str = None) -> FT:
             try:
                 cache = self._instances.cache
             except AttributeError:
-                cache = self._instances.cache = DefaultCache(create_instance)
+                cache = self._instances.cache = DefaultCache(create)
             return cache[name]
 
-        self.create_instance = replacement_create_instance
+        self.create = create_wrapper
