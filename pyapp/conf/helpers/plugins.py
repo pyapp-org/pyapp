@@ -72,7 +72,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
 
     """
 
-    def __init__(self, setting: str, abc: Type[PT], *, default_name: str = None):
+    def __init__(self, setting: str, *, abc: Type[PT] = None, default_name: str = None):
         """
         Initialise a named factory.
 

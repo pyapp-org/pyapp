@@ -16,7 +16,7 @@ pyApp - A python application framework
    :target: https://codecov.io/gh/pyapp-org/pyapp
    :alt: Test Coverage
 
-.. image:: https://api.codeclimate.com/v1/badges/e7435637488d1ac363e2/maintainability
+.. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/maintainability
    :target: https://codeclimate.com/github/pyapp-org/pyapp/maintainability
    :alt: Maintainability
 
@@ -25,6 +25,7 @@ Many features inspired by Django, but modified to be more general for use
 outside of web applications.
 
 With PyApp 4.0, support for versions of Python < 3.6 are no longer supported.
+
 
 So what do we handle?
 =====================
@@ -42,6 +43,10 @@ So what do we handle?
 - Application - Provides a extensible and simple CLI interface for starting
   running commands, comes with built-in commands to support Checks, report
   settings/extensions.
+- Logging - Initialise and apply sane logging defaults (when using an Application).
+  Defaults to logging to `stderr` so your application can write data to `stdout`
+  for piping into other tools.
+
 
 Extensions
 ==========
@@ -52,4 +57,4 @@ Extensions
 Coming soon
 -----------
 
-Support for common services eg email, as well as companion libraries to add plugin factories for, Paramiko, LDAP etc.
+Extensions for LDAP, Paramiko, SMTP, Boto.

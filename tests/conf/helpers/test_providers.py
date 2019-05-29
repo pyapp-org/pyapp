@@ -40,13 +40,13 @@ class TestProviderFactoryBase:
         actual = target.provider_summaries
 
         assert len(actual) == 1
-        assert actual == [
+        assert actual == (
             providers.ProviderSummary(
                 "tests.conf.helpers.test_providers.ProviderBaseTest",
                 "Test Provider",
                 "Description.",
-            )
-        ]
+            ),
+        )
 
     def test_get_provider(self):
         target = ProviderFactoryTest()
@@ -67,7 +67,7 @@ class TestProviderFactoryBase:
             "tests.conf.helpers.test_providers.ProviderBaseTest", {"foo": "bar"}
         )
 
-        actual = target()
+        actual = target.create()
 
         assert isinstance(actual, ProviderBaseTest)
         assert actual.foo == "bar"
@@ -76,7 +76,7 @@ class TestProviderFactoryBase:
         target = ProviderFactoryTest("tests.wrong.ProviderBaseTest")
 
         with pytest.raises(providers.ProviderNotFound):
-            target()
+            target.create()
 
     @pytest.mark.parametrize(
         "provider_settings, expected",
