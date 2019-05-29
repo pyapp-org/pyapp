@@ -56,10 +56,9 @@ Example::
 
 
 """
-import abc
-
+from abc import ABCMeta, abstractmethod
 from collections import namedtuple, OrderedDict
-from typing import Any, Dict, List, Tuple, TypeVar, Type
+from typing import Any, Dict, Sequence, Tuple, TypeVar, Type, Generic
 
 from pyapp import checks
 from pyapp.conf import settings
@@ -72,21 +71,21 @@ __all__ = ("ProviderSummary", "ProviderFactoryBase")
 ProviderSummary = namedtuple("ProviderSummary", ("code", "name", "description"))
 
 
-A = TypeVar("A", covariant=True)
+PT = TypeVar("PT", covariant=True)
 
 
-class ProviderFactoryBase(abc.ABC):
+class ProviderFactoryBase(Generic[PT], metaclass=ABCMeta):
     """
     Factory to instantiate and configure a provider.
     """
 
-    def __init__(self, setting: str, *, abstract_base: Type[A] = None):
+    def __init__(self, setting: str, abc: Type[PT] = None):
         self.setting = setting
-        self.abstract_base = abstract_base
+        self.abc = abc
 
         self._register_checks()
 
-    def __call__(self, *args, **kwargs):
+    def create(self, *args, **kwargs) -> PT:
         provider_code, provider_config = self.load_config(*args, **kwargs)
         provider = self.get_provider(provider_code)
         return provider(**provider_config)
@@ -106,22 +105,22 @@ class ProviderFactoryBase(abc.ABC):
         return providers
 
     @cached_property
-    def provider_summaries(self) -> List[ProviderSummary]:
+    def provider_summaries(self) -> Sequence[ProviderSummary]:
         """
         Summary list of the available providers with code, name and description.
 
         This is intended for display purposes.
         """
-        return [
+        return tuple(
             ProviderSummary(
                 code,
                 getattr(provider, "name", provider.__name__),
                 (provider.__doc__ or "").strip(),
             )
             for code, provider in self.providers.items()
-        ]
+        )
 
-    def get_provider(self, provider_code: str) -> A:
+    def get_provider(self, provider_code: str) -> PT:
         """
         Get provider type from the supplied config.
         """
@@ -132,7 +131,7 @@ class ProviderFactoryBase(abc.ABC):
                 f"Provider `{provider_code}` was not found in the provider list."
             )
 
-    @abc.abstractmethod
+    @abstractmethod
     def load_config(self, *args, **kwargs) -> Tuple[str, Dict[str, Any]]:
         """
         Load configuration for data store.

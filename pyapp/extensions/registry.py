@@ -1,6 +1,5 @@
 import importlib
 
-from types import ModuleType
 from typing import Optional, Callable, Sequence, List, Dict
 
 from pyapp.conf import settings, factory as loader_factory
@@ -18,11 +17,6 @@ class Extension:
     def __init__(self, module, package):
         self.module = module
         self.package = package
-
-    def __eq__(self, other):
-        if isinstance(other, ModuleType):
-            return self.module == other
-        return NotImplemented
 
     def summary(self) -> Dict[str, str]:
         return {
@@ -89,6 +83,7 @@ class ExtensionRegistry(List[Extension]):
     """
     Registry for tracking install PyApp extensions.
     """
+
     def load(self, module_name: str):
         """
         Load a module
@@ -128,7 +123,8 @@ class ExtensionRegistry(List[Extension]):
         """
         return tuple(
             loader_factory(module.default_settings)
-            for module in self if module.default_settings
+            for module in self
+            if module.default_settings
         )
 
     @property

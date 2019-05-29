@@ -8,8 +8,8 @@ from pyapp.conf.helpers import plugins as conf_factory
 from tests import factory
 
 
-def factory_test(key):
-    return "Factory[{}]".format(key)
+def factory_test(key: str) -> str:
+    return f"Factory[{key}]"
 
 
 class TestDefaultCache:
@@ -41,7 +41,7 @@ class TestNamedFactory:
     def test_get_default(self):
         target = conf_factory.NamedPluginFactory("TEST_NAMED_FACTORY")
 
-        actual = target()
+        actual = target.create()
         assert isinstance(actual, factory.Bar)
         assert str(actual) == "Bar"
         assert actual.length == 42
@@ -49,7 +49,7 @@ class TestNamedFactory:
     def test_get_specific(self):
         target = conf_factory.NamedPluginFactory("TEST_NAMED_FACTORY")
 
-        actual = target("iron")
+        actual = target.create("iron")
         assert isinstance(actual, factory.IronBar)
         assert str(actual) == "Iron Bar"
         assert actual.length == 24
@@ -59,7 +59,7 @@ class TestNamedFactory:
             "TEST_NAMED_FACTORY", default_name="iron"
         )
 
-        actual = target()
+        actual = target.create()
         assert isinstance(actual, factory.IronBar)
         assert str(actual) == "Iron Bar"
         assert actual.length == 24
@@ -68,14 +68,14 @@ class TestNamedFactory:
         target = conf_factory.NamedPluginFactory("TEST_NAMED_FACTORY")
 
         with pytest.raises(KeyError):
-            target("copper")
+            target.create("copper")
 
     def test_with_abc_defined(self):
         target = conf_factory.NamedPluginFactory(
             "TEST_NAMED_FACTORY", abc=factory.BarABC
         )
 
-        actual = target()
+        actual = target.create()
         assert isinstance(actual, factory.Bar)
 
     def test_type_error_raised_if_not_correct_abc(self):
@@ -84,7 +84,7 @@ class TestNamedFactory:
         )
 
         with pytest.raises(TypeError):
-            target("steel")
+            target.create("steel")
 
     def test_get_type_definition_is_cached(self, monkeypatch):
         mock_import = mock.Mock()
@@ -93,8 +93,8 @@ class TestNamedFactory:
 
         target = conf_factory.NamedPluginFactory("TEST_NAMED_FACTORY")
 
-        actual1 = target()
-        actual2 = target()
+        actual1 = target.create()
+        actual2 = target.create()
 
         assert isinstance(actual1, factory.Bar)
         assert isinstance(actual2, factory.Bar)

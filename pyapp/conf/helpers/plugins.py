@@ -16,18 +16,19 @@ framework to allow checks to be executed on the instances.
 Usage::
 
     >>> foo_factory = NamedPluginFactory('FOO')
-    >>> instance = foo_factory()
+    >>> instance = foo_factory.create()
 
 or taking advantage of the factory being callable we can create a singleton
 factory::
 
     >>> get_bar_instance = NamedSingletonPluginFactory('BAR')
     >>> # Get iron bar instance
-    >>> bar = get_bar_instance('iron')
+    >>> bar = get_bar_instance.create('iron')
 
 """
 import threading
 
+from abc import ABCMeta
 from typing import TypeVar, Type
 
 from pyapp import checks
@@ -47,10 +48,10 @@ __all__ = (
 )
 
 
-A = TypeVar("A", covariant=True)
+PT = TypeVar("PT", covariant=True)
 
 
-class NamedPluginFactory(FactoryMixin):
+class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
     """
     Factory object that generates a named instance from a definition in
     settings. Can optionally verify an instance type against a specified ABC
@@ -71,7 +72,7 @@ class NamedPluginFactory(FactoryMixin):
 
     """
 
-    def __init__(self, setting: str, *, abc: Type[A] = None, default_name: str = None):
+    def __init__(self, setting: str, abc: Type[PT], *, default_name: str = None):
         """
         Initialise a named factory.
 
@@ -83,7 +84,8 @@ class NamedPluginFactory(FactoryMixin):
             default instance type if a value is not supplied.
 
         """
-        assert isinstance(setting, str) and setting.isupper()
+        if not (isinstance(setting, str) and setting.isupper()):
+            raise ValueError(f"Setting `{setting}` must be upper-case")
         self.setting = setting
         self.abc = abc
         self.default_name = default_name or "default"
@@ -104,7 +106,7 @@ class NamedPluginFactory(FactoryMixin):
         """
         return self._instance_definitions.keys()
 
-    def _get_type_definition(self, name):
+    def _get_type_definition(self, name: str):
         try:
             type_name, kwargs = self._instance_definitions[name]
         except KeyError:
@@ -118,7 +120,7 @@ class NamedPluginFactory(FactoryMixin):
 
         return type_, kwargs
 
-    def create_instance(self, name: str = None) -> A:
+    def create(self, name: str = None) -> PT:
         """
         Get a named instance.
 
@@ -243,7 +245,7 @@ class NamedPluginFactory(FactoryMixin):
         return messages
 
 
-class NamedSingletonPluginFactory(SingletonFactoryMixin, NamedPluginFactory):
+class NamedSingletonPluginFactory(SingletonFactoryMixin, NamedPluginFactory[PT]):
     """
     :py:class:`NamedPluginFactory` that provides a single instance of an object.
 
@@ -257,7 +259,7 @@ class NamedSingletonPluginFactory(SingletonFactoryMixin, NamedPluginFactory):
 
 
 class ThreadLocalNamedSingletonPluginFactory(
-    ThreadLocalSingletonFactoryMixin, NamedPluginFactory
+    ThreadLocalSingletonFactoryMixin, NamedPluginFactory[PT]
 ):
     """
     :py:class:`NamedPluginFactory` that provides a single instance of a plugin per

@@ -3,7 +3,7 @@ import pytest
 import pyapp.conf
 
 
-class TestSettings(object):
+class TestSettings:
     def test_configure(self):
         settings = pyapp.conf.Settings()
         settings.configure("tests.settings")

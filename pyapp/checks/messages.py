@@ -2,7 +2,7 @@
 Messages
 """
 from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL, getLevelName
-from typing import Any, Union, List
+from typing import Any
 
 __all__ = (
     "CheckMessage",

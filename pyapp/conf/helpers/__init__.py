@@ -67,19 +67,21 @@ configuration where configuration is obtained from data storage eg a database.
 """
 import itertools
 
+from abc import ABCMeta
 from typing import Dict, Any, Sequence
 
 from pyapp import checks
 from pyapp.conf import settings
-from pyapp.conf.helpers.plugins import *
-from pyapp.conf.helpers.providers import *
 from pyapp.utils import cached_property
 from .bases import (
     DefaultCache,
+    FT,
     FactoryMixin,
     SingletonFactoryMixin,
     ThreadLocalSingletonFactoryMixin,
 )
+from .plugins import *
+from .providers import *
 
 __all__ = (
     "NamedConfiguration",
@@ -89,8 +91,9 @@ __all__ = (
     "ThreadLocalNamedSingletonFactory",
     "NamedPluginFactory",
     "NamedSingletonPluginFactory",
-    "ThreadLocalNamedSingletonPluginFactory" "ProviderFactoryBase",
-    "ProviderBase",
+    "ThreadLocalNamedSingletonPluginFactory",
+    "ProviderSummary",
+    "ProviderFactoryBase",
 )
 
 
@@ -117,6 +120,7 @@ class NamedConfiguration:
     def __init__(
         self,
         setting: str,
+        *,
         defaults: Dict[str, Any] = None,
         required_keys: Sequence[str] = None,
         optional_keys: Sequence[str] = None,
@@ -142,7 +146,8 @@ class NamedConfiguration:
             default instance type if a value is not supplied.
 
         """
-        assert isinstance(setting, str) and setting.isupper()
+        if not (isinstance(setting, str) and setting.isupper()):
+            raise ValueError(f"Setting `{setting}` must be upper-case")
         self.setting = setting
 
         if defaults is not None:
@@ -235,14 +240,11 @@ class NamedConfiguration:
 
     checks.check_name = "{obj.setting}.check_configuration"
 
-    def check_definition(self, config_definitions, name, **_):
+    def check_definition(
+        self, config_definitions: Dict[str, Dict[str, Any]], name: str, **_
+    ):
         """
         Checks for individual definitions.
-
-        :param config_definitions:
-        :param name:
-        :return:
-
         """
         definition = config_definitions[name]
         if not isinstance(definition, dict):
@@ -278,13 +280,15 @@ class NamedConfiguration:
         return messages
 
 
-class NamedFactory(FactoryMixin, NamedConfiguration):
+class NamedFactory(NamedConfiguration, FactoryMixin[FT], metaclass=ABCMeta):
     """
     Factory for creating instances from a named configuration.
     """
 
 
-class NamedSingletonFactory(SingletonFactoryMixin, NamedFactory):
+class NamedSingletonFactory(
+    NamedConfiguration, SingletonFactoryMixin[FT], metaclass=ABCMeta
+):
     """"
     :py:class:`NamedFactory` that provides a single instance of an object.
 
@@ -296,7 +300,9 @@ class NamedSingletonFactory(SingletonFactoryMixin, NamedFactory):
     """
 
 
-class ThreadLocalNamedSingletonFactory(ThreadLocalSingletonFactoryMixin, NamedFactory):
+class ThreadLocalNamedSingletonFactory(
+    NamedConfiguration, ThreadLocalSingletonFactoryMixin[FT], metaclass=ABCMeta
+):
     """
     :py:class:`NamedFactory` that provides a single instance of an object per
     thread.

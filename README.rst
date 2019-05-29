@@ -21,22 +21,35 @@ pyApp - A python application framework
    :alt: Maintainability
 
 
-Many features inspired by Django, but modified to be more general for use outside of web applications.
+Many features inspired by Django, but modified to be more general for use
+outside of web applications.
 
-PyApp with the release of 4.0 supports Python 3.6+ all previous versions are no longer supported.
+With PyApp 4.0, support for versions of Python < 3.6 are no longer supported.
 
 So what do we handle?
 =====================
 
 - Configuration - Loading, merging your settings from different sources
   + Python modules
-  + Files and HTTP(s) endpoints for JSON and YAML files.
-- Instance Factories - Configuration of plugins, database connections, or just implementations of an ``ABC``.
+  + File and HTTP(S) endpoints for JSON and YAML files.
+- Instance Factories - Configuration of plugins, database connections, or just
+  implementations of an ``ABC``.
   Leveraging settings to make setup of your application easy and reduce coupling.
-- Checks - A framework for checking your settings are correct, can the application connect to that API end point?
-- Application - Provides a extensible and simple CLI interface for adding more commands, comes with commands to support Checks, settings.
+- Checks - A framework for checking settings are correct and checking that your
+  application connect to that API end point (your ops team will love you)?
+- Extensions - Extend the basic framework with extensions, the framework provides
+  deterministic startup and the ability to register checks and default settings.
+- Application - Provides a extensible and simple CLI interface for starting
+  running commands, comes with built-in commands to support Checks, report
+  settings/extensions.
+
+Extensions
+==========
+
+- SQLAlchemy - `pae.sqlalchemy <https://www.github.com/pyapp-org/pae.sqlalchemy>`_
+- Redis - `pae.redis <https://www.github.com/pyapp-org/pae.redis>`_
 
 Coming soon
 -----------
 
-Support for common services eg email, as well as companion libraries to add plugin factories for SQL Alchemy, Redis, Paramiko, LDAP etc.
+Support for common services eg email, as well as companion libraries to add plugin factories for, Paramiko, LDAP etc.
