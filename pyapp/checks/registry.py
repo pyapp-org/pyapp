@@ -1,6 +1,6 @@
 from collections import namedtuple
 from itertools import chain
-from typing import NamedTuple
+from typing import Iterable, Sequence
 
 from pyapp import extensions
 from pyapp.conf import settings
@@ -18,10 +18,7 @@ class Tags:
 CheckResult = namedtuple("CheckResult", "check, messages")
 
 
-class CheckRegistry:
-    def __init__(self):
-        self.registered_checks = []
-
+class CheckRegistry(list):
     def register(self, check=None, *tags):
         """
         Can be used as a function or a decorator. Register given function
@@ -34,8 +31,8 @@ class CheckRegistry:
 
         def inner(func):
             setattr(func, "_check__tags", tags)
-            if func not in self.registered_checks:
-                self.registered_checks.append(func)
+            if func not in self:
+                self.append(func)
             return func
 
         if callable(check) or hasattr(check, "checks"):
@@ -45,23 +42,21 @@ class CheckRegistry:
                 tags += (check,)
             return inner
 
-    def checks_by_tags(self, tags=None):
+    def checks_by_tags(self, tags: Iterable[str] = None):
         """
         Return an iterator of checks that relate to a specific tag (or tags)
         """
-        checks = self.registered_checks
-
         if tags:
             tags = set(tags)
             return (
                 check
-                for check in checks
+                for check in self
                 if set(getattr(check, "_check__tags", [])) & tags
             )
         else:
-            return iter(checks)
+            return iter(self)
 
-    def run_checks_iter(self, tags=None, pre_callback=None):
+    def run_checks_iter(self, tags: Iterable[str] = None, pre_callback=None):
         """
         Iterate through all registered checks and run each to return messages.
 
@@ -88,14 +83,16 @@ class CheckRegistry:
             else:
                 yield CheckResult(check, tuple())
 
-    def run_checks(self, tags=None):
+    def run_checks(self, tags: Iterable[str] = None) -> Sequence[CheckMessage]:
         """
         Run all registered checks and return Messages. Use tags to filter checks.
 
         :param tags: Iterable of tags to filter checks by.
 
         """
-        return list(chain.from_iterable(r.messages for r in self.run_checks_iter(tags)))
+        return tuple(
+            chain.from_iterable(r.messages for r in self.run_checks_iter(tags))
+        )
 
 
 # Singleton instance of registry

@@ -10,8 +10,8 @@ class TestCheckRegistry(object):
         def my_check_func(**kwargs):
             pass
 
-        assert len(target.registered_checks) == 1
-        assert my_check_func in target.registered_checks
+        assert len(target) == 1
+        assert my_check_func in target
         assert len(my_check_func._check__tags) == 0
 
     def test_register__with_decorator_with_tags(self):
@@ -21,8 +21,8 @@ class TestCheckRegistry(object):
         def my_check_func(**kwargs):
             pass
 
-        assert len(target.registered_checks) == 1
-        assert my_check_func in target.registered_checks
+        assert len(target) == 1
+        assert my_check_func in target
         assert len(my_check_func._check__tags) == 2
 
     def test_register__with_method(self):
@@ -33,8 +33,8 @@ class TestCheckRegistry(object):
 
         target.register(my_check_func, "foo", "bar")
 
-        assert len(target.registered_checks) == 1
-        assert my_check_func in target.registered_checks
+        assert len(target) == 1
+        assert my_check_func in target
         assert len(my_check_func._check__tags) == 2
 
     def test_register__same_check(self):
@@ -46,8 +46,8 @@ class TestCheckRegistry(object):
 
         target.register(my_check_func, "foo", "bar")
 
-        assert len(target.registered_checks) == 1
-        assert my_check_func in target.registered_checks
+        assert len(target) == 1
+        assert my_check_func in target
         assert len(my_check_func._check__tags) == 2
 
     def test_register__attached_check(self):
@@ -63,8 +63,8 @@ class TestCheckRegistry(object):
 
         target.register(my_func, "foo")
 
-        assert len(target.registered_checks) == 1
-        assert my_func in target.registered_checks
+        assert len(target) == 1
+        assert my_func in target
         assert len(my_func._check__tags) == 1
 
     def test_run_checks__all_successful(self):
@@ -96,11 +96,11 @@ class TestCheckRegistry(object):
         actual = target.run_checks()
 
         assert len(actual) == 3
-        assert [
+        assert (
             messages.Info("Message1"),
             messages.Info("Message2"),
             messages.Info("Message3"),
-        ] == actual
+        ) == actual
 
     def test_run_checks__filter_by_tag(self):
         target = registry.CheckRegistry()
@@ -118,22 +118,22 @@ class TestCheckRegistry(object):
             return messages.Info("Message3"), messages.Info("Message4")
 
         actual = target.run_checks(["foo"])
-        assert [messages.Info("Message1"), messages.Info("Message2")] == actual
+        assert (messages.Info("Message1"), messages.Info("Message2")) == actual
 
         actual = target.run_checks(["bar"])
-        assert [
+        assert (
             messages.Info("Message2"),
             messages.Info("Message3"),
             messages.Info("Message4"),
-        ] == actual
+        ) == actual
 
         actual = target.run_checks(["foo", "bar"])
-        assert [
+        assert (
             messages.Info("Message1"),
             messages.Info("Message2"),
             messages.Info("Message3"),
             messages.Info("Message4"),
-        ] == actual
+        ) == actual
 
     def test_run_checks__attached_checks(self):
         target = registry.CheckRegistry()
@@ -147,4 +147,4 @@ class TestCheckRegistry(object):
         target.register(instance)
 
         actual = target.run_checks()
-        assert [messages.Info("Message1"), messages.Info("Message2")] == actual
+        assert (messages.Info("Message1"), messages.Info("Message2")) == actual
