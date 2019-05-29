@@ -11,7 +11,7 @@ class DefaultCache(dict):
     however passes the specified key to the default factory method.
     """
 
-    __slots__ = ('default_factory',)
+    __slots__ = ("default_factory",)
 
     def __init__(self, default_factory=None, **kwargs):
         super().__init__(**kwargs)
@@ -31,6 +31,7 @@ class FactoryMixin(Generic[FT], metaclass=ABCMeta):
     """
     Mixing to provide a factory interface
     """
+
     __slots__ = ()
 
     @abc.abstractmethod
@@ -51,7 +52,8 @@ class SingletonFactoryMixin(FactoryMixin[FT], metaclass=ABCMeta):
     :py:class:`ThreadLocalSingletonFactoryMixin` is used.
 
     """
-    __slots__ = ('_instances',)
+
+    __slots__ = ("_instances",)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -75,7 +77,8 @@ class ThreadLocalSingletonFactoryMixin(FactoryMixin[FT], metaclass=ABCMeta):
     not thread safe.
 
     """
-    __slots__ = ('_instances',)
+
+    __slots__ = ("_instances",)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

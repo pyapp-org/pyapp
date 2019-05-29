@@ -240,7 +240,9 @@ class NamedConfiguration:
 
     checks.check_name = "{obj.setting}.check_configuration"
 
-    def check_definition(self, config_definitions: Dict[str, Dict[str, Any]], name: str, **_):
+    def check_definition(
+        self, config_definitions: Dict[str, Dict[str, Any]], name: str, **_
+    ):
         """
         Checks for individual definitions.
         """
@@ -284,7 +286,9 @@ class NamedFactory(NamedConfiguration, FactoryMixin[FT], metaclass=ABCMeta):
     """
 
 
-class NamedSingletonFactory(NamedConfiguration, SingletonFactoryMixin[FT], metaclass=ABCMeta):
+class NamedSingletonFactory(
+    NamedConfiguration, SingletonFactoryMixin[FT], metaclass=ABCMeta
+):
     """"
     :py:class:`NamedFactory` that provides a single instance of an object.
 
@@ -296,7 +300,9 @@ class NamedSingletonFactory(NamedConfiguration, SingletonFactoryMixin[FT], metac
     """
 
 
-class ThreadLocalNamedSingletonFactory(NamedConfiguration, ThreadLocalSingletonFactoryMixin[FT], metaclass=ABCMeta):
+class ThreadLocalNamedSingletonFactory(
+    NamedConfiguration, ThreadLocalSingletonFactoryMixin[FT], metaclass=ABCMeta
+):
     """
     :py:class:`NamedFactory` that provides a single instance of an object per
     thread.
