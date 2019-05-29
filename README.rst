@@ -43,7 +43,13 @@ So what do we handle?
   running commands, comes with built-in commands to support Checks, report
   settings/extensions.
 
+Extensions
+==========
+
+- SQLAlchemy - `pae.sqlalchemy <https://www.github.com/pyapp-org/pae.sqlalchemy>`_
+- Redis - `pae.redis <https://www.github.com/pyapp-org/pae.redis>`_
+
 Coming soon
 -----------
 
-Support for common services eg email, as well as companion libraries to add plugin factories for SQL Alchemy, Redis, Paramiko, LDAP etc.
+Support for common services eg email, as well as companion libraries to add plugin factories for, Paramiko, LDAP etc.
