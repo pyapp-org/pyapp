@@ -16,7 +16,7 @@ pyApp - A python application framework
    :target: https://codecov.io/gh/pyapp-org/pyapp
    :alt: Test Coverage
 
-.. image:: https://api.codeclimate.com/v1/badges/e7435637488d1ac363e2/maintainability
+.. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/maintainability
    :target: https://codeclimate.com/github/pyapp-org/pyapp/maintainability
    :alt: Maintainability
 
