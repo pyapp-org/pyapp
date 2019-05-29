@@ -8,16 +8,16 @@ pyApp - A python application framework
    :target: https://github.com/ambv/black
    :alt: Once you go Black...
 
-.. image:: https://img.shields.io/travis/timsavage/pyapp.svg?style=flat
-   :target: https://travis-ci.org/timsavage/pyapp
+.. image:: https://img.shields.io/travis/pyapp-org/pyapp.svg?style=flat
+   :target: https://travis-ci.org/pyapp-org/pyapp
    :alt: Travis CI Status
 
-.. image:: https://codecov.io/gh/timsavage/pyapp/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/timsavage/pyapp
+.. image:: https://codecov.io/gh/pyapp-org/pyapp/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/pyapp-org/pyapp
    :alt: Test Coverage
 
 .. image:: https://api.codeclimate.com/v1/badges/e7435637488d1ac363e2/maintainability
-   :target: https://codeclimate.com/github/timsavage/pyapp/maintainability
+   :target: https://codeclimate.com/github/pyapp-org/pyapp/maintainability
    :alt: Maintainability
 
 
