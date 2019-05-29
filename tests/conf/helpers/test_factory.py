@@ -205,8 +205,8 @@ class TestNamedSingletonFactory:
     def test_get_default(self):
         target = conf_factory.NamedSingletonPluginFactory("TEST_NAMED_FACTORY")
 
-        actual1 = target()
-        actual2 = target()
+        actual1 = target.create()
+        actual2 = target.create()
 
         assert actual1 is actual2
 
@@ -218,8 +218,8 @@ class TestNamedSingletonFactory:
             "TEST_NAMED_FACTORY_NO_DEFAULT"
         )
 
-        actual1 = target("iron")
-        actual2 = target("iron")
+        actual1 = target.create("iron")
+        actual2 = target.create("iron")
 
         assert actual1 is actual2
 
@@ -230,8 +230,8 @@ class TestNamedSingletonFactory:
 
         target = conf_factory.NamedSingletonPluginFactory("TEST_NAMED_FACTORY")
 
-        actual1 = target()
-        actual2 = target()
+        actual1 = target.create()
+        actual2 = target.create()
 
         assert isinstance(actual1, factory.Bar)
         assert isinstance(actual2, factory.Bar)
@@ -245,8 +245,8 @@ class TestThreadLocalNamedSingletonPluginFactory(object):
             "TEST_NAMED_FACTORY"
         )
 
-        actual1 = target()
-        actual2 = target()
+        actual1 = target.create()
+        actual2 = target.create()
 
         assert actual1 is actual2
 
@@ -258,8 +258,8 @@ class TestThreadLocalNamedSingletonPluginFactory(object):
             "TEST_NAMED_FACTORY_NO_DEFAULT"
         )
 
-        actual1 = target("iron")
-        actual2 = target("iron")
+        actual1 = target.create("iron")
+        actual2 = target.create("iron")
 
         assert actual1 is actual2
 
@@ -272,8 +272,8 @@ class TestThreadLocalNamedSingletonPluginFactory(object):
             "TEST_NAMED_FACTORY"
         )
 
-        actual1 = target()
-        actual2 = target()
+        actual1 = target.create()
+        actual2 = target.create()
 
         assert isinstance(actual1, factory.Bar)
         assert isinstance(actual2, factory.Bar)

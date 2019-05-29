@@ -86,6 +86,9 @@ class ProviderFactoryBase(Generic[PT], metaclass=ABCMeta):
         self._register_checks()
 
     def create(self, *args, **kwargs) -> PT:
+        """
+        Create a provider instance
+        """
         provider_code, provider_config = self.load_config(*args, **kwargs)
         provider = self.get_provider(provider_code)
         return provider(**provider_config)
