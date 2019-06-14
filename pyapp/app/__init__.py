@@ -50,87 +50,29 @@ import logging.config
 import os
 import sys
 
-from typing import Callable, Optional, Dict, Sequence, Union
+from typing import Dict, Sequence, Optional
 
 from pyapp import conf
 from pyapp import extensions
 from pyapp.app import builtin_handlers
 from pyapp.conf import settings
+from .arguments import *
 
 logger = logging.getLogger(__name__)
 
 
-Handler = Callable[[argparse.Namespace], Optional[int]]
-
-
-class HandlerProxy:
-    """
-    Proxy object that wraps a handler.
-    """
-
-    def __init__(self, handler: Handler, sub_parser: argparse.ArgumentParser):
-        """
-        Initialise proxy
-
-        :param handler: Callable object that accepts a single argument.
-
-        """
-        self.handler = handler
-        self.sub_parser = sub_parser
-
-        # Copy details
-        self.__doc__ = handler.__doc__
-        self.__name__ = handler.__name__
-        self.__module__ = handler.__module__
-
-        # Add any existing arguments
-        if hasattr(handler, "arguments__"):
-            for args, kwargs in handler.arguments__:
-                self.argument(*args, **kwargs)
-            del handler.arguments__
-
-    def __call__(self, *args, **kwargs):
-        return self.handler(*args, **kwargs)
-
-    def argument(self, *args, **kwargs) -> "HandlerProxy":
-        """
-        Add argument to proxy
-        """
-        self.sub_parser.add_argument(*args, **kwargs)
-        return self
-
-
-def argument(*args, **kwargs):
-    """
-    Decorator for adding arguments to a handler.
-
-    This decorator can be used before or after the handler registration
-    decorator :meth:`CliApplication.command` has been used.
-
-    """
-
-    def wrapper(func: Union[Handler, HandlerProxy]) -> Union[Handler, HandlerProxy]:
-        if isinstance(func, HandlerProxy):
-            func.argument(*args, **kwargs)
-        else:
-            # Add the argument to a list that will be consumed by HandlerProxy.
-            if not hasattr(func, "arguments__"):
-                func.arguments__ = [(args, kwargs)]
-            else:
-                func.arguments__.insert(0, (args, kwargs))
-        return func
-
-    return wrapper
-
-
 class CliApplication:
     """
+    Application interface that provides a CLI interface.
+
     :param root_module: The root module for this application (used for discovery of other modules)
     :param name: Name of your application; defaults to `sys.argv[0]`
     :param description: A description of your application for `--help`.
     :param version: Specify a specific version; defaults to `getattr(root_module, '__version__')`
     :param application_settings: The default settings for this application; defaults to `root_module.default_settings`
     :param application_checks: Location of application checks file; defaults to `root_module.checks` if it exists.
+    :param env_settings_key: Key used to define settings file in environment.
+    :param env_loglevel_key: Key used to define log level in environment
 
     """
 
@@ -172,14 +114,59 @@ class CliApplication:
         application_checks: str = None,
         env_settings_key: str = None,
         env_loglevel_key: str = None,
-        default_handler=None,
     ):
         self.root_module = root_module
         self.application_version = version or getattr(
             root_module, "__version__", "Unknown"
         )
-        self._default_handler = default_handler
 
+        # Determine application settings
+        if application_settings is None:
+            application_settings = f"{root_module.__name__}.default_settings"
+        self.application_settings = application_settings
+
+        # Determine application checks
+        if application_checks is None:
+            application_checks = f"{root_module.__name__}.checks"
+        self.application_checks = application_checks
+
+        # Override default value
+        if env_settings_key is not None:
+            self.env_settings_key = env_settings_key
+        if env_loglevel_key is not None:
+            self.env_loglevel_key = env_loglevel_key
+
+        self._handlers = {}
+        self._default_handler = None
+
+        self._init_parser(name, description)
+        self.register_builtin_handlers()
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.root_module!r})"
+
+    def __str__(self) -> str:
+        return self.application_summary
+
+    @property
+    def application_name(self) -> str:
+        """
+        Name of the application
+        """
+        return self.parser.prog
+
+    @property
+    def application_summary(self) -> str:
+        """
+        Summary of the application, name version and description.
+        """
+        description = self.parser.description
+        if description:
+            return f"{self.application_name} version {self.application_version} - {description}"
+        else:
+            return f"{self.application_name} version {self.application_version}"
+
+    def _init_parser(self, name: str = None, description: str = None):
         def key_help(key):
             if key in os.environ:
                 return f"{key} [{os.environ[key]}]"
@@ -231,55 +218,12 @@ class CliApplication:
             help="Minimum level of check message to display",
         )
 
-        # Create sub parsers
+        # Create sub parsers collection
         self.sub_parsers = self.parser.add_subparsers(dest="handler")
-
-        self._handlers = {}
-        self.register_builtin_handlers()
-
-        # Determine application settings
-        if application_settings is None:
-            application_settings = f"{root_module.__name__}.default_settings"
-        self.application_settings = application_settings
-
-        # Determine application checks
-        if application_checks is None:
-            application_checks = f"{root_module.__name__}.checks"
-        self.application_checks = application_checks
-
-        # Override default value
-        if env_settings_key is not None:
-            self.env_settings_key = env_settings_key
-        if env_loglevel_key is not None:
-            self.env_loglevel_key = env_loglevel_key
-
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}({self.root_module!r})"
-
-    def __str__(self) -> str:
-        return self.application_summary
-
-    @property
-    def application_name(self) -> str:
-        """
-        Name of the application
-        """
-        return self.parser.prog
-
-    @property
-    def application_summary(self) -> str:
-        """
-        Summary of the application, name version and description.
-        """
-        description = self.parser.description
-        if description:
-            return f"{self.application_name} version {self.application_version} - {description}"
-        else:
-            return f"{self.application_name} version {self.application_version}"
 
     def command(
         self, handler: Handler = None, cli_name: str = None, doc: str = None
-    ) -> HandlerProxy:
+    ) -> CommandProxy:
         """
         Decorator for registering handlers.
 
@@ -290,7 +234,7 @@ class CliApplication:
 
         """
 
-        def inner(func: Handler) -> HandlerProxy:
+        def inner(func: Handler) -> CommandProxy:
             name = cli_name or func.__name__
 
             # Setup sub parser
@@ -300,7 +244,7 @@ class CliApplication:
             )
 
             # Create proxy instance
-            proxy = HandlerProxy(func, sub_parser)
+            proxy = CommandProxy(func, sub_parser)
             self._handlers[name] = proxy
             return proxy
 
@@ -395,7 +339,7 @@ class CliApplication:
 
     def pre_configure_logging(self, opts):
         """
-        Set some default logging so setting are logged.
+        Set some default logging so settings are logged.
 
         The main logging configuration from settings leaving us with a chicken
         and egg situation.
@@ -407,6 +351,22 @@ class CliApplication:
         # Apply handler to root logger and set level.
         logging.root.handlers = [handler]
         logging.root.setLevel(opts.log_level)
+
+    @staticmethod
+    def configure_extensions(_):
+        """
+        Load/Configure extensions.
+        """
+        extensions.registry.load_from_settings()
+
+        # Load settings into from extensions, do not override as
+        # extensions are loaded after the main settings file so only
+        # settings that do not already exist should be loaded.
+        settings.load_from_loaders(extensions.registry.settings_loaders, override=False)
+
+        # Indicate that everything is loaded and and initialisation
+        # can be performed.
+        extensions.registry.trigger_ready()
 
     def configure_settings(self, opts):
         """
@@ -433,22 +393,6 @@ class CliApplication:
 
             # Configure root log level
             logging.root.setLevel(opts.log_level)
-
-    @staticmethod
-    def configure_extensions(_):
-        """
-        Load/Configure extensions.
-        """
-        extensions.registry.load_from_settings()
-
-        # Load settings into from extensions, do not override as
-        # extensions are loaded after the main settings file so only
-        # settings that do not already exist should be loaded.
-        settings.load_from_loaders(extensions.registry.settings_loaders, override=False)
-
-        # Indicate that everything is loaded and and initialisation
-        # can be performed.
-        extensions.registry.trigger_ready()
 
     def checks_on_startup(self, opts: argparse.Namespace):
         """
@@ -548,7 +492,7 @@ class CliApplication:
                 exit(exit_code)
 
 
-CURRENT_APP: CliApplication = None
+CURRENT_APP: Optional[CliApplication] = None
 
 
 def _set_running_application(app: CliApplication):
