@@ -2,7 +2,7 @@ import mock
 import pytest
 import tests.sample_app
 
-from pyapp.app import HandlerProxy, argument, CliApplication
+from pyapp.app import CommandProxy, argument, CliApplication
 
 
 class TestHandlerProxy:
@@ -12,7 +12,7 @@ class TestHandlerProxy:
 
         mock_parser = mock.Mock()
 
-        target = HandlerProxy(sample_handler, mock_parser)
+        target = CommandProxy(sample_handler, mock_parser)
 
         assert sample_handler is target.handler
         assert mock_parser is target.sub_parser
@@ -28,7 +28,7 @@ class TestHandlerProxy:
             pass
 
         mock_parser = mock.Mock()
-        HandlerProxy(sample_handler, mock_parser)
+        CommandProxy(sample_handler, mock_parser)
 
         assert mock_parser.add_argument.call_count == 2
 
