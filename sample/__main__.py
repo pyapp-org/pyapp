@@ -3,9 +3,7 @@ from pyapp.conf import settings
 
 import sample
 
-app = CliApplication(
-    sample, name="PyApp Sample", description="Sample pyApp application."
-)
+app = CliApplication(sample, prog="sample", description="Sample pyApp application.")
 
 
 @app.command
