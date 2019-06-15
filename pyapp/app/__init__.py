@@ -61,12 +61,12 @@ from .arguments import *
 logger = logging.getLogger(__name__)
 
 
-class CliApplication:
+class CliApplication(CommandGroup):
     """
     Application interface that provides a CLI interface.
 
     :param root_module: The root module for this application (used for discovery of other modules)
-    :param name: Name of your application; defaults to `sys.argv[0]`
+    :param prog: Name of your application; defaults to `sys.argv[0]`
     :param description: A description of your application for `--help`.
     :param version: Specify a specific version; defaults to `getattr(root_module, '__version__')`
     :param application_settings: The default settings for this application; defaults to `root_module.default_settings`
@@ -106,9 +106,10 @@ class CliApplication:
     def __init__(
         self,
         root_module,
-        name: str = None,
         *,
+        prog: str = None,
         description: str = None,
+        epilog: str = None,
         version: str = None,
         application_settings: str = None,
         application_checks: str = None,
@@ -116,6 +117,10 @@ class CliApplication:
         env_loglevel_key: str = None,
     ):
         self.root_module = root_module
+        super().__init__(
+            argparse.ArgumentParser(prog, description=description, epilog=epilog)
+        )
+
         self.application_version = version or getattr(
             root_module, "__version__", "Unknown"
         )
@@ -136,10 +141,7 @@ class CliApplication:
         if env_loglevel_key is not None:
             self.env_loglevel_key = env_loglevel_key
 
-        self._handlers = {}
-        self._default_handler = None
-
-        self._init_parser(name, description)
+        self._init_parser()
         self.register_builtin_handlers()
 
     def __repr__(self) -> str:
@@ -166,34 +168,33 @@ class CliApplication:
         else:
             return f"{self.application_name} version {self.application_version}"
 
-    def _init_parser(self, name: str = None, description: str = None):
+    def _init_parser(self):
         def key_help(key):
             if key in os.environ:
                 return f"{key} [{os.environ[key]}]"
             return key
 
         # Create argument parser
-        self.parser = argparse.ArgumentParser(name, description=description)
-        self.parser.add_argument(
+        self.argument(
             "--settings",
             dest="settings",
             help="Settings to load; either a Python module or settings URL. "
             f"Defaults to the env variable: {key_help(self.env_settings_key)}",
         )
-        self.parser.add_argument(
+        self.argument(
             "--nocolor",
             dest="no_color",
             action="store_true",
             help="Disable colour output.",
         )
-        self.parser.add_argument(
+        self.argument(
             "--version",
             action="version",
             version=f"%(prog)s version: {self.application_version}",
         )
 
         # Log configuration
-        self.parser.add_argument(
+        self.argument(
             "--log-level",
             dest="log_level",
             default=os.environ.get(self.env_loglevel_key, "INFO"),
@@ -203,52 +204,20 @@ class CliApplication:
         )
 
         # Global check values
-        self.parser.add_argument(
+        self.argument(
             "--checks",
             dest="checks_on_startup",
             action="store_true",
             help="Run checks on startup, any serious error will result "
             "in the application terminating.",
         )
-        self.parser.add_argument(
+        self.argument(
             "--checks-level",
             dest="checks_message_level",
             default="INFO",
             choices=("DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"),
             help="Minimum level of check message to display",
         )
-
-        # Create sub parsers collection
-        self.sub_parsers = self.parser.add_subparsers(dest="handler")
-
-    def command(
-        self, handler: Handler = None, cli_name: str = None, doc: str = None
-    ) -> CommandProxy:
-        """
-        Decorator for registering handlers.
-
-        :param handler: Handler function
-        :param cli_name: Optional name to use for CLI; defaults to the
-            function name.
-        :param doc: Description for help; default is taken from the handlers doc string.
-
-        """
-
-        def inner(func: Handler) -> CommandProxy:
-            name = cli_name or func.__name__
-
-            # Setup sub parser
-            description = doc or func.__doc__
-            sub_parser = self.sub_parsers.add_parser(
-                name, help=description.strip() if description else None
-            )
-
-            # Create proxy instance
-            proxy = CommandProxy(func, sub_parser)
-            self._handlers[name] = proxy
-            return proxy
-
-        return inner(handler) if handler else inner
 
     def run_checks(
         self,
@@ -303,25 +272,28 @@ class CliApplication:
             "--tag",
             dest="tags",
             action="append",
-            help="Run checks associated with a tag.",
+            help_text="Run checks associated with a tag.",
         )
         @argument(
-            "--verbose", dest="verbose", action="store_true", help="Verbose output."
+            "--verbose",
+            dest="verbose",
+            action="store_true",
+            help_text="Verbose output.",
         )
         @argument(
             "--out",
             dest="out",
             default=sys.stdout,
             type=argparse.FileType(mode="w"),
-            help="File to output check report to; default is stdout.",
+            help_text="File to output check report to; default is stdout.",
         )
         @argument(
             "--table",
             dest="table",
             action="store_true",
-            help="Output report in tabular format.",
+            help_text="Output report in tabular format.",
         )
-        @self.command(cli_name="checks", doc="Run a check report")
+        @self.command(name="checks", help_text="Run a check report")
         def check_report(opts, **_):
             if self.run_checks(
                 opts.out,
@@ -422,17 +394,6 @@ class CliApplication:
         )
         return False
 
-    def default_handler(self, opts: argparse.Namespace, **_) -> int:
-        """
-        Handler called if no handler is specified
-        """
-        if self._default_handler:
-            return self._default_handler(opts)
-        else:
-            print("No command specified!")
-            self.parser.print_usage()
-            return 1
-
     @staticmethod
     def call_handler(handler: Handler, *args, **kwargs) -> int:
         """
@@ -458,7 +419,8 @@ class CliApplication:
 
         logger.info("Starting %s", self.application_summary)
 
-        if opts.handler == "checks":
+        handler_name = getattr(opts, ":handler", None)
+        if handler_name == "checks":
             # If checks command just configure extensions.
             self.configure_extensions(opts)
         else:
@@ -468,15 +430,9 @@ class CliApplication:
             self.checks_on_startup(opts)
             self.configure_extensions(opts)
 
-        # Handle case where a handler is not supplied.
-        if not opts.handler:
-            handler = self.default_handler
-        else:
-            handler = self._handlers[opts.handler]
-
         # Dispatch to handler.
         try:
-            exit_code = self.call_handler(handler, opts)
+            exit_code = self.dispatch_handler(opts)
 
         except Exception as ex:
             if not self.exception_report(ex, opts):
