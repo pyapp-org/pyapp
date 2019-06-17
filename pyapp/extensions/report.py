@@ -2,7 +2,7 @@ import sys
 
 from colorama import Style, Fore
 
-from .registry import registry, Extension
+from .registry import registry, ExtensionWrapper
 
 
 class ExtensionReport:
@@ -88,7 +88,7 @@ class ExtensionReport:
                 + "\n\n"
             )
 
-    def output_result(self, extension: Extension):
+    def output_result(self, extension: ExtensionWrapper):
         """
         Output a result to output file.
         """
