@@ -309,7 +309,7 @@ class CliApplication(CommandGroup):
         for additional_handler in self.additional_handlers:
             additional_handler(self)
 
-    def pre_configure_logging(self, opts):
+    def pre_configure_logging(self):
         """
         Set some default logging so settings are logged.
 
@@ -322,32 +322,24 @@ class CliApplication(CommandGroup):
 
         # Apply handler to root logger and set level.
         logging.root.handlers = [handler]
-        logging.root.setLevel(opts.log_level)
 
-    @staticmethod
-    def configure_extensions(_):
+    def load_extensions(self):
         """
         Load/Configure extensions.
         """
-        extensions.registry.load_from_settings()
-
-        # Load settings into from extensions, do not override as
-        # extensions are loaded after the main settings file so only
-        # settings that do not already exist should be loaded.
-        settings.load_from_loaders(extensions.registry.settings_loaders, override=False)
-
-        # Indicate that everything is loaded and and initialisation
-        # can be performed.
-        extensions.registry.trigger_ready()
+        entry_points = extensions.ExtensionEntryPoints(None)
+        extensions.registry.load_from(entry_points.extensions())
+        extensions.registry.register_commands(self)
 
     def configure_settings(self, opts):
         """
         Configure settings container.
         """
+        application_settings = [self.application_settings]
+        application_settings.extend(extensions.registry.default_settings)
+
         settings.configure(
-            self.application_settings,
-            opts.settings,
-            env_settings_key=self.env_settings_key,
+            application_settings, opts.settings, env_settings_key=self.env_settings_key
         )
 
     @staticmethod
@@ -363,8 +355,8 @@ class CliApplication(CommandGroup):
             dict_config.setdefault("version", 1)
             logging.config.dictConfig(dict_config)
 
-            # Configure root log level
-            logging.root.setLevel(opts.log_level)
+        # Configure root log level
+        logging.root.setLevel(opts.log_level)
 
     def checks_on_startup(self, opts: argparse.Namespace):
         """
@@ -390,7 +382,7 @@ class CliApplication(CommandGroup):
         logger.exception(
             "Un-handled exception %s caught executing handler: %s",
             exception,
-            opts.handler,
+            getattr(opts, ":handler"),
         )
         return False
 
@@ -408,27 +400,24 @@ class CliApplication(CommandGroup):
         """
         Dispatch command to registered handler.
         """
+        self.pre_configure_logging()
+        self.load_extensions()
+
         # Enable auto complete if available
         argcomplete.autocomplete(self.parser)
         opts = self.parser.parse_args(args)
 
-        _set_running_application(self)
-
-        self.pre_configure_logging(opts)
-        self.configure_settings(opts)
-
-        logger.info("Starting %s", self.application_summary)
-
         handler_name = getattr(opts, ":handler", None)
-        if handler_name == "checks":
-            # If checks command just configure extensions.
-            self.configure_extensions(opts)
-        else:
-            # If checks handler don't configure logging or call the "checks on
-            # startup" process.
+        if handler_name != "checks":
             self.configure_logging(opts)
+            logger.info("Starting %s", self.application_summary)
+            self.configure_settings(opts)
             self.checks_on_startup(opts)
-            self.configure_extensions(opts)
+        else:
+            self.configure_settings(opts)
+
+        _set_running_application(self)
+        extensions.registry.ready()
 
         # Dispatch to handler.
         try:
