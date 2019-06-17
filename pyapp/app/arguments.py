@@ -148,7 +148,7 @@ class CommandGroup(ParserBase):
         prefix = self._prefix
         return f":handler:{prefix}" if prefix else ":handler"
 
-    def command_group(
+    def create_command_group(
         self, name: str, *, aliases: Sequence[str] = (), help_text: str = None
     ) -> "CommandGroup":
         """

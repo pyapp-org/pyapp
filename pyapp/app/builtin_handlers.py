@@ -5,7 +5,7 @@ import sys
 def extensions(app):
     from pyapp.app import argument
 
-    group = app.command_group(
+    group = app.create_command_group(
         name="extensions", help_text="Get info on extensions in use by this application"
     )
 
