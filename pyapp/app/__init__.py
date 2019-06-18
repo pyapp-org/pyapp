@@ -50,7 +50,7 @@ import logging.config
 import os
 import sys
 
-from typing import Dict, Sequence, Optional
+from typing import Sequence, Optional
 
 from pyapp import conf
 from pyapp import extensions
@@ -183,6 +183,7 @@ class CliApplication(CommandGroup):
         )
         self.argument(
             "--nocolor",
+            "--nocolour",
             dest="no_color",
             action="store_true",
             help="Disable colour output.",
