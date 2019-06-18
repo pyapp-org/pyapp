@@ -2,7 +2,7 @@ import sys
 
 from colorama import Style, Fore
 
-from .registry import registry, ExtensionWrapper
+from .registry import registry, ExtensionDetail
 
 
 class ExtensionReport:
@@ -40,7 +40,6 @@ class ExtensionReport:
                 ("=" * self.width)
                 + "\n Name:       {name}"
                 + "\n Version:    {version}"
-                + "\n Package:    {package}"
                 + "\n Settings:   {default_settings}"
                 + "\n Has Checks: {has_checks}\n"
                 + ("=" * self.width)
@@ -71,10 +70,6 @@ class ExtensionReport:
                 + Style.RESET_ALL
                 + "{version}"
                 + Style.BRIGHT
-                + "\n Package:    "
-                + Style.RESET_ALL
-                + "{package}"
-                + Style.BRIGHT
                 + "\n Settings:   "
                 + Style.RESET_ALL
                 + "{default_settings}"
@@ -88,14 +83,13 @@ class ExtensionReport:
                 + "\n\n"
             )
 
-    def output_result(self, extension: ExtensionWrapper):
+    def output_result(self, extension: ExtensionDetail):
         """
         Output a result to output file.
         """
         format_args = dict(
             name=extension.name,
             version=extension.version or "Unknown",
-            package=extension.package,
             default_settings=extension.default_settings or "None",
             has_checks="Yes" if bool(extension.checks_module) else "No",
         )

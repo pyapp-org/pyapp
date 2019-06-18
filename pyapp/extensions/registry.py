@@ -1,56 +1,22 @@
 import pkg_resources
 
-from typing import Sequence, Iterator, Optional, List
+from typing import Sequence, Iterator, Optional, List, NamedTuple
 
 from pyapp.app.arguments import CommandGroup
 
-__all__ = ("registry", "ExtensionEntryPoints", "ExtensionWrapper")
+__all__ = ("registry", "ExtensionEntryPoints", "ExtensionDetail")
 
 ENTRY_POINTS = "pyapp.extensions"
 
 
-class ExtensionEntryPoints:
-    def __init__(self, white_list: Sequence[str] = None):
-        self.white_list = white_list
-
-    def _entry_points(self) -> Iterator[pkg_resources.EntryPoint]:
-        """
-        Iterator of filtered extension entry points
-        """
-        white_list = self.white_list
-        for entry_point in pkg_resources.iter_entry_points(ENTRY_POINTS):
-            if white_list is None or entry_point.name in white_list:
-                yield entry_point
-
-    def extensions(self) -> Iterator[object]:
-        """
-        Iterator of loaded extensions.
-        """
-        for entry_point in self._entry_points():
-            yield entry_point.resolve()
-
-    def summary(self):
-        """
-        List of extensions that are installed (and or while listed)
-        """
-        for entry_point in self._entry_points():
-            print(
-                f"Key:\t\t{entry_point.name}\n"
-                f"Name:\t\t{entry_point.dist.project_name}\n"
-                f"Version:\t{entry_point.dist.version}"
-            )
-
-
-class ExtensionWrapper:
+class ExtensionDetail(NamedTuple):
     """
-    Wrapper around an extension to provide calling convenience.
+    Details of an entry point Extension
     """
-
-    def __init__(self, extension):
-        self.extension = extension
-
-    def __repr__(self):
-        return repr(self.extension)
+    extension: object
+    key: str
+    name: str
+    version: str
 
     @property
     def default_settings(self) -> str:
@@ -80,14 +46,40 @@ class ExtensionWrapper:
             self.extension.ready()
 
 
-class ExtensionRegistry(List[ExtensionWrapper]):
+class ExtensionEntryPoints:
+    def __init__(self, white_list: Sequence[str] = None):
+        self.white_list = white_list
+
+    def _entry_points(self) -> Iterator[pkg_resources.EntryPoint]:
+        """
+        Iterator of filtered extension entry points
+        """
+        white_list = self.white_list
+        for entry_point in pkg_resources.iter_entry_points(ENTRY_POINTS):
+            if white_list is None or entry_point.name in white_list:
+                yield entry_point
+
+    def extensions(self, load: bool = True) -> Iterator[object]:
+        """
+        Iterator of loaded extensions.
+        """
+        for entry_point in self._entry_points():
+            yield ExtensionDetail(
+                entry_point.resolve() if load else None,
+                entry_point.name,
+                entry_point.dist.project_name,
+                entry_point.dist.version,
+            )
+
+
+class ExtensionRegistry(List[ExtensionDetail]):
     """
     Registry for tracking install PyApp extensions.
     """
 
-    def load_from(self, extensions: Iterator[object]):
+    def load_from(self, extensions: Iterator[ExtensionDetail]):
         for extension in extensions:
-            self.append(ExtensionWrapper(extension))
+            self.append(extension)
 
     def register_commands(self, root: CommandGroup):
         """
