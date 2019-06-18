@@ -8,7 +8,7 @@ from yarl import URL
 from json import load as json_load
 
 try:
-    from yaml import load as yaml_load
+    from yaml import safe_load as yaml_load
 except ImportError:
     yaml_load = None
 
