@@ -1,13 +1,11 @@
 import argparse
 import sys
 
+from .arguments import CommandGroup
 
-def extensions(app):
+
+def extensions(app: CommandGroup):
     from pyapp.app import argument
-
-    group = app.create_command_group(
-        name="extensions", help_text="Get info on extensions in use by this application"
-    )
 
     # Register extension report handler
     @argument(
@@ -20,8 +18,8 @@ def extensions(app):
         type=argparse.FileType(mode="w"),
         help_text="File to output extension report to; default is stdout.",
     )
-    @group.command(name="list")
-    def list_(opts):
+    @app.command(name="extensions")
+    def _handler(opts):
         """
         Report of installed PyApp extensions.
         """
@@ -30,7 +28,7 @@ def extensions(app):
         return ExtensionReport(opts.verbose, opts.no_color, opts.out).run()
 
 
-def settings(app):
+def settings(app: CommandGroup):
     from pyapp.app import argument
 
     # Register settings report handler
