@@ -39,7 +39,8 @@ So what do we handle?
 - Checks - A framework for checking settings are correct and checking that your
   application connect to that API end point (your ops team will love you)?
 - Extensions - Extend the basic framework with extensions, the framework provides
-  deterministic startup and the ability to register checks and default settings.
+  deterministic startup, addition of commands to the CLI and the ability to 
+  register checks and default settings.
 - Application - Provides a extensible and simple CLI interface for starting
   running commands, comes with built-in commands to support Checks, report
   settings/extensions.
