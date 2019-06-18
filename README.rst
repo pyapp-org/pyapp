@@ -59,8 +59,8 @@ Extensions
 In development
 --------------
 
-- Boto3 - `pyapp.redis <https://www.github.com/pyapp-org/pyapp.boto3>`_
-- AIOBotocore - `pyapp.redis <https://www.github.com/pyapp-org/pyapp.aiobotocore>`_
+- Boto3 - `pyapp.boto3 <https://www.github.com/pyapp-org/pyapp.boto3>`_
+- AIOBotocore - `pyapp.aiobotocore <https://www.github.com/pyapp-org/pyapp.aiobotocore>`_
 
 Coming soon
 -----------
