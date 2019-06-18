@@ -335,8 +335,8 @@ class CliApplication(CommandGroup):
         """
         Configure settings container.
         """
-        application_settings = [self.application_settings]
-        application_settings.extend(extensions.registry.default_settings)
+        application_settings = list(extensions.registry.default_settings)
+        application_settings.append(self.application_settings)
 
         settings.configure(
             application_settings, opts.settings, env_settings_key=self.env_settings_key
