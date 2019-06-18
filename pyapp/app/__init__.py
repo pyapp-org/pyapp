@@ -396,7 +396,7 @@ class CliApplication(CommandGroup):
         """
         return handler(*args, **kwargs)
 
-    def dispatch(self, args: Dict[str, str] = None) -> None:
+    def dispatch(self, args: Sequence[str] = None) -> None:
         """
         Dispatch command to registered handler.
         """
