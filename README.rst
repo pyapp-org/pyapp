@@ -59,3 +59,14 @@ Coming soon
 -----------
 
 Extensions for LDAP, Paramiko, SMTP, Boto.
+
+
+Contributions
+=============
+
+Contributions are most welcome, be it in the form of a extension and factories
+for your favourite service client of bug reports, feature enhancements.
+
+The core of pyApp is intended to remain simple and only provide required features
+with extensions providing optional more specific functionality.
+
