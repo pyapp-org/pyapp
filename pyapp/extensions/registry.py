@@ -13,6 +13,7 @@ class ExtensionDetail(NamedTuple):
     """
     Details of an entry point Extension
     """
+
     extension: object
     key: str
     name: str
