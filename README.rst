@@ -24,7 +24,7 @@ pyApp - A python application framework
 Many features inspired by Django, but modified to be more general for use
 outside of web applications.
 
-With PyApp 4.0, support for versions of Python < 3.6 are no longer supported.
+With pyApp 4.0, support for versions of Python < 3.6 are no longer supported.
 
 
 So what do we handle?
@@ -51,10 +51,17 @@ So what do we handle?
 Extensions
 ==========
 
-- SQLAlchemy - `pae.sqlalchemy <https://www.github.com/pyapp-org/pae.sqlalchemy>`_
-- Redis - `pae.redis <https://www.github.com/pyapp-org/pae.redis>`_
+- SQLAlchemy - `pyapp.sqlalchemy <https://www.github.com/pyapp-org/pyapp.sqlalchemy>`_
+- SMTP - `pyapp.SMTP <https://www.github.com/pyapp-org/pyapp.SMTP>`_
+- Redis - `pyapp.redis <https://www.github.com/pyapp-org/pyapp.redis>`_
+
+In development
+--------------
+
+- Boto3 - `pyapp.redis <https://www.github.com/pyapp-org/pyapp.boto3>`_
+- AIOBotocore - `pyapp.redis <https://www.github.com/pyapp-org/pyapp.aiobotocore>`_
 
 Coming soon
 -----------
 
-Extensions for LDAP, Paramiko, SMTP, Boto.
+Extensions for LDAP, Paramiko.
