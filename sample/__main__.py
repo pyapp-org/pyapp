@@ -22,5 +22,9 @@ def do_foo(opts):
     print(settings.FOO_MESSAGE)
 
 
-if __name__ == "__main__":
+def main():
     app.dispatch()
+
+
+if __name__ == "__main__":
+    main()
