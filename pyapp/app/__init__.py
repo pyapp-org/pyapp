@@ -69,6 +69,7 @@ class CliApplication(CommandGroup):
     :param prog: Name of your application; defaults to `sys.argv[0]`
     :param description: A description of your application for `--help`.
     :param version: Specify a specific version; defaults to `getattr(root_module, '__version__')`
+    :param ext_white_list: Sequence if extensions that are white listed; default is `None` or all extensions.
     :param application_settings: The default settings for this application; defaults to `root_module.default_settings`
     :param application_checks: Location of application checks file; defaults to `root_module.checks` if it exists.
     :param env_settings_key: Key used to define settings file in environment.
@@ -111,6 +112,7 @@ class CliApplication(CommandGroup):
         description: str = None,
         epilog: str = None,
         version: str = None,
+        ext_white_list: Sequence[str] = None,
         application_settings: str = None,
         application_checks: str = None,
         env_settings_key: str = None,
@@ -120,10 +122,10 @@ class CliApplication(CommandGroup):
         super().__init__(
             argparse.ArgumentParser(prog, description=description, epilog=epilog)
         )
-
         self.application_version = version or getattr(
             root_module, "__version__", "Unknown"
         )
+        self.ext_white_list = ext_white_list
 
         # Determine application settings
         if application_settings is None:
@@ -328,7 +330,7 @@ class CliApplication(CommandGroup):
         """
         Load/Configure extensions.
         """
-        entry_points = extensions.ExtensionEntryPoints(None)
+        entry_points = extensions.ExtensionEntryPoints(self.ext_white_list)
         extensions.registry.load_from(entry_points.extensions())
         extensions.registry.register_commands(self)
 

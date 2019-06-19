@@ -5,8 +5,6 @@ here = Path(__file__).parent
 
 FOO_MESSAGE = "Message from foo..."
 
-EXT = ["sample_extension"]
-
 CHECK_LOCATIONS = ["sample.alt_checks"]
 
 INCLUDE_SETTINGS = [
