@@ -20,16 +20,48 @@ class BThing(ThingBase):
         print(f"Doing B to {item}")
 
 
+class CThing(ThingBase):
+    def __init__(self):
+        raise hell
+
+    def do_stuff(self, item: str):
+        pass
+
+
 def thing_factory(name: str = None) -> ThingBase:
     name = name or "default"
-    return {"default": AThing, "b": BThing}[name]()
+    return {"default": AThing, "b": BThing, "c": CThing}[name]()
 
 
 local_registry = injection.FactoryRegistry()
-local_registry.register_factory(ThingBase, thing_factory)
+local_registry.register(ThingBase, thing_factory)
 
 
-def test_default_injection():
+class TestFactoryRegistry:
+    def test_register(self):
+        target = injection.FactoryRegistry()
+        target.register(ThingBase, thing_factory)
+
+        assert len(target) == 1
+
+    @pytest.mark.parametrize("abstract_type", (None, "abc", 123))
+    def test_register__invalid_abstract_type(self, abstract_type):
+        target = injection.FactoryRegistry()
+
+        with pytest.raises(TypeError):
+            target.register(abstract_type, thing_factory)
+
+    @pytest.mark.parametrize(
+        "abstract_type, expected",
+        ((None, None), (ThingBase, thing_factory), ("abc", None), (123, None)),
+    )
+    def test_resolve(self, abstract_type, expected):
+        actual = local_registry.resolve(abstract_type)
+
+        assert actual is expected
+
+
+def test_inject_into():
     actual = None
 
     @injection.inject_into(from_registry=local_registry)
@@ -42,7 +74,33 @@ def test_default_injection():
     assert isinstance(actual, AThing)
 
 
-def test_injection_args():
+def test_inject_into__no_dependencies():
+    actual = None
+
+    @injection.inject_into(from_registry=local_registry)
+    def get_value(value: str):
+        nonlocal actual
+        actual = value
+
+    get_value("123")
+
+    assert actual == "123"
+
+
+def test_inject_into__override():
+    actual = None
+
+    @injection.inject_into(from_registry=local_registry)
+    def get_value(*, value: ThingBase):
+        nonlocal actual
+        actual = value
+
+    get_value(value=BThing())
+
+    assert isinstance(actual, BThing)
+
+
+def test_inject_into__with_args():
     actual = None
 
     @injection.inject_into(from_registry=local_registry)
@@ -53,3 +111,32 @@ def test_injection_args():
     get_value()
 
     assert isinstance(actual, BThing)
+
+
+def test_inject_into__with_factory_args_and_not_kwarg():
+    with pytest.raises(injection.InjectionSetupError):
+
+        @injection.inject_into()
+        def get_value(value: ThingBase = injection.FactoryArgs("*")):
+            pass
+
+
+def test_inject_into__with_factory_args_and_no_type_annotation():
+    with pytest.raises(injection.InjectionSetupError):
+
+        @injection.inject_into()
+        def get_value(*, value=injection.FactoryArgs("*")):
+            pass
+
+
+def test_inject_into__factory_raises_error():
+    """
+    Error generated constructing a object
+    """
+
+    @injection.inject_into(from_registry=local_registry)
+    def get_value(*, value: ThingBase = injection.FactoryArgs("c")):
+        pass
+
+    with pytest.raises(injection.InjectionError):
+        get_value()

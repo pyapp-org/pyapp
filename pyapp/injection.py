@@ -60,7 +60,7 @@ class FactoryRegistry(Dict[abc.ABCMeta, Callable]):
     Registry of type factories.
     """
 
-    def register_factory(self, abstract_type: AT_co, factory: Callable):
+    def register(self, abstract_type: AT_co, factory: Callable):
         """
         Register a factory method for providing a abstract type.
 
@@ -72,16 +72,39 @@ class FactoryRegistry(Dict[abc.ABCMeta, Callable]):
             raise TypeError("'abstract_type' must utilise ABCMeta")
         self[abstract_type] = factory
 
-    def resolve_factory(self, abstract_type: AT_co) -> Optional[Callable[[], AT_co]]:
+    def resolve(self, abstract_type: AT_co) -> Optional[Callable[[], AT_co]]:
         """
         Resolve an abstract type to a factory.
         """
         return self.get(abstract_type)
 
+    def resolve_from_parameter(
+        self, parameter: inspect.Parameter
+    ) -> Callable[[], AT_co]:
+        """
+        Resolve an abstract type from an `Parameter`.
+        """
+        default = parameter.default
+        if isinstance(default, FactoryArgs):
+            if parameter.kind is not parameter.KEYWORD_ONLY:
+                raise InjectionSetupError(
+                    "Only keyword-only arguments can be injected."
+                )
+
+            factory = self.get(parameter.annotation)
+            if not factory:
+                raise InjectionSetupError("A type must be specified with `FactoryArgs`")
+
+            return functools.partial(factory, *default.args, **default.kwargs)
+
+        # Ensure that the annotation is an ABC.
+        if isinstance(parameter.annotation, abc.ABCMeta):
+            return self.get(parameter.annotation)
+
 
 # Define the global default registry
 default_registry = FactoryRegistry()
-register_factory = default_registry.register_factory
+register_factory = default_registry.register
 
 
 class FactoryArgs:
@@ -92,26 +115,6 @@ class FactoryArgs:
         self.kwargs = kwargs
 
 
-def _get_factory(parameter: inspect.Parameter, registry: FactoryRegistry):
-    """
-    Determine if a parameter can be injected.
-    """
-    default = parameter.default
-    if isinstance(default, FactoryArgs):
-        if parameter.kind is not parameter.KEYWORD_ONLY:
-            raise InjectionSetupError("Only keyword-only arguments can be injected.")
-
-        factory = registry.resolve_factory(parameter.annotation)
-        if not factory:
-            raise InjectionSetupError("No type specified with factory args")
-
-        return functools.partial(factory, *default.args, **default.kwargs)
-
-    # Ensure that the annotation is an ABC.
-    if isinstance(parameter.annotation, abc.ABCMeta):
-        return registry.resolve_factory(parameter.annotation)
-
-
 def _build_dependencies(func: FunctionType, registry: FactoryRegistry):
     """
     Build a list of dependency objects.
@@ -120,7 +123,7 @@ def _build_dependencies(func: FunctionType, registry: FactoryRegistry):
 
     dependencies = []
     for name, parameter in sig.parameters.items():
-        factory = _get_factory(parameter, registry)
+        factory = registry.resolve_from_parameter(parameter)
         if factory:
             dependencies.append((name, factory))
 
@@ -137,13 +140,17 @@ def inject_into(func: FunctionType = None, *, from_registry: FactoryRegistry = N
         return lambda f: inject_into(f, from_registry=from_registry)
 
     dependencies = _build_dependencies(func, from_registry or default_registry)
+    if not dependencies:
+        # If no dependencies are found just return original function
+        return func
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # Apply dependencies
         for name, factory in dependencies:
             try:
-                kwargs[name] = factory()
+                if name not in kwargs:
+                    kwargs[name] = factory()
             except Exception as ex:
                 raise InjectionError(
                     f"Unable to instantiate instance for {name}."
@@ -151,5 +158,4 @@ def inject_into(func: FunctionType = None, *, from_registry: FactoryRegistry = N
 
         return func(*args, **kwargs)
 
-    # If no dependencies are found just return original function
-    return wrapper if dependencies else func
+    return wrapper
