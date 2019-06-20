@@ -1,8 +1,23 @@
 """
-Dependency Injection
-~~~~~~~~~~~~~~~~~~~~
+IoC (Inversion of Control) Dependency Injection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Support for dependency injection from factories.
+Support for automatic resolution of dependencies from factories.
+
+These methods are built around *data annotations* and `abc` module.
+
+Usage::
+
+    # Register factory with framework
+    pyapp.injection.register_factory(FooABC, foo_factory)
+
+    # Mark functions for injection and specify type
+    @inject_into
+    def my_function(foo: FooABC):
+        ...
+
+What `my_function` is called a concrete instance that implements `FooABC` is
+passed into the function.
 
 """
 
@@ -13,7 +28,14 @@ import inspect
 from types import FunctionType
 from typing import Callable, Dict, TypeVar, Optional
 
-__all__ = ("FactoryRegistry", "default_registry", "register_factory", "inject")
+__all__ = (
+    "FactoryRegistry",
+    "default_registry",
+    "register_factory",
+    "inject_into",
+    "InjectionError",
+    "InjectionSetupError",
+)
 
 AT_co = TypeVar("AT_co", bound=abc.ABCMeta, covariant=True)
 
@@ -105,16 +127,16 @@ def _build_dependencies(func: FunctionType, registry: FactoryRegistry):
     return tuple(dependencies)
 
 
-def inject(func: FunctionType = None, *, registry: FactoryRegistry = None):
+def inject_into(func: FunctionType = None, *, from_registry: FactoryRegistry = None):
     """
     Mark a function to have arguments injected.
 
     A specific registry can be provided, else the global registry is used.
     """
     if func is None:
-        return lambda f: inject(f, registry=registry)
+        return lambda f: inject_into(f, from_registry=from_registry)
 
-    dependencies = _build_dependencies(func, registry or default_registry)
+    dependencies = _build_dependencies(func, from_registry or default_registry)
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):

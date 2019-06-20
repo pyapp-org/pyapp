@@ -32,7 +32,7 @@ local_registry.register_factory(ThingBase, thing_factory)
 def test_default_injection():
     actual = None
 
-    @injection.inject(registry=local_registry)
+    @injection.inject_into(from_registry=local_registry)
     def get_value(value: ThingBase):
         nonlocal actual
         actual = value
@@ -45,7 +45,7 @@ def test_default_injection():
 def test_injection_args():
     actual = None
 
-    @injection.inject(registry=local_registry)
+    @injection.inject_into(from_registry=local_registry)
     def get_value(*, value: ThingBase = injection.FactoryArgs("b")):
         nonlocal actual
         actual = value
