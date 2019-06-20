@@ -44,13 +44,6 @@ class TestFactoryRegistry:
 
         assert len(target) == 1
 
-    @pytest.mark.parametrize("abstract_type", (None, "abc", 123))
-    def test_register__invalid_abstract_type(self, abstract_type):
-        target = injection.FactoryRegistry()
-
-        with pytest.raises(TypeError):
-            target.register(abstract_type, thing_factory)
-
     @pytest.mark.parametrize(
         "abstract_type, expected",
         ((None, None), (ThingBase, thing_factory), ("abc", None), (123, None)),

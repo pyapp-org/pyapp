@@ -21,7 +21,6 @@ passed into the function.
 
 """
 
-import abc
 import functools
 import inspect
 
@@ -37,7 +36,7 @@ __all__ = (
     "InjectionSetupError",
 )
 
-AT_co = TypeVar("AT_co", bound=abc.ABCMeta, covariant=True)
+BT_co = TypeVar("BT_co", covariant=True)
 
 
 class InjectionError(Exception):
@@ -55,32 +54,30 @@ class InjectionSetupError(Exception):
     """
 
 
-class FactoryRegistry(Dict[abc.ABCMeta, Callable]):
+class FactoryRegistry(Dict[type, Callable]):
     """
     Registry of type factories.
     """
 
-    def register(self, abstract_type: AT_co, factory: Callable):
+    def register(self, base_type: BT_co, factory: Callable[..., BT_co]):
         """
         Register a factory method for providing a abstract type.
 
-        :param abstract_type: A type based on `abc.ABC` or using `abc.ABCMeta`
+        :param base_type: Type factory will produce
         :param factory: A factory that generates concrete instances based off the abstract type.
 
         """
-        if not isinstance(abstract_type, abc.ABCMeta):
-            raise TypeError("'abstract_type' must utilise ABCMeta")
-        self[abstract_type] = factory
+        self[base_type] = factory
 
-    def resolve(self, abstract_type: AT_co) -> Optional[Callable[[], AT_co]]:
+    def resolve(self, base_type: BT_co) -> Optional[Callable[[], BT_co]]:
         """
         Resolve an abstract type to a factory.
         """
-        return self.get(abstract_type)
+        return self.get(base_type)
 
     def resolve_from_parameter(
         self, parameter: inspect.Parameter
-    ) -> Callable[[], AT_co]:
+    ) -> Callable[[], BT_co]:
         """
         Resolve an abstract type from an `Parameter`.
         """
@@ -98,8 +95,7 @@ class FactoryRegistry(Dict[abc.ABCMeta, Callable]):
             return functools.partial(factory, *default.args, **default.kwargs)
 
         # Ensure that the annotation is an ABC.
-        if isinstance(parameter.annotation, abc.ABCMeta):
-            return self.get(parameter.annotation)
+        return self.get(parameter.annotation)
 
 
 # Define the global default registry
