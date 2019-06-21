@@ -21,6 +21,7 @@ passed into the function.
 
 """
 
+import abc
 import functools
 import inspect
 
@@ -36,7 +37,7 @@ __all__ = (
     "InjectionSetupError",
 )
 
-BT_co = TypeVar("BT_co", covariant=True)
+AT_co = TypeVar("AT_co", bound=abc.ABCMeta, covariant=True)
 
 
 class InjectionError(Exception):
@@ -59,25 +60,25 @@ class FactoryRegistry(Dict[type, Callable]):
     Registry of type factories.
     """
 
-    def register(self, base_type: BT_co, factory: Callable[..., BT_co]):
+    def register(self, abstract_type: AT_co, factory: Callable[..., AT_co]):
         """
         Register a factory method for providing a abstract type.
 
-        :param base_type: Type factory will produce
+        :param abstract_type: Type factory will produce
         :param factory: A factory that generates concrete instances based off the abstract type.
 
         """
-        self[base_type] = factory
+        self[abstract_type] = factory
 
-    def resolve(self, base_type: BT_co) -> Optional[Callable[[], BT_co]]:
+    def resolve(self, abstract_type: AT_co) -> Optional[Callable[[], AT_co]]:
         """
         Resolve an abstract type to a factory.
         """
-        return self.get(base_type)
+        return self.get(abstract_type)
 
     def resolve_from_parameter(
         self, parameter: inspect.Parameter
-    ) -> Callable[[], BT_co]:
+    ) -> Callable[[], AT_co]:
         """
         Resolve an abstract type from an `Parameter`.
         """
