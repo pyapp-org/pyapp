@@ -11,6 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   extensions
    reference/index
 
 Indices and tables

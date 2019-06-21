@@ -3,9 +3,7 @@ from pyapp.conf import settings
 
 import sample
 
-app = CliApplication(
-    sample, name="PyApp Sample", description="Sample pyApp application."
-)
+app = CliApplication(sample, prog="sample", description="Sample pyApp application.")
 
 
 @app.command
@@ -24,5 +22,9 @@ def do_foo(opts):
     print(settings.FOO_MESSAGE)
 
 
-if __name__ == "__main__":
+def main():
     app.dispatch()
+
+
+if __name__ == "__main__":
+    main()
