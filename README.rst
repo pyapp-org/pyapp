@@ -24,7 +24,7 @@ pyApp - A python application framework
 Many features inspired by Django, but modified to be more general for use
 outside of web applications.
 
-With pyApp 4.0, support for versions of Python < 3.6 are no longer supported.
+With pyApp 4.0, versions of Python < 3.6 are no longer supported.
 
 
 So what do we handle?
