@@ -85,8 +85,7 @@ class HttpLoader(Loader):
 
     def __iter__(self):
         try:
-            if self._fp is None:
-                self._fp, self.content_type = retrieve_file(self.url)
+            self._fp, self.content_type = retrieve_file(self.url)
 
             # Seek to start before parsing
             self._fp.seek(0)
