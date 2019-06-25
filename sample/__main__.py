@@ -8,7 +8,7 @@ app = CliApplication(sample, prog="sample", description="Sample pyApp applicatio
 
 @app.command
 @argument("--verbose", action="store_true")
-def do_foo(opts):
+def foo_do(opts):
     """
     Perform a foo operation.
     """
@@ -20,6 +20,16 @@ def do_foo(opts):
 
     # Print a message from the settings file
     print(settings.FOO_MESSAGE)
+
+
+bar_group = app.create_command_group("bar")
+
+
+@bar_group.command(name="do")
+@argument("--repeat", type=int, default=1)
+def do_bar(opts):
+    for _ in range(opts.repeat):
+        print("Doing bar...")
 
 
 def main():
