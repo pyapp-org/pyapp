@@ -12,8 +12,8 @@ pyApp - A python application framework
    :target: https://travis-ci.org/pyapp-org/pyapp
    :alt: Travis CI Status
 
-.. image:: https://codecov.io/gh/pyapp-org/pyapp/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/pyapp-org/pyapp
+.. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/test_coverage
+   :target: https://codeclimate.com/github/pyapp-org/pyapp/test_coverage
    :alt: Test Coverage
 
 .. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/maintainability
