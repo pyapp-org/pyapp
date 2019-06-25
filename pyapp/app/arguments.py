@@ -28,7 +28,7 @@ class ParserBase:
         self.parser.add_argument(*name_or_flags, **kwargs)
 
 
-class CommandProxy(ParserBase):
+class CommandProxy(Handler, ParserBase):
     """
     Proxy object that wraps a handler.
     """
@@ -129,24 +129,20 @@ class CommandGroup(ParserBase):
         self,
         parser: argparse.ArgumentParser,
         _prefix: str = None,
-        _handlers: Dict[str, ParserBase] = None,
+        _handlers: Dict[str, Handler] = None,
     ):
         super().__init__(parser)
         self._prefix = _prefix
-        self._handlers = _handlers or {}
+        self._handlers: Dict[str, Handler] = {} if _handlers is None else _handlers
 
         self._sub_parsers = parser.add_subparsers(dest=self.handler_dest)
-        self._default_handler = None
+        self._default_handler = self.default_handler
         if _prefix:
-            self._handlers[_prefix] = self
-
-    def __call__(self, opts: argparse.Namespace) -> int:
-        return self.dispatch_handler(opts)
+            self._handlers[_prefix] = self.dispatch_handler
 
     @cached_property
     def handler_dest(self) -> str:
-        prefix = self._prefix
-        return f":handler:{prefix}" if prefix else ":handler"
+        return f":handler:{self._prefix or ''}"
 
     def create_command_group(
         self, name: str, *, aliases: Sequence[str] = (), help_text: str = None
@@ -201,36 +197,29 @@ class CommandGroup(ParserBase):
 
         return inner(handler) if handler else inner
 
-    def default(self, handler: Handler = None):
+    def default(self, handler: Handler):
         """
         Decorator for registering a default handler.
         """
+        self._default_handler = handler
+        return handler
 
-        def inner(func: Handler) -> Handler:
-            self._default_handler = func
-            return func
-
-        return inner(handler) if handler else inner
-
-    def default_handler(self, opts: argparse.Namespace) -> int:
+    def default_handler(self, _: argparse.Namespace) -> int:
         """
         Handler called if no handler is specified
         """
-        if self._default_handler:
-            return self._default_handler(opts)
-        else:
-            print("No command specified!")
-            self.parser.print_usage()
-            return 1
+        print("No command specified!")
+        self.parser.print_usage()
+        return 1
 
     def dispatch_handler(self, opts: argparse.Namespace) -> int:
         """
-        Dispatch to handler.
+        Resolve the correct handler and call it with supplied options namespace.
         """
         handler_name = getattr(opts, self.handler_dest, None)
 
         if self._prefix:
             handler_name = f"{self._prefix}:{handler_name}"
-        handler = self._handlers.get(handler_name, self.default_handler)
+        handler = self._handlers.get(handler_name, self._default_handler)
 
         return handler(opts)

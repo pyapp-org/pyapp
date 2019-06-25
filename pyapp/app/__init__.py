@@ -377,27 +377,16 @@ class CliApplication(CommandGroup):
             else:
                 logger.info("Check results:\n%s", out.getvalue())
 
-    @staticmethod
-    def exception_report(exception: BaseException, opts: argparse.Namespace):
+    def exception_report(self, exception: BaseException, opts: argparse.Namespace):
         """
         Generate a report for any unhandled exceptions caught by the framework.
         """
         logger.exception(
             "Un-handled exception %s caught executing handler: %s",
             exception,
-            getattr(opts, ":handler"),
+            getattr(opts, self.handler_dest),
         )
         return False
-
-    @staticmethod
-    def call_handler(handler: Handler, *args, **kwargs) -> int:
-        """
-        Actually call the handler and return the status code.
-
-        This allows for this method to be modified to provide additional
-        functionality.
-        """
-        return handler(*args, **kwargs)
 
     def dispatch(self, args: Sequence[str] = None) -> None:
         """
@@ -432,7 +421,7 @@ class CliApplication(CommandGroup):
 
         except KeyboardInterrupt:
             print("\n\nInterrupted.", file=sys.stderr)
-            exit(-1)
+            exit(-2)
 
         else:
             # Provide exit code.
