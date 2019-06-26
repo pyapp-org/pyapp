@@ -1,16 +1,71 @@
+from urllib.error import ContentTooShortError
+
 import mock
 import pytest
 
 from io import StringIO
 from yarl import URL
 
+from tests.utils import InstanceOf
+
 from pyapp.conf.loaders import http_loader
 from pyapp.exceptions import UnsupportedContentType, InvalidConfiguration
 
 
 class TestRetrieveFile:
-    def test_retrieve_file__ok(self):
-        pass
+    def test_retrieve_file__invalid_scheme(self):
+        with pytest.raises(InvalidConfiguration):
+            http_loader.retrieve_file(URL("ftp://hostname/foo/bar.json"))
+
+    @pytest.mark.parametrize(
+        "url, expected",
+        (
+            (URL("http://hostname/foo/bar.json"), None),
+            (
+                URL("https://hostname/foo/bar.json"),
+                InstanceOf(http_loader.ssl.SSLContext),
+            ),
+        ),
+    )
+    def test_retrieve_file__correct_context(self, monkeypatch, url, expected):
+        urlopen_mock = mock.Mock(side_effect=AssertionError)
+        monkeypatch.setattr(http_loader, "urlopen", urlopen_mock)
+
+        with pytest.raises(AssertionError):
+            http_loader.retrieve_file(url)
+
+        urlopen_mock.assert_called_with(url, context=expected)
+
+    @pytest.mark.parametrize(
+        "headers", ({}, {"Content-Length": "6"}, {"Content-Type": "application/json"})
+    )
+    def test_retrieve_file__ok(self, monkeypatch, headers):
+        response_mock = mock.Mock()
+        response_mock.info.return_value = headers
+        response_mock.read.side_effect = [b"foo", b"bar", None]
+
+        urlopen_mock = mock.Mock(return_value=response_mock)
+        monkeypatch.setattr(http_loader, "urlopen", urlopen_mock)
+
+        file, content_type = http_loader.retrieve_file(
+            URL("http://hostname/foo/bar.json")
+        )
+
+        assert content_type == "application/json"
+        assert file.read() == b"foobar"
+
+        file.close()
+
+    def test_retrieve_file__invalid_length(self, monkeypatch):
+        response_mock = mock.Mock()
+        response_mock.info.return_value = {"Content-Length": "10"}
+        response_mock.read.side_effect = [b"foo", b"bar", None]
+
+        urlopen_mock = mock.Mock(return_value=response_mock)
+        monkeypatch.setattr(http_loader, "urlopen", urlopen_mock)
+
+        with pytest.raises(ContentTooShortError):
+            http_loader.retrieve_file(URL("http://hostname/foo/bar.json"))
 
 
 class TestHttpLoader:

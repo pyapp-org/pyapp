@@ -17,37 +17,43 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
     Fetch a file from a URL (handling SSL).
 
     This is based off `urllib.request.urlretrieve`.
+
     """
     if url.scheme not in ("http", "https"):
         raise InvalidConfiguration("Illegal scheme.")
 
-    context = ssl.SSLContext if url.scheme == "https" else None
+    context = ssl.SSLContext() if url.scheme == "https" else None
 
     with contextlib.closing(
         urlopen(url, context=context)  # nosec - There is a check above for SSL
-    ) as fp:
+    ) as response:
         bs = 1024 * 8
         size = -1
         read = 0
 
-        headers = fp.info()
-        if "content-length" in headers:
+        headers = response.info()
+        if "Content-Length" in headers:
             size = int(headers["Content-Length"])
 
-        if "content-type" in headers:
+        if "Content-Type" in headers:
             content_type = headers["Content-Type"]
         else:
             content_type = content_type_from_url(url)
 
         tfp = tempfile.TemporaryFile()
         while True:
-            block = fp.read(bs)
+            block = response.read(bs)
             if not block:
                 break
             read += len(block)
             tfp.write(block)
 
+        # Seek to start
+        tfp.seek(0)
+
     if size >= 0 and read < size:
+        tfp.close()
+
         raise ContentTooShortError(
             f"retrieval incomplete: got only {read} out of {size} bytes", headers
         )
@@ -86,9 +92,6 @@ class HttpLoader(Loader):
     def __iter__(self):
         try:
             self._fp, self.content_type = retrieve_file(self.url)
-
-            # Seek to start before parsing
-            self._fp.seek(0)
         except IOError as ex:
             raise InvalidConfiguration(f"Unable to load settings: {self}\n{ex}")
 

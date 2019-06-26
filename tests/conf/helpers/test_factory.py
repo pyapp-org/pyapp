@@ -38,6 +38,10 @@ class TestDefaultCache:
 
 
 class TestNamedFactory:
+    def test_init__invalid_name(self):
+        with pytest.raises(ValueError):
+            conf_factory.NamedPluginFactory("test_named_config")
+
     def test_get_default(self):
         target = conf_factory.NamedPluginFactory("TEST_NAMED_FACTORY")
 
