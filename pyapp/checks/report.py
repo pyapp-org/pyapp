@@ -1,4 +1,5 @@
 import csv
+import io
 import logging
 import sys
 import textwrap
@@ -7,8 +8,7 @@ from colorama import Style, Fore, Back
 from io import StringIO
 from typing import Sequence, Optional, Any
 
-from pyapp.checks.registry import CheckRegistry, CheckMessage
-from pyapp.checks.registry import registry
+from .registry import CheckRegistry, Check, CheckMessage, registry, import_checks
 
 COLOURS = {
     # Type: (Title, Border),
@@ -28,7 +28,83 @@ def get_check_name(obj: Any) -> str:
     return getattr(check, "check_name", check.__name__).format(obj=obj)
 
 
-class CheckReport:
+class BaseReport:
+    def __init__(self, f_out=sys.stdout, check_registry: CheckRegistry = registry):
+        """
+        :param f_out: File to output report to; default is ``stdout``
+        :param check_registry: Registry to source checks from; defaults to the builtin registry.
+        """
+        self.f_out = f_out
+        self.registry = check_registry
+
+    def render_header(self):
+        """
+        Render any header.
+        """
+
+    def render_result_prefix(self, check: Check):
+        """
+        Called prior to rendering a checks messages
+        """
+
+    def render_result(self, check: Check, message: Optional[CheckMessage]):
+        """
+        Render result of check.
+        """
+
+    def render_result_suffix(self, check: Check, shown: bool):
+        """
+        Called after rendering a checks messages.
+
+        Shown indicates if any messages where shown (could be filtered)
+
+        """
+
+    def render_footer(self):
+        """
+        Render any footer
+        """
+
+    def run(
+        self, message_level: int = logging.INFO, tags: Sequence[str] = None
+    ) -> bool:
+        """
+        Run the report
+
+        :param message_level: Level of message to be displayed.
+        :param tags: List of tags to include in report
+        :return: Indicate if any serious message where generated.
+
+        """
+        serious_message = False
+
+        self.render_header()
+
+        # Generate report
+        for check, messages in self.registry.run_checks_iter(
+            tags, self.render_result_prefix
+        ):
+            message_shown = False
+            if messages:
+                for message in messages:
+                    serious_message = serious_message or message.is_serious()
+
+                    # Filter output
+                    if message.level >= message_level:
+                        message_shown = True
+                        self.render_result(check, message)
+
+            if not message_shown:
+                self.render_result(check, None)
+
+            self.render_result_suffix(check, message_shown)
+
+        self.render_footer()
+
+        return serious_message
+
+
+class CheckReport(BaseReport):
     """
     Wrapper for the generation of a check report.
     """
@@ -39,6 +115,7 @@ class CheckReport:
         self,
         verbose: bool = False,
         no_color: bool = False,
+        header: str = None,
         f_out=sys.stdout,
         check_registry=registry,
     ):
@@ -46,15 +123,16 @@ class CheckReport:
         Initialise check report
 
         :param verbose: Enable verbose output
-        :param no_color: Disable colourised output (if colorama is installed)
+        :param no_color: Disable colourised output
+        :param header: An optional header to prepend to report (if verbose)
         :param f_out: File to output report to; default is ``stdout``
         :param check_registry: Registry to source checks from; defaults to the builtin registry.
 
         """
         self.verbose = verbose
-        self.f_out = f_out
         self.no_color = no_color
-        self.registry = check_registry
+        self.header = header
+        super().__init__(f_out, check_registry)
 
         # Generate templates
         if self.no_color:
@@ -101,7 +179,11 @@ class CheckReport:
                 + "\n\n"
             )
 
-    def pre_callback(self, obj):
+    def render_header(self):
+        if self.header and self.verbose:
+            self.f_out.write(self.header + "\n")
+
+    def render_result_prefix(self, obj):
         if self.verbose:
             self.f_out.write(
                 self.VERBOSE_CHECK_TEMPLATE.format(name=get_check_name(obj))
@@ -173,64 +255,24 @@ class CheckReport:
         else:
             return ""
 
-    def output_result(self, message):
-        """
-        Output a result to output file.
+    def render_result(self, _: Check, message: Optional[CheckMessage]):
+        if message:
+            format_args = dict(
+                level=logging.getLevelName(message.level),
+                title=self.format_title(message),
+                hint=self.format_hint(message),
+            )
+            if not self.no_color:
+                format_args.update(border_style=COLOURS[message.level][1])
 
-        :type message: messages.CheckMessage
+            self.f_out.write(self.MESSAGE_TEMPLATE.format(**format_args))
 
-        """
-        format_args = dict(
-            level=logging.getLevelName(message.level),
-            title=self.format_title(message),
-            hint=self.format_hint(message),
-        )
-        if not self.no_color:
-            format_args.update(border_style=COLOURS[message.level][1])
-
-        self.f_out.write(self.MESSAGE_TEMPLATE.format(**format_args))
-
-    def run(
-        self,
-        message_level: int = logging.INFO,
-        tags: Sequence[str] = None,
-        header: str = None,
-    ) -> bool:
-        """
-        Run the report
-
-        :param message_level: Level of message to be displayed.
-        :param tags: List of tags to include in report
-        :param header: An optional header to prepend to report (if verbose)
-        :return: Indicate if any serious message where generated.
-
-        """
-        serious_message = False
-
-        if header and self.verbose:
-            self.f_out.write(header + "\n")
-
-        # Generate report
-        for _, messages in self.registry.run_checks_iter(tags, self.pre_callback):
-            message_shown = False
-            if messages:
-                for message in messages:
-                    serious_message = serious_message or message.is_serious()
-
-                    # Filter output
-                    if message.level >= message_level:
-                        message_shown = True
-                        self.output_result(message)
-
-            if not (
-                self.verbose or message_shown
-            ):  # DeMorgans law: !a & !b == !(a | b)
-                self.f_out.write(".\n")
-
-        return serious_message
+    def render_result_suffix(self, check: Check, message_shown: bool):
+        if not (self.verbose or message_shown):
+            self.f_out.write(".\n")
 
 
-class TabularCheckReport:
+class TabularCheckReport(BaseReport):
     """
     Generation of a check report that outputs tabular output.
     """
@@ -241,44 +283,54 @@ class TabularCheckReport:
         """
         Initialise report
         """
-        self.f_out = f_out
-        self.registry = check_registry
-
+        super().__init__(f_out, check_registry)
         self.writer = csv.writer(self.f_out, delimiter=str("\t"))
 
-    def output_result(self, check: CheckReport, message: Optional[CheckMessage]):
+    def render_result(self, check: Check, message: Optional[CheckMessage]):
         name = get_check_name(check)
         if message:
             self.writer.writerow([name, message.level_name, message.msg])
         else:
             self.writer.writerow([name, "OK", ""])
 
-    def run(
-        self, message_level: int = logging.INFO, tags: Sequence[str] = None
-    ) -> bool:
-        """
-        Run the report
 
-        :param message_level: Level of message to be displayed.
-        :param tags: List of tags to include in report
-        :return: Indicate if any serious message where generated.
+def execute_report(
+    output: io.StringIO,
+    application_checks: str,
+    message_level: int = logging.INFO,
+    tags: Sequence[str] = None,
+    verbose: bool = False,
+    no_color: bool = False,
+    table: bool = False,
+    header: str = None,
+) -> bool:
+    """
+    Run application checks.
 
-        """
-        serious_message = False
+    :param output: File like object to write output to.
+    :param message_level: Reporting level.
+    :param application_checks: Application builtin check module
+    :param tags: Specific tags to run.
+    :param verbose: Display verbose output.
+    :param no_color: Disable coloured output.
+    :param table: Tabular output (disables verbose and colour option)
+    :param header: Header message for standard report
 
-        # Generate report
-        for check, messages in self.registry.run_checks_iter(tags):
-            message_shown = False
-            if messages:
-                for message in messages:
-                    serious_message = serious_message or message.is_serious()
+    """
+    # Import default application checks
+    try:
+        __import__(application_checks)
+    except ImportError:
+        pass
 
-                    # Filter output
-                    if message.level >= message_level:
-                        message_shown = True
-                        self.output_result(check, message)
+    # Import additional checks defined in settings.
+    import_checks()
 
-            if not message_shown:
-                self.output_result(check, None)
+    # Note the getLevelName method returns the level code if a string level is supplied!
+    message_level = logging.getLevelName(message_level)
 
-        return serious_message
+    # Create report instance
+    if table:
+        return TabularCheckReport(output).run(message_level, tags)
+    else:
+        return CheckReport(verbose, no_color, header, output).run(message_level, tags)
