@@ -43,13 +43,13 @@ CliApplication
 
 """
 import argcomplete
-import argparse
 import io
 import logging
 import logging.config
 import os
 import sys
 
+from argparse import ArgumentParser, Namespace as CommandOptions
 from typing import Sequence, Optional
 
 from pyapp import conf
@@ -99,7 +99,11 @@ class CliApplication(CommandGroup):
     Key used to define log level in environment
     """
 
-    additional_handlers = (builtin_handlers.extensions, builtin_handlers.settings)
+    additional_handlers = (
+        builtin_handlers.checks,
+        builtin_handlers.extensions,
+        builtin_handlers.settings,
+    )
     """
     Handlers to be added when builtin handlers are registered.
     """
@@ -119,9 +123,7 @@ class CliApplication(CommandGroup):
         env_loglevel_key: str = None,
     ):
         self.root_module = root_module
-        super().__init__(
-            argparse.ArgumentParser(prog, description=description, epilog=epilog)
-        )
+        super().__init__(ArgumentParser(prog, description=description, epilog=epilog))
         self.application_version = version or getattr(
             root_module, "__version__", "Unknown"
         )
@@ -147,7 +149,7 @@ class CliApplication(CommandGroup):
         self.register_builtin_handlers()
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self.root_module!r})"
+        return f"{type(self).__name__}(<module {self.root_module.__name__}>)"
 
     def __str__(self) -> str:
         return self.application_summary
@@ -222,92 +224,10 @@ class CliApplication(CommandGroup):
             help="Minimum level of check message to display",
         )
 
-    def run_checks(
-        self,
-        output: io.StringIO,
-        message_level: int = logging.INFO,
-        tags: Sequence[str] = None,
-        verbose: bool = False,
-        no_color: bool = False,
-        table: bool = False,
-    ) -> bool:
-        """
-        Run application checks.
-
-        :param output: File like object to write output to.
-        :param message_level: Reporting level.
-        :param tags: Specific tags to run.
-        :param verbose: Display verbose output.
-        :param no_color: Disable coloured output.
-        :param table: Tabular output (disables verbose and colour option)
-
-        """
-        from pyapp.checks.registry import import_checks
-        from pyapp.checks.report import CheckReport, TabularCheckReport
-
-        # Import default application checks
-        try:
-            __import__(self.application_checks)
-        except ImportError:
-            pass
-
-        # Import additional checks defined in settings.
-        import_checks()
-
-        # Note the getLevelName method returns the level code if a string level is supplied!
-        message_level = logging.getLevelName(message_level)
-
-        # Create report instance
-        if table:
-            return TabularCheckReport(output).run(message_level, tags)
-        else:
-            return CheckReport(verbose, no_color, output).run(
-                message_level, tags, f"Checks for {self.application_summary}"
-            )
-
     def register_builtin_handlers(self):
         """
         Register any built in handlers.
         """
-        # Register the checks handler
-        @argument(
-            "-t",
-            "--tag",
-            dest="tags",
-            action="append",
-            help_text="Run checks associated with a tag.",
-        )
-        @argument(
-            "--verbose",
-            dest="verbose",
-            action="store_true",
-            help_text="Verbose output.",
-        )
-        @argument(
-            "--out",
-            dest="out",
-            default=sys.stdout,
-            type=argparse.FileType(mode="w"),
-            help_text="File to output check report to; default is stdout.",
-        )
-        @argument(
-            "--table",
-            dest="table",
-            action="store_true",
-            help_text="Output report in tabular format.",
-        )
-        @self.command(name="checks", help_text="Run a check report")
-        def check_report(opts, **_):
-            if self.run_checks(
-                opts.out,
-                opts.checks_message_level,
-                opts.tags,
-                opts.verbose,
-                opts.no_color,
-                opts.table,
-            ):
-                exit(4)
-
         # Register any additional handlers
         for additional_handler in self.additional_handlers:
             additional_handler(self)
@@ -361,15 +281,21 @@ class CliApplication(CommandGroup):
         # Configure root log level
         logging.root.setLevel(opts.log_level)
 
-    def checks_on_startup(self, opts: argparse.Namespace):
+    def checks_on_startup(self, opts: CommandOptions):
         """
         Run checks on startup.
         """
+        from pyapp.checks.report import execute_report
+
         if opts.checks_on_startup:
             out = io.StringIO()
 
-            serious_error = self.run_checks(
-                out, opts.checks_message_level, None, True, False
+            serious_error = execute_report(
+                out,
+                self.application_settings,
+                opts.checks_message_level,
+                verbose=True,
+                header=f"Check report for {self.application_summary}",
             )
             if serious_error:
                 logger.error("Check results:\n%s", out.getvalue())
@@ -377,7 +303,7 @@ class CliApplication(CommandGroup):
             else:
                 logger.info("Check results:\n%s", out.getvalue())
 
-    def exception_report(self, exception: BaseException, opts: argparse.Namespace):
+    def exception_report(self, exception: BaseException, opts: CommandOptions):
         """
         Generate a report for any unhandled exceptions caught by the framework.
         """
@@ -395,7 +321,6 @@ class CliApplication(CommandGroup):
         self.pre_configure_logging()
         self.load_extensions()
 
-        # Enable auto complete if available
         argcomplete.autocomplete(self.parser)
         opts = self.parser.parse_args(args)
 

@@ -1,12 +1,53 @@
-import argparse
 import sys
 
-from .arguments import CommandGroup
+from argparse import FileType
+
+from .arguments import argument, CommandGroup
+
+
+def checks(app):
+    # Register the checks handler
+    @argument(
+        "-t",
+        "--tag",
+        dest="tags",
+        action="append",
+        help_text="Run checks associated with a tag.",
+    )
+    @argument(
+        "--verbose", dest="verbose", action="store_true", help_text="Verbose output."
+    )
+    @argument(
+        "--out",
+        dest="out",
+        default=sys.stdout,
+        type=FileType(mode="w"),
+        help_text="File to output check report to; default is stdout.",
+    )
+    @argument(
+        "--table",
+        dest="table",
+        action="store_true",
+        help_text="Output report in tabular format.",
+    )
+    @app.command(name="checks", help_text="Run a check report")
+    def check_report(opts, **_):
+        from pyapp.checks.report import execute_report
+
+        if execute_report(
+            opts.out,
+            app.application_settings,
+            opts.checks_message_level,
+            tags=opts.tags,
+            verbose=opts.verbose,
+            no_color=opts.no_color,
+            table=opts.table,
+            header=f"Check report for {app.application_summary}",
+        ):
+            exit(4)
 
 
 def extensions(app: CommandGroup):
-    from pyapp.app import argument
-
     # Register extension report handler
     @argument(
         "--verbose", dest="verbose", action="store_true", help_text="Verbose output."
@@ -15,7 +56,7 @@ def extensions(app: CommandGroup):
         "--out",
         dest="out",
         default=sys.stdout,
-        type=argparse.FileType(mode="w"),
+        type=FileType(mode="w"),
         help_text="File to output extension report to; default is stdout.",
     )
     @app.command(name="extensions")
@@ -29,14 +70,12 @@ def extensions(app: CommandGroup):
 
 
 def settings(app: CommandGroup):
-    from pyapp.app import argument
-
     # Register settings report handler
     @argument(
         "--out",
         dest="out",
         default=sys.stdout,
-        type=argparse.FileType(mode="w"),
+        type=FileType(mode="w"),
         help_text="File to output settings report to; default is stdout.",
     )
     def _handler(opts):

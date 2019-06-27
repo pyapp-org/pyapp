@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 import pytest
 import tests.sample_app
 
@@ -72,24 +74,43 @@ class TestCliApplication:
         target.dispatch(args=("--log-level", "WARN", "settings"))
         assert logging.root.level == logging.WARN
 
-    def test_env_key_settings(self):
-        target = CliApplication(tests.sample_app)
-        assert target.env_loglevel_key == "PYAPP_LOGLEVEL"
-        assert target.env_settings_key == "PYAPP_SETTINGS"
+    @pytest.mark.parametrize(
+        "kwargs, expected",
+        (
+            ({}, "PYAPP_LOGLEVEL"),
+            ({"env_loglevel_key": "MYAPP_LOGLEVEL"}, "MYAPP_LOGLEVEL"),
+        ),
+    )
+    def test_env_loglevel_key(self, kwargs, expected):
+        target = CliApplication(tests.sample_app, **kwargs)
+        assert target.env_loglevel_key == expected
 
-        target = CliApplication(
-            tests.sample_app,
-            env_loglevel_key="MYAPP_LOGLEVEL",
-            env_settings_key="MYAPP_SETTINGS",
-        )
-        assert target.env_loglevel_key == "MYAPP_LOGLEVEL"
-        assert target.env_settings_key == "MYAPP_SETTINGS"
+    @pytest.mark.parametrize(
+        "kwargs, expected",
+        (
+            ({}, "PYAPP_SETTINGS"),
+            ({"env_settings_key": "MYAPP_SETTINGS"}, "MYAPP_SETTINGS"),
+        ),
+    )
+    def test_env_settings_key(self, kwargs, expected):
+        target = CliApplication(tests.sample_app, **kwargs)
+        assert target.env_settings_key == expected
 
-    def test_summary(self):
+    @pytest.mark.parametrize(
+        "kwargs, expected",
+        (
+            ({"prog": "testing"}, "testing version 1.2.3"),
+            (
+                {"prog": "testing", "description": "This is a test"},
+                "testing version 1.2.3 - This is a test",
+            ),
+        ),
+    )
+    def test_summary(self, kwargs, expected):
+        target = CliApplication(tests.sample_app, **kwargs)
+        assert str(target) == expected
+
+    def test_repr(self):
         target = CliApplication(tests.sample_app, prog="testing")
-        assert target.application_summary == "testing version 1.2.3"
 
-        target = CliApplication(
-            tests.sample_app, prog="testing", description="This is a test"
-        )
-        assert target.application_summary == "testing version 1.2.3 - This is a test"
+        assert repr(target) == "CliApplication(<module tests.sample_app>)"

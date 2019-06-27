@@ -37,21 +37,18 @@ class TestHandlerProxy:
 class TestCommandGroup:
     @pytest.fixture
     def target(self):
-        return arguments.CommandGroup(
-            argparse.ArgumentParser("test")
-        )
+        return arguments.CommandGroup(argparse.ArgumentParser("test"))
 
-    @pytest.mark.parametrize("prefix, expected", (
-            (None, ":handler:"),
-            ("foo", ":handler:foo"),
-    ))
+    @pytest.mark.parametrize(
+        "prefix, expected", ((None, ":handler:"), ("foo", ":handler:foo"))
+    )
     def test_handler_dest(self, prefix, expected):
         target = arguments.CommandGroup(argparse.ArgumentParser("test"), _prefix=prefix)
 
         assert target.handler_dest == expected
 
     def test_create_command_group(self, target: arguments.CommandGroup):
-        actual = target.create_command_group("foo", help_text="bar", aliases=('f',))
+        actual = target.create_command_group("foo", help_text="bar", aliases=("f",))
 
         assert isinstance(actual, arguments.CommandGroup)
         assert actual.parser.prog == "test foo"
@@ -96,9 +93,8 @@ class TestCommandGroup:
         def known(opts) -> int:
             return 24
 
-        actual = target.dispatch_handler(argparse.Namespace(**{
-            ":handler:foo": "known",
-            ":handler:": "foo",
-        }))
+        actual = target.dispatch_handler(
+            argparse.Namespace(**{":handler:foo": "known", ":handler:": "foo"})
+        )
 
         assert actual == 24
