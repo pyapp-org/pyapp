@@ -36,7 +36,7 @@ def checks(app):
 
         if execute_report(
             opts.out,
-            app.application_settings,
+            app.application_checks,
             opts.checks_message_level,
             tags=opts.tags,
             verbose=opts.verbose,

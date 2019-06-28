@@ -292,7 +292,7 @@ class CliApplication(CommandGroup):
 
             serious_error = execute_report(
                 out,
-                self.application_settings,
+                self.application_checks,
                 opts.checks_message_level,
                 verbose=True,
                 header=f"Check report for {self.application_summary}",
