@@ -12,4 +12,5 @@ Contents:
    conf
    conf/default_settings
    conf/helpers
+   injection
    extensions
