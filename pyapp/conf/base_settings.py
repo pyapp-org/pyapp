@@ -4,33 +4,18 @@ Default Settings
 
 .. auto
 """
-from __future__ import unicode_literals
+from typing import Sequence, Dict, Any
 
-DEBUG = False
+DEBUG: bool = False
 """
 Enable debug mode
 """
 
-###############################################################################
-# Extensions
-EXT = []
-"""
-List of extensions currently in use. Will cause pyapp to import any checks,
-load default_configuration etc that are supplied by any extension.
-
-Should be a list of modules to import eg::
-
-    EXT = (
-        'pyapp_sqlalchemy',
-        'my_custom_extension',
-    )
-    
-"""
 
 ###############################################################################
 # Logging
 
-LOGGING = {}
+LOGGING: Dict[str, Any] = {}
 """
 Logging configuration.
 
@@ -57,10 +42,11 @@ The following configuration is applied by default::
 
 """
 
+
 ###############################################################################
 # Checks
 
-CHECK_LOCATIONS = []
+CHECK_LOCATIONS: Sequence[str] = []
 """
 Locations to import to ensure checks are registered.
 """

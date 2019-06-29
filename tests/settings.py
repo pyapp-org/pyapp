@@ -1,7 +1,7 @@
 # Test only upper values are included
-UPPER_VALUE = 'foo'
-lower_value = 'bar'
-mixed_VALUE = 'eek'
+UPPER_VALUE = "foo"
+lower_value = "bar"
+mixed_VALUE = "eek"
 
 # Helpful test placeholders.
 SETTING_1 = 1
@@ -12,40 +12,22 @@ SETTING_5 = 5
 
 # Factory sample values
 TEST_NAMED_FACTORY = {
-    'default': (
-        'tests.factory.Bar', {
-            'length': 42
-        },
-    ),
-    'iron': (
-        'tests.factory.IronBar', {
-            'length': 24
-        },
-    ),
-    'steel': ('tests.factory.SteelBeam', {})
+    "default": ("tests.factory.Bar", {"length": 42}),
+    "iron": ("tests.factory.IronBar", {"length": 24}),
+    "steel": ("tests.factory.SteelBeam", {}),
 }
 
 # Factory sample values
 TEST_NAMED_FACTORY_NO_DEFAULT = {
-    'iron': (
-        'tests.factory.IronBar', {
-            'length': 24
-        },
-    ),
-    'steel': ('tests.factory.SteelBeam', {})
+    "iron": ("tests.factory.IronBar", {"length": 24}),
+    "steel": ("tests.factory.SteelBeam", {}),
 }
 
 # Config sample values
 TEST_NAMED_CONFIG = {
-    'default': {
-        'length': 42,
-        'foo': 'bar'
-    },
-    'eek': {
-        'length': 24,
-        'foo': 'bar'
-    }
+    "default": {"length": 42, "foo": "bar"},
+    "eek": {"length": 24, "foo": "bar"},
 }
 
 # Providers
-TEST_PROVIDERS = ['tests.test_conf_helpers_providers.ProviderBaseTest']
+TEST_PROVIDERS = ["tests.conf.helpers.test_providers.ProviderBaseTest"]

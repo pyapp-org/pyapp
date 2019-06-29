@@ -1,107 +1,174 @@
-from __future__ import print_function, unicode_literals
-
 import csv
+import io
 import logging
 import sys
-import textwrap
 
-# Typing imports
-from typing import List, Optional, Any  # noqa
-from io import StringIO  # noqa
-from pyapp.checks.registry import CheckRegistry, CheckMessage  # noqa
+from colorama import Style, Fore, Back
+from io import StringIO
+from typing import Sequence, Optional, Any
 
-from pyapp.checks.registry import registry
-from pyapp.utils import colorama
+from .registry import CheckRegistry, Check, CheckMessage, registry, import_checks
+from ..utils import wrap_text
 
-if colorama:
-    from colorama import Style, Fore, Back
-    COLOURS = {
-        # Type: (Title, Border),
-        logging.CRITICAL: (Fore.WHITE + Back.RED, Fore.RED),
-        logging.ERROR: (Fore.RED, Fore.RED),
-        logging.WARNING: (Fore.YELLOW, Fore.YELLOW),
-        logging.INFO: (Fore.CYAN, Fore.CYAN),
-        logging.DEBUG: (Fore.MAGENTA, Fore.MAGENTA),
-    }
+COLOURS = {
+    # Type: (Title, Border),
+    logging.CRITICAL: (Fore.WHITE + Back.RED, Fore.RED),
+    logging.ERROR: (Fore.RED, Fore.RED),
+    logging.WARNING: (Fore.YELLOW, Fore.YELLOW),
+    logging.INFO: (Fore.CYAN, Fore.CYAN),
+    logging.DEBUG: (Fore.MAGENTA, Fore.MAGENTA),
+}
 
 
-def get_check_name(obj):
-    # type: (Any) -> str
+def get_check_name(obj: Any) -> str:
     """
     Get the name of a check
     """
-    check = obj.checks if hasattr(obj, 'checks') else obj
-    return getattr(check, 'check_name', check.__name__).format(obj=obj)
+    check = obj.checks if hasattr(obj, "checks") else obj
+    return getattr(check, "check_name", check.__name__).format(obj=obj)
 
 
-class CheckReport(object):
+class BaseReport:
+    def __init__(self, f_out=sys.stdout, check_registry: CheckRegistry = registry):
+        """
+        :param f_out: File to output report to; default is ``stdout``
+        :param check_registry: Registry to source checks from; defaults to the builtin registry.
+        """
+        self.f_out = f_out
+        self.registry = check_registry
+
+    def render_header(self):
+        """
+        Render any header.
+        """
+
+    def render_result_prefix(self, check: Check):
+        """
+        Called prior to rendering a checks messages
+        """
+
+    def render_result(self, check: Check, message: Optional[CheckMessage]):
+        """
+        Render result of check.
+        """
+
+    def render_result_suffix(self, check: Check, shown: bool):
+        """
+        Called after rendering a checks messages.
+
+        Shown indicates if any messages where shown (could be filtered)
+
+        """
+
+    def render_footer(self):
+        """
+        Render any footer
+        """
+
+    def run(
+        self, message_level: int = logging.INFO, tags: Sequence[str] = None
+    ) -> bool:
+        """
+        Run the report
+
+        :param message_level: Level of message to be displayed.
+        :param tags: List of tags to include in report
+        :return: Indicate if any serious message where generated.
+
+        """
+        serious_message = False
+
+        self.render_header()
+
+        # Generate report
+        for check, messages in self.registry.run_checks_iter(
+            tags, self.render_result_prefix
+        ):
+            message_shown = False
+            if messages:
+                for message in messages:
+                    serious_message = serious_message or message.is_serious()
+
+                    # Filter output
+                    if message.level >= message_level:
+                        message_shown = True
+                        self.render_result(check, message)
+
+            if not message_shown:
+                self.render_result(check, None)
+
+            self.render_result_suffix(check, message_shown)
+
+        self.render_footer()
+
+        return serious_message
+
+
+class CheckReport(BaseReport):
     """
     Wrapper for the generation of a check report.
     """
+
     width = 80
 
-    def __init__(self, verbose=False, no_color=False, f_out=sys.stdout, check_registry=registry):
+    def __init__(
+        self,
+        verbose: bool = False,
+        no_color: bool = False,
+        header: str = None,
+        f_out=sys.stdout,
+        check_registry=registry,
+    ):
         """
         Initialise check report
 
         :param verbose: Enable verbose output
-        :param no_color: Disable colourised output (if colorama is installed)
+        :param no_color: Disable colourised output
+        :param header: An optional header to prepend to report (if verbose)
         :param f_out: File to output report to; default is ``stdout``
         :param check_registry: Registry to source checks from; defaults to the builtin registry.
 
         """
         self.verbose = verbose
-        self.f_out = f_out
-        # Default color to be disabled if colorama is not installed.
-        self.no_color = no_color if colorama else True
-        self.registry = check_registry
+        self.no_color = no_color
+        self.header = header
+        super().__init__(f_out, check_registry)
 
         # Generate templates
         if self.no_color:
             self.VERBOSE_CHECK_TEMPLATE = "+ {name}\n"
             self.TITLE_TEMPLATE = " {level}: {title}"
             self.HINT_TEMPLATE = ("-" * self.width) + "\n HINT: {hint}\n"
-            self.MESSAGE_TEMPLATE = ("=" * self.width) + "\n{title}\n{hint}" + ("=" * self.width) + '\n\n'
+            self.MESSAGE_TEMPLATE = (
+                f"{'=' * self.width}\n{{title}}\n{{hint}}{'=' * self.width}\n\n"
+            )
 
         else:
-            self.VERBOSE_CHECK_TEMPLATE = Fore.YELLOW + "+ " + Fore.CYAN + "{name}\n" + Style.RESET_ALL
-            self.TITLE_TEMPLATE = "{style} " + Style.BRIGHT + "{level}:" + Style.NORMAL + " {title}" + Style.RESET_ALL
-            self.HINT_TEMPLATE = \
-                "{border_style}" + ("-" * self.width) + Style.RESET_ALL + \
-                "\n" + Style.BRIGHT + " HINT: " + Style.DIM + Fore.WHITE + " {hint}" + Style.RESET_ALL + "\n"
-            self.MESSAGE_TEMPLATE = \
-                "{border_style}" + ("=" * self.width) + Style.RESET_ALL + \
-                "\n{title}\n{hint}" + \
-                "{border_style}" + ("=" * self.width) + Style.RESET_ALL + \
-                "\n\n"
+            self.VERBOSE_CHECK_TEMPLATE = (
+                f"{Fore.YELLOW}+ {Fore.CYAN}{{name}}{Style.RESET_ALL}\n"
+            )
+            self.TITLE_TEMPLATE = f"{{style}} {Style.BRIGHT}{{level:7s}}{Style.NORMAL} {{title}}{Style.RESET_ALL}"
+            self.HINT_TEMPLATE = (
+                f"{{border_style}}{'-' * self.width}{Style.RESET_ALL}\n "
+                f"{Style.BRIGHT}HINT:{Style.DIM} {Fore.WHITE}{{hint}}{Style.RESET_ALL}\n"
+            )
+            self.MESSAGE_TEMPLATE = (
+                f"{{border_style}}{'=' * self.width}{Style.RESET_ALL}\n"
+                f"{{title}}\n{{hint}}"
+                f"{{border_style}}{'=' * self.width}{Style.RESET_ALL}\n\n"
+            )
 
-    def pre_callback(self, obj):
+    def render_header(self):
+        if self.header and self.verbose:
+            self.f_out.write(self.header + "\n")
+
+    def render_result_prefix(self, obj):
         if self.verbose:
             self.f_out.write(
                 self.VERBOSE_CHECK_TEMPLATE.format(name=get_check_name(obj))
             )
 
-    def wrap_text(self, text, indent_width, line_sep='\n'):
-        """
-        Perform word wrapping on text
-
-        :param text: Text to wrap.
-        :type text: str
-        :indent_width indent: Size of text indent.
-        :type indent_width: int
-        :param line_sep: Line separator
-        :rtype: str
-
-        """
-        indent = ' ' * (indent_width + 1)
-        lines = textwrap.wrap(
-            text, self.width - 2,
-            initial_indent=indent, subsequent_indent=indent
-        )
-        return line_sep.join(l + (' ' * (self.width - len(l))) for l in lines)
-
-    def format_title(self, message):
-        # type: (CheckMessage) -> str
+    def format_title(self, message: CheckMessage) -> str:
         """
         Format the title of message.
         """
@@ -109,21 +176,22 @@ class CheckReport(object):
         level_name = message.level_name
         msg = message.msg
         if message.obj:
-            msg = "{} - {}".format(message.obj, msg)
+            msg = f"{message.obj} - {msg}"
 
         if self.no_color:
-            title_style = ''
+            title_style = ""
             line_sep = "\n"
         else:
             title_style = COLOURS[message.level][0]
             line_sep = Style.RESET_ALL + "\n" + title_style
 
         return self.TITLE_TEMPLATE.format(
-            style=title_style, level=level_name,
-            title=self.wrap_text(msg, len(level_name) + 2, line_sep).lstrip()
+            style=title_style,
+            level=level_name,
+            title=wrap_text(msg, self.width, indent=9, line_sep=line_sep).lstrip(),
         )
 
-    def format_hint(self, message):
+    def format_hint(self, message: CheckMessage) -> str:
         """
         Format the hint of a message.
         """
@@ -141,112 +209,91 @@ class CheckReport(object):
                 line_sep = Style.RESET_ALL + "\n" + Style.DIM + Fore.WHITE
                 border_style = COLOURS[message.level][1]
 
-            indent_width = len(" Hint: ")
             return self.HINT_TEMPLATE.format(
                 border_style=border_style,
-                hint='\n\n'.join(self.wrap_text(p, indent_width, line_sep) for p in hint).lstrip()
+                hint="\n\n".join(
+                    wrap_text(p, self.width, indent=8, line_sep=line_sep) for p in hint
+                ).lstrip(),
             )
         else:
-            return ''
+            return ""
 
-    def output_result(self, message):
-        """
-        Output a result to output file.
+    def render_result(self, _: Check, message: Optional[CheckMessage]):
+        if message:
+            format_args = dict(
+                level=logging.getLevelName(message.level),
+                title=self.format_title(message),
+                hint=self.format_hint(message),
+            )
+            if not self.no_color:
+                format_args.update(border_style=COLOURS[message.level][1])
 
-        :type message: messages.CheckMessage
+            self.f_out.write(self.MESSAGE_TEMPLATE.format(**format_args))
 
-        """
-        format_args = dict(
-            level=logging.getLevelName(message.level),
-            title=self.format_title(message),
-            hint=self.format_hint(message),
-        )
-        if not self.no_color:
-            format_args.update(border_style=COLOURS[message.level][1])
-
-        self.f_out.write(self.MESSAGE_TEMPLATE.format(**format_args))
-
-    def run(self, message_level=logging.INFO, tags=None, header=None):
-        # type: (int, List[str], str) -> bool
-        """
-        Run the report
-
-        :param message_level: Level of message to be displayed.
-        :param tags: List of tags to include in report
-        :param header: An optional header to prepend to report (if verbose)
-        :return: Indicate if any serious message where generated.
-
-        """
-        serious_message = False
-
-        if header and self.verbose:
-            self.f_out.write(header + '\n')
-
-        # Generate report
-        for _, messages in self.registry.run_checks_iter(tags, self.pre_callback):
-            message_shown = False
-            if messages:
-                for message in messages:
-                    serious_message = serious_message or message.is_serious()
-
-                    # Filter output
-                    if message.level >= message_level:
-                        message_shown = True
-                        self.output_result(message)
-
-            if not (self.verbose or message_shown):  # DeMorgans law: !a & !b == !(a | b)
-                self.f_out.write(".\n")
-
-        return serious_message
+    def render_result_suffix(self, check: Check, message_shown: bool):
+        if not (self.verbose or message_shown):
+            self.f_out.write(".\n")
 
 
-class TabularCheckReport(object):
+class TabularCheckReport(BaseReport):
     """
     Generation of a check report that outputs tabular output.
     """
-    def __init__(self, f_out=sys.stdout, check_registry=registry):
-        # type: (StringIO, CheckRegistry) -> None
+
+    def __init__(
+        self, f_out: StringIO = sys.stdout, check_registry: CheckRegistry = registry
+    ):
         """
         Initialise report
         """
-        self.f_out = f_out
-        self.registry = check_registry
+        super().__init__(f_out, check_registry)
+        self.writer = csv.writer(self.f_out, delimiter=str("\t"))
 
-        self.writer = csv.writer(self.f_out, delimiter=str('\t'))
-
-    def output_result(self, check, message):
-        # type: (CheckReport, Optional[CheckMessage]) -> None
+    def render_result(self, check: Check, message: Optional[CheckMessage]):
         name = get_check_name(check)
         if message:
             self.writer.writerow([name, message.level_name, message.msg])
         else:
-            self.writer.writerow([name, 'OK', ''])
+            self.writer.writerow([name, "OK", ""])
 
-    def run(self, message_level=logging.INFO, tags=None):
-        # type: (int, List[str]) -> bool
-        """
-        Run the report
 
-        :param message_level: Level of message to be displayed.
-        :param tags: List of tags to include in report
-        :return: Indicate if any serious message where generated.
+def execute_report(
+    output: io.StringIO,
+    application_checks: str,
+    message_level: int = logging.INFO,
+    tags: Sequence[str] = None,
+    verbose: bool = False,
+    no_color: bool = False,
+    table: bool = False,
+    header: str = None,
+) -> bool:
+    """
+    Run application checks.
 
-        """
-        serious_message = False
+    :param output: File like object to write output to.
+    :param message_level: Reporting level.
+    :param application_checks: Application builtin check module
+    :param tags: Specific tags to run.
+    :param verbose: Display verbose output.
+    :param no_color: Disable coloured output.
+    :param table: Tabular output (disables verbose and colour option)
+    :param header: Header message for standard report
 
-        # Generate report
-        for check, messages in self.registry.run_checks_iter(tags):
-            message_shown = False
-            if messages:
-                for message in messages:
-                    serious_message = serious_message or message.is_serious()
+    """
+    # Import default application checks
+    try:
+        __import__(application_checks)
+    except ImportError:
+        pass
 
-                    # Filter output
-                    if message.level >= message_level:
-                        message_shown = True
-                        self.output_result(check, message)
+    # Import additional checks defined in settings.
+    import_checks()
 
-            if not message_shown:
-                self.output_result(check, None)
+    # Note the getLevelName method returns the level code if a string level is supplied!
+    message_level = logging.getLevelName(message_level)
 
-        return serious_message
+    # Create report instance
+    if table:
+        return TabularCheckReport(output).run(message_level, tags)
+    else:
+        return CheckReport(verbose, no_color, header, output).run(message_level, tags)

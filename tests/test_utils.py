@@ -8,13 +8,10 @@ class IteratorTest(object):
         yield 1
 
 
-@pytest.mark.parametrize(('instance', 'is_iterable'), (
-    (None, False),
-    (123, False),
-    ("Foo", True),
-    ([], True),
-    (IteratorTest(), True),
-))
+@pytest.mark.parametrize(
+    ("instance", "is_iterable"),
+    ((None, False), (123, False), ("Foo", True), ([], True), (IteratorTest(), True)),
+)
 def test_is_iterable(instance, is_iterable):
     assert utils.is_iterable(instance) == is_iterable
 
@@ -29,10 +26,10 @@ class CachedPropertyTest(object):
 
 
 def test_cached_property():
-    target = CachedPropertyTest('foo', 123)
+    target = CachedPropertyTest("foo", 123)
 
-    assert target.a == 'foo'
-    target.backing_a = 'bar'
-    assert target.a == 'foo'
+    assert target.a == "foo"
+    target.backing_a = "bar"
+    assert target.a == "foo"
     del target.a
-    assert target.a == 'bar'
+    assert target.a == "bar"

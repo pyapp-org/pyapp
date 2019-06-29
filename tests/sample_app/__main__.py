@@ -36,7 +36,7 @@ def critical_check(**_):
     return checks.Critical(
         "Critical message, that is really really long and should be wrapped across lines. Actually across two no THREE "
         "lines! Now that is getting fairly full on! :)",
-        "Remove critical messages"
+        "Remove critical messages",
     )
 
 
@@ -51,8 +51,11 @@ def double_check(**_):
         checks.Warn("Warn message", "Remove warning messages", obj="App"),
         checks.Info(
             "Info message",
-            ["Just a tip really message.", "This is also a multi-paragraph hint as an example of what can be done."],
-            obj="App"
+            [
+                "Just a tip really message.",
+                "This is also a multi-paragraph hint as an example of what can be done.",
+            ],
+            obj="App",
         ),
     )
 
@@ -67,5 +70,5 @@ def debug_check(**_):
     return checks.Debug("Debug message")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.dispatch()

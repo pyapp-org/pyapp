@@ -1,135 +1,117 @@
-from __future__ import absolute_import, unicode_literals
+import pkg_resources
 
-import importlib
-import six
+from typing import Sequence, Iterator, Optional, List, NamedTuple
 
-from types import ModuleType
+from pyapp.app.arguments import CommandGroup
 
-from pyapp.conf import settings, factory as loader_factory
-from pyapp.utils import cached_property
+__all__ = ("registry", "ExtensionEntryPoints", "ExtensionDetail")
 
-__all__ = ('registry', 'load')
+ENTRY_POINTS = "pyapp.extensions"
 
 
-class Extension(object):
+class ExtensionDetail(NamedTuple):
     """
-    Wrapper that provides accessors to extension module values.
+    Details of an entry point Extension
     """
-    def __init__(self, module, package):
-        self.module = module
-        self.package = package
 
-    def __eq__(self, other):
-        if isinstance(other, ModuleType):
-            return self.module == other
-        return NotImplemented
+    extension: object
+    key: str
+    name: str
+    version: str
 
-    def summary(self):
-        return {
-            'name': self.name,
-            'version': self.version,
-            'package': self.package,
-            'checks': self.checks_module,
-            'default_settings': self.default_settings
-        }
+    @property
+    def default_settings(self) -> str:
+        module = getattr(self.extension, "default_settings", "default_settings")
+        if module.startswith("."):
+            return f"{self.extension.__module__}{module}"
+        else:
+            return module
 
-    def trigger_ready(self):
+    @property
+    def checks_module(self) -> Optional[str]:
         """
-        Trigger the ready callback to indicate extensions have been loaded and marked as ready.
+        Get reference to optional checks module.
         """
-        if self.ready_callback:
-            self.ready_callback()
+        module = getattr(self.extension, "checks", "checks")
+        if module and module.startswith("."):
+            return f"{self.extension.__module__}{module}"
+        else:
+            return module
 
-    def _resolve_name(self, name):
+    def register_commands(self, root: CommandGroup):
+        if hasattr(self.extension, "register_commands"):
+            self.extension.register_commands(root)
+
+    def ready(self):
+        if hasattr(self.extension, "ready"):
+            self.extension.ready()
+
+
+class ExtensionEntryPoints:
+    def __init__(self, white_list: Sequence[str] = None):
+        self.white_list = white_list
+
+    def _entry_points(self) -> Iterator[pkg_resources.EntryPoint]:
         """
-        Return the absolute name of the module to be imported.
+        Iterator of filtered extension entry points
         """
-        if isinstance(name, six.string_types):
-            if name.startswith('.'):
-                return self.package + name
-            return name
+        white_list = self.white_list
+        for entry_point in pkg_resources.iter_entry_points(ENTRY_POINTS):
+            if white_list is None or entry_point.name in white_list:
+                yield entry_point
 
-    @cached_property
-    def name(self):
-        return self.module.__name__
-
-    @cached_property
-    def version(self):
-        return getattr(self.module, '__version__', None)
-
-    @cached_property
-    def checks_module(self):
-        return self._resolve_name(getattr(self.module, '__checks__', None))
-
-    @cached_property
-    def default_settings(self):
-        return self._resolve_name(getattr(self.module, '__default_settings__', None))
-
-    @cached_property
-    def ready_callback(self):
-        return getattr(self.module, 'ready', None)
+    def extensions(self, load: bool = True) -> Iterator[object]:
+        """
+        Iterator of loaded extensions.
+        """
+        for entry_point in self._entry_points():
+            yield ExtensionDetail(
+                entry_point.resolve() if load else None,
+                entry_point.name,
+                entry_point.dist.project_name,
+                entry_point.dist.version,
+            )
 
 
-class ExtensionRegistry(object):
+class ExtensionRegistry(List[ExtensionDetail]):
     """
     Registry for tracking install PyApp extensions.
     """
-    def __init__(self):
-        self._extensions = []
 
-    def __iter__(self):
-        return iter(self._extensions)
+    def load_from(self, extensions: Iterator[ExtensionDetail]):
+        for extension in extensions:
+            self.append(extension)
 
-    def load(self, module_name):
-        """
-        Load a module from
-
-        :param module_name: Name of the module to load (in standard python dot format)
-        :raises: ImportError
-
-        """
-        module = importlib.import_module(module_name)
-        if module not in self._extensions:
-            self._extensions.append(Extension(module, module_name))
-
-    def load_from_settings(self):
-        """
-        Load all extensions defined in settings
-        """
-        for module_name in settings.EXT:
-            self.load(module_name)
-
-    def summary(self):
-        """
-        Returns a summary of the loaded extension modules.
-        """
-        module_summary = []
-        for extension in self._extensions:
-            module_summary.append(extension.summary())
-        return module_summary
-
-    def trigger_ready(self):
+    def register_commands(self, root: CommandGroup):
         """
         Trigger ready callback on all extension modules.
         """
-        for extension in self._extensions:
-            extension.trigger_ready()
+        for extension in self:
+            extension.register_commands(root)
+
+    def ready(self):
+        """
+        Trigger ready callback on all extension modules.
+        """
+        for extension in self:
+            extension.ready()
 
     @property
-    def settings_loaders(self):
+    def default_settings(self) -> Sequence[str]:
         """
         Return a list of module loaders for extensions that specify default settings.
         """
-        return [loader_factory(module.default_settings)
-                for module in self._extensions if module.default_settings]
+        return tuple(
+            module.default_settings for module in self if module.default_settings
+        )
 
     @property
-    def check_locations(self):
+    def check_locations(self) -> Sequence[str]:
         """
         Return a list of checks modules for extensions that specify checks.
         """
-        return [module.checks_module for module in self._extensions if module.checks_module]
+        return tuple(module.checks_module for module in self if module.checks_module)
+
 
 # Shortcuts and global extension registry.
 registry = ExtensionRegistry()
-load = registry.load

@@ -1,35 +1,38 @@
-from __future__ import print_function, unicode_literals
-
 import sys
 import pprint
 
+from colorama import Style, Fore
+from typing import TextIO
+
 from pyapp import conf
-from pyapp.utils import colorama
-
-if colorama:
-    from colorama import Style, Fore
 
 
-class SettingsReport(object):
+class SettingsReport:
     """
     Report of all settings in use.
     """
+
     width = 80
 
-    def __init__(self, verbose=False, no_color=False, f_out=sys.stdout, settings=None):
+    def __init__(
+        self,
+        verbose: bool = False,
+        no_color: bool = False,
+        f_out: TextIO = sys.stdout,
+        settings: str = None,
+    ):
         """
         Initialise check report
 
         :param verbose: Enable verbose output
-        :param no_color: Disable colourised output (if colorama is installed)
+        :param no_color: Disable colourised output
         :param f_out: File to output report to; default is ``stdout``
         :param settings: Settings to produce a report of.
 
         """
         self.verbose = verbose
         self.f_out = f_out
-        # Default color to be disabled if colorama is not installed.
-        self.no_color = no_color if colorama else True
+        self.no_color = no_color
         self.settings = settings or conf.settings
 
         # Generate templates
@@ -37,16 +40,21 @@ class SettingsReport(object):
             self.BASIC_TEMPLATE = "{key:20} : {ppsetting}\n"
 
         else:
-            self.BASIC_TEMPLATE = Fore.YELLOW + "{key:20} : " + Fore.CYAN + "{ppsetting}" + Style.RESET_ALL + "\n"
+            self.BASIC_TEMPLATE = (
+                Fore.YELLOW
+                + "{key:20} : "
+                + Fore.CYAN
+                + "{ppsetting}"
+                + Style.RESET_ALL
+                + "\n"
+            )
 
-    def output_result(self, key, setting):
+    def output_result(self, key: str, setting):
         """
         Output a result to output file.
         """
         format_args = dict(
-            key=key,
-            setting=setting,
-            ppsetting=pprint.pformat(setting, 2)
+            key=key, setting=setting, ppsetting=pprint.pformat(setting, 2)
         )
 
         self.f_out.write(self.BASIC_TEMPLATE.format(**format_args))

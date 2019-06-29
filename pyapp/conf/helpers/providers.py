@@ -56,61 +56,45 @@ Example::
 
 
 """
-from __future__ import unicode_literals
-
+from abc import ABCMeta, abstractmethod
 from collections import namedtuple, OrderedDict
-
-# Typing import
-import six
-from typing import Any, Dict, List, Tuple  # noqa
+from typing import Any, Dict, Sequence, Tuple, TypeVar, Type, Generic
 
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.exceptions import ProviderNotFound
 from pyapp.utils import import_type, cached_property
 
-__all__ = ('ProviderSummary', 'ProviderBase', 'ProviderFactoryBase')
+__all__ = ("ProviderSummary", "ProviderFactoryBase")
 
 
-ProviderSummary = namedtuple('ProviderSummary', ('code', 'name', 'description'))
+ProviderSummary = namedtuple("ProviderSummary", ("code", "name", "description"))
 
 
-class ProviderBase(object):
-    """
-    A specific provider type these are created by the provider factory, using stored
-    configuration.
-    """
-    name = None
-    """
-    Providers name.
-    """
+PT = TypeVar("PT", covariant=True)
 
 
-class ProviderFactoryBase(object):
+class ProviderFactoryBase(Generic[PT], metaclass=ABCMeta):
     """
     Factory to instantiate and configure a provider.
     """
-    setting = None  # type: str
-    """
-    Setting that enumerates available providers.
-    """
 
-    abc = ProviderBase
-    """
-    The absolute base class that any provider should be based on.
-    """
+    def __init__(self, setting: str, abc: Type[PT] = None):
+        self.setting = setting
+        self.abc = abc
 
-    def __init__(self):
         self._register_checks()
 
-    def __call__(self, *args, **kwargs):
+    def create(self, *args, **kwargs) -> PT:
+        """
+        Create a provider instance
+        """
         provider_code, provider_config = self.load_config(*args, **kwargs)
         provider = self.get_provider(provider_code)
         return provider(**provider_config)
 
     @cached_property
-    def providers(self):
-        # type: () -> Dict[str, Any]
+    def providers(self) -> Dict[str, Any]:
         """
         List of providers defined in settings.
         """
@@ -124,36 +108,39 @@ class ProviderFactoryBase(object):
         return providers
 
     @cached_property
-    def provider_summaries(self):
-        # type: () -> List[ProviderSummary]
+    def provider_summaries(self) -> Sequence[ProviderSummary]:
         """
         Summary list of the available providers with code, name and description.
 
         This is intended for display purposes.
         """
-        return [
-            ProviderSummary(code, provider.name, (provider.__doc__ or '').strip())
+        return tuple(
+            ProviderSummary(
+                code,
+                getattr(provider, "name", provider.__name__),
+                (provider.__doc__ or "").strip(),
+            )
             for code, provider in self.providers.items()
-        ]
+        )
 
-    def get_provider(self, provider_code):
-        # type: (str) -> Any
+    def get_provider(self, provider_code: str) -> PT:
         """
         Get provider type from the supplied config.
         """
         try:
             return self.providers[provider_code]
         except KeyError:
-            raise ProviderNotFound("Provider `{}` was not found in the provider list.".format(provider_code))
+            raise ProviderNotFound(
+                f"Provider `{provider_code}` was not found in the provider list."
+            )
 
-    def load_config(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Tuple[str, Dict[str, Any]]
+    @abstractmethod
+    def load_config(self, *args, **kwargs) -> Tuple[str, Dict[str, Any]]:
         """
         Load configuration for data store.
 
         This method should raise a ProviderConfigNotFound exception if configuration cannot be loaded
         """
-        raise NotImplementedError()
 
     def _register_checks(self):
         checks.register(self)
@@ -164,14 +151,14 @@ class ProviderFactoryBase(object):
         individual definitions in settings.
 
         """
-        settings_ = kwargs['settings']
+        settings_ = kwargs["settings"]
 
         # Check settings are defined
         if not hasattr(settings_, self.setting):
             return checks.Critical(
                 "Provider definitions missing from settings.",
-                hint="Add a {} entry into settings.".format(self.setting),
-                obj="settings.{}".format(self.setting)
+                hint=f"Add a {self.setting} entry into settings.",
+                obj=f"settings.{self.setting}",
             )
 
         provider_refs = getattr(settings_, self.setting)
@@ -181,8 +168,8 @@ class ProviderFactoryBase(object):
         if not isinstance(provider_refs, (list, tuple)):
             return checks.Critical(
                 "Provider definitions defined in settings not a list/tuple instance.",
-                hint="Change setting {} to be a list or tuple in settings file.".format(self.setting),
-                obj="settings.{}".format(self.setting)
+                hint=f"Change setting {self.setting} to be a list or tuple in settings file.",
+                obj=f"settings.{self.setting}",
             )
 
         messages = []
@@ -195,17 +182,18 @@ class ProviderFactoryBase(object):
                 messages += message
 
         return messages
+
     checks.check_name = "{obj.setting}.check_configuration"
 
     def check_instance(self, idx, provider_ref, **_):
         """
         Checks for individual providers.
         """
-        if not isinstance(provider_ref, six.string_types):
+        if not isinstance(provider_ref, str):
             return checks.Critical(
                 "Provider definition is not a string.",
                 hint="Change definition to be a string in settings.",
-                obj='settings.{}[{}]'.format(self.setting, idx)
+                obj=f"settings.{self.setting}[{idx}]",
             )
 
         try:
@@ -214,5 +202,5 @@ class ProviderFactoryBase(object):
             return checks.Critical(
                 "Unable to import provider type.",
                 hint=str(ex),
-                obj='settings.{}[{}]'.format(self.setting, idx)
+                obj=f"settings.{self.setting}[{idx}]",
             )

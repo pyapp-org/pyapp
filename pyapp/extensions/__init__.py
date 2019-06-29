@@ -2,36 +2,103 @@
 Extensions
 ~~~~~~~~~~
 
-*Provides extensions to PyApp that allows other modules to register checks and default settings.*
+*Extensions allow for additional features to be added to pyApp.*
 
-Extensions are registered with PyApp via the settings file :py:data:`pyapp.conf.default_settings.EXT`
-setting. Usually extensions will be a python package that contains at least ``default_settings.py`` and
-``checks.py`` files.
+With pyApp 4.0 the extension interface was redesigned to allow for extensions a lot
+more flexibility in what they can do.
 
-Details of the package can be declared in the ``__init__.py`` file using the following attributes::
+Extensions can:
 
-    __name__ = 'Name of the Extension`
-    __version__ = '0.1.0'
-    __checks__ = '.checks'  # This can be a relative path or fully qualified
-    __default_settings__ = '.default_settings'  # This can be a relative path or fully qualified
+- Provide default settings
+- Register checks
+- Add commands to the CLI
+- Register factories with the injection framework.
 
-The ``__checks__`` and ``__default_settings__`` attributes tell PyApp to include these when loading
- settings or determining what checks are available.
+.. note:: Extensions developed for previous versions of pyApp need to be upgraded
+          to work with pyApp 4.
 
-Use the ``extensions`` command provided by the PyApp CLI to list the extensions (and version) installed
-in your application.
 
-Ready State
------------
+Using extensions
+----------------
 
-Once settings have been loaded, logging configured etc a ready callback is triggered to let the extension
-perform any initialisation that is required::
+Once an extension has been installed it is immediately available in pyApp. The
+CLI `extensions` command will list all installed extensions. You will also likely
+see additional settings files being loaded on startup.
 
-    def ready(**_):
-        # Do any initialise
-        pass
+Control of the extension version and availability of extensions is left up to the
+standard packaging tools and processes. I would recommend using
+`pipenv <https://docs.pipenv.org/en/latest/>`_ to control this. If you project has
+specific security requirements a whitelist can be provided to `CliApplication` to
+only allow specific extensions to be loaded.
 
+
+Developing an extension
+-----------------------
+
+An extension is a normal Python package with some specific criteria.
+
+Extensions must provide a `setuptools` entry point, this is how they are identified
+by pyApp and loaded.
+
+In a `setup.py` file::
+
+    setup(
+        ...
+        entry_points={'pyapp.extensions': 'my-extension = my_extension:Extension'}
+        ...
+    )
+
+or in a `setup.cfg` file::
+
+    [options.entry_points]
+    pyapp.extensions =
+        my-extension = my_extension:Extension
+
+
+You can use any name you wish (or provide multiple entry points) for the extension.
+The entry `my_extension:Extension` refers to a class called `Extension` in the
+`my_extension` package.
+
+The extension class requires no base and duck typing is used to look for specific
+functionality.
+
+The following attributes/methods are used by pyApp:
+
+`default_settings`
+    A string that specifies a module that provides default settings.
+
+`checks`
+    A string that specifies a module that registers additional checks.
+
+`def register_commands(root: CommandGroup)`
+    A method that is called at startup to allow the extension to register additional
+    commands. This happens early in the startup process prior to settings being
+    loaded.
+
+`def ready()`
+    The application has been successfully started and is ready. This is an opportunity
+    to register any custom functionality with pyApp.
+
+
+An example extension class::
+
+    class Extension:
+        default_settings = ".default_settings"
+        checks = ".checks"
+
+        @staticmethod
+        def register_commands(root: CommandGroup):
+            # Register a group and commands
+            group = root.create_command_group("foo")
+
+            @group.command
+            def bar(opts):
+                '''
+                Do a foo bar operation.
+                '''
+
+        @staticmethod
+        def ready():
+            pass
 """
-from __future__ import absolute_import
-
 from .registry import *

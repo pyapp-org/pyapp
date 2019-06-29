@@ -16,30 +16,42 @@ framework to allow checks to be executed on the instances.
 Usage::
 
     >>> foo_factory = NamedPluginFactory('FOO')
-    >>> instance = foo_factory()
+    >>> instance = foo_factory.create()
 
 or taking advantage of the factory being callable we can create a singleton
 factory::
 
     >>> get_bar_instance = NamedSingletonPluginFactory('BAR')
     >>> # Get iron bar instance
-    >>> bar = get_bar_instance('iron')
+    >>> bar = get_bar_instance.create('iron')
 
 """
-from __future__ import absolute_import, unicode_literals
-
-import six
 import threading
+
+from abc import ABCMeta
+from typing import TypeVar, Type
 
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.utils import cached_property, import_type
-from .bases import DefaultCache, FactoryMixin, SingletonFactoryMixin, ThreadLocalSingletonFactoryMixin
+from .bases import (
+    DefaultCache,
+    FactoryMixin,
+    SingletonFactoryMixin,
+    ThreadLocalSingletonFactoryMixin,
+)
 
-__all__ = ('NamedPluginFactory', 'NamedSingletonPluginFactory', 'ThreadLocalNamedSingletonPluginFactory')
+__all__ = (
+    "NamedPluginFactory",
+    "NamedSingletonPluginFactory",
+    "ThreadLocalNamedSingletonPluginFactory",
+)
 
 
-class NamedPluginFactory(FactoryMixin):
+PT = TypeVar("PT", covariant=True)
+
+
+class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
     """
     Factory object that generates a named instance from a definition in
     settings. Can optionally verify an instance type against a specified ABC
@@ -59,7 +71,8 @@ class NamedPluginFactory(FactoryMixin):
     The :py:class:`NamedPluginFactory` is thread safe.
 
     """
-    def __init__(self, setting, abc=None, default_name='default'):
+
+    def __init__(self, setting: str, *, abc: Type[PT] = None, default_name: str = None):
         """
         Initialise a named factory.
 
@@ -71,10 +84,11 @@ class NamedPluginFactory(FactoryMixin):
             default instance type if a value is not supplied.
 
         """
-        assert isinstance(setting, six.string_types) and setting.isupper()
+        if not (isinstance(setting, str) and setting.isupper()):
+            raise ValueError(f"Setting `{setting}` must be upper-case")
         self.setting = setting
         self.abc = abc
-        self.default_name = default_name
+        self.default_name = default_name or "default"
 
         self._type_definitions = DefaultCache(self._get_type_definition)
         self._type_definitions_lock = threading.RLock()
@@ -92,21 +106,21 @@ class NamedPluginFactory(FactoryMixin):
         """
         return self._instance_definitions.keys()
 
-    def _get_type_definition(self, name):
+    def _get_type_definition(self, name: str):
         try:
             type_name, kwargs = self._instance_definitions[name]
         except KeyError:
-            raise KeyError("Setting definition `{}` not found".format(name))
+            raise KeyError(f"Setting definition `{name}` not found")
 
         type_ = import_type(type_name)
         if self.abc and not issubclass(type_, self.abc):
-            raise TypeError("Setting definition `{}` is not a subclass of `{}`".format(
-                type_name, self.abc
-            ))
+            raise TypeError(
+                f"Setting definition `{type_name}` is not a subclass of `{self.abc}`"
+            )
 
         return type_, kwargs
 
-    def create_instance(self, name=None):
+    def create(self, name: str = None) -> PT:
         """
         Get a named instance.
 
@@ -127,14 +141,14 @@ class NamedPluginFactory(FactoryMixin):
         Run checks to ensure settings are valid, secondly run checks against
         individual definitions in settings.
         """
-        settings_ = kwargs['settings']
+        settings_ = kwargs["settings"]
 
         # Check settings are defined
         if not hasattr(settings_, self.setting):
             return checks.Critical(
                 "Instance definitions missing from settings.",
-                hint="Add a {} entry into settings.".format(self.setting),
-                obj="settings.{}".format(self.setting)
+                hint=f"Add a {self.setting} entry into settings.",
+                obj=f"settings.{self.setting}",
             )
 
         instance_definitions = getattr(settings_, self.setting)
@@ -144,8 +158,8 @@ class NamedPluginFactory(FactoryMixin):
         if not isinstance(instance_definitions, dict):
             return checks.Critical(
                 "Instance definitions defined in settings not a dict instance.",
-                hint="Change setting {} to be a dict in settings file.".format(self.setting),
-                obj="settings.{}".format(self.setting)
+                hint=f"Change setting {self.setting} to be a dict in settings file.",
+                obj=f"settings.{self.setting}",
             )
 
         # Take over the lock while checks are being performed
@@ -161,11 +175,13 @@ class NamedPluginFactory(FactoryMixin):
 
                 # Check default is defined
                 if self.default_name not in instance_definitions:
-                    messages.append(checks.Warn(
-                        "Default definition not defined.",
-                        hint="The default instance type `{}` is not defined.".format(self.default_name),
-                        obj="settings.{}".format(self.setting)
-                    ))
+                    messages.append(
+                        checks.Warn(
+                            "Default definition not defined.",
+                            hint=f"The default instance type `{self.default_name}` is not defined.",
+                            obj=f"settings.{self.setting}",
+                        )
+                    )
 
                 # Check instance definitions
                 for name in instance_definitions:
@@ -181,6 +197,7 @@ class NamedPluginFactory(FactoryMixin):
                 # Put definitions back and clear cache.
                 self._instance_definitions = instance_definitions_orig
                 self._type_definitions.clear()
+
     checks.check_name = "{obj.setting}.check_configuration"
 
     def check_instance(self, instance_definitions, name, **_):
@@ -192,14 +209,14 @@ class NamedPluginFactory(FactoryMixin):
             return checks.Critical(
                 "Instance definition is not a list/tuple.",
                 hint="Change definition to be a list/tuple (type_name, kwargs) in settings.",
-                obj='settings.{}[{}]'.format(self.setting, name)
+                obj=f"settings.{self.setting}[{name}]",
             )
 
         if len(definition) != 2:
             return checks.Critical(
                 "Instance definition is not a type name, kwarg (dict) pair.",
                 hint="Change definition to be a list/tuple (type_name, kwargs) in settings.",
-                obj='settings.{}[{}]'.format(self.setting, name)
+                obj=f"settings.{self.setting}[{name}]",
             )
 
         type_name, kwargs = definition
@@ -208,23 +225,27 @@ class NamedPluginFactory(FactoryMixin):
         try:
             import_type(type_name)
         except (ImportError, ValueError):
-            messages.append(checks.Error(
-                "Unable to import type `{}`.".format(type_name),
-                hint="Check the type name in definition.",
-                obj='settings.{}[{}]'.format(self.setting, name)
-            ))
+            messages.append(
+                checks.Error(
+                    f"Unable to import type `{type_name}`.",
+                    hint="Check the type name in definition.",
+                    obj=f"settings.{self.setting}[{name}]",
+                )
+            )
 
         if not isinstance(kwargs, dict):
-            messages.append(checks.Critical(
-                "Instance kwargs is not a dict.",
-                hint="Change kwargs definition to be a dict.",
-                obj='settings.{}[{}]'.format(self.setting, name)
-            ))
+            messages.append(
+                checks.Critical(
+                    "Instance kwargs is not a dict.",
+                    hint="Change kwargs definition to be a dict.",
+                    obj=f"settings.{self.setting}[{name}]",
+                )
+            )
 
         return messages
 
 
-class NamedSingletonPluginFactory(SingletonFactoryMixin, NamedPluginFactory):
+class NamedSingletonPluginFactory(SingletonFactoryMixin, NamedPluginFactory[PT]):
     """
     :py:class:`NamedPluginFactory` that provides a single instance of an object.
 
@@ -237,7 +258,9 @@ class NamedSingletonPluginFactory(SingletonFactoryMixin, NamedPluginFactory):
     """
 
 
-class ThreadLocalNamedSingletonPluginFactory(ThreadLocalSingletonFactoryMixin, NamedPluginFactory):
+class ThreadLocalNamedSingletonPluginFactory(
+    ThreadLocalSingletonFactoryMixin, NamedPluginFactory[PT]
+):
     """
     :py:class:`NamedPluginFactory` that provides a single instance of a plugin per
     thread.

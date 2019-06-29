@@ -1,22 +1,51 @@
+dist: xenial
 language: python
-sudo: false
-python:
-  - "2.7"
-  - "3.5"
-  - "3.6"
-  - "pypy"
 
-branches:
-  only:
-    - master
-    - development
+python:
+  - "3.6"
+  - "3.7"
+  - "3.7-dev"
+  - "3.8-dev"
+  - "nightly"
+  - "pypy3"
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - python: "3.7-dev"
+    - python: "3.8-dev"
+    - python: "nightly"
+    - python: "pypy3"
+
+env:
+  global:
+    - CC_TEST_REPORTER_ID=767be575271677c6435197b16f142b6ded3332f4f5112ed30fcc760d02a7d762
 
 install:
-  - travis_retry pip install -Ur requirements-dev.txt bandit
+  - travis_retry pip install bandit coverage
+
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 
 script:
   - bandit -ll -r pyapp
-  - py.test tests/ --cov=pyapp
+  - python setup.py test
+
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT -t coverage.py
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+deploy:
+  provider: pypi
+  user: "timsavage"
+  password:
+    secure: ""
+  distributions: "sdist bdist_wheel"
+  skip_existing: true
+  on:
+    branch: master
+

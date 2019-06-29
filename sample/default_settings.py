@@ -1,9 +1,13 @@
-FOO_MESSAGE = 'Message from foo...'
+from pathlib import Path
 
-EXT = [
-    'sample_extension',
-]
+here = Path(__file__).parent
 
-CHECK_LOCATIONS = [
-    'sample.alt_checks'
+
+FOO_MESSAGE = "Message from foo..."
+
+CHECK_LOCATIONS = ["sample.alt_checks"]
+
+INCLUDE_SETTINGS = [
+    f"file://{here}/more-settings.json",
+    f"file://{here}/more-settings.yaml",
 ]

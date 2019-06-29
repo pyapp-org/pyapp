@@ -1,78 +1,82 @@
-from __future__ import print_function, unicode_literals
-
 import sys
 
-from pyapp.extensions.registry import registry
-from pyapp.utils import colorama
+from colorama import Style, Fore
 
-if colorama:
-    from colorama import Style, Fore
+from .registry import registry, ExtensionDetail
 
 
-class ExtensionReport(object):
+class ExtensionReport:
     """
     Wrapper for the generation of a check report.
     """
+
     width = 80
 
-    def __init__(self, verbose=False, no_color=False, f_out=sys.stdout, extension_registry=registry):
+    BASIC_TEMPLATE_MONO = "+ {name} ({version})\n"
+    VERBOSE_TEMPLATE_MONO = (
+        f"{'=' * width}\n"
+        f" Name:       {{name}}\n"
+        f" Version     {{version}}\n"
+        f" Settings:   {{default_settings}}\n"
+        f" Has Checks: {{has_checks}}\n"
+        f"{'=' * width}\n\n"
+    )
+    BASIC_TEMPLATE = (
+        f"{Fore.YELLOW}+{Fore.CYAN} {{name}}{Style.RESET_ALL} ({{version}})\n"
+    )
+    VERBOSE_TEMPLATE = (
+        f"{Fore.YELLOW}{'=' * width}{Style.RESET_ALL}\n"
+        f"{Style.BRIGHT} Name:       {Style.RESET_ALL}{Fore.CYAN}{{name}}{Style.RESET_ALL}\n"
+        f"{Style.BRIGHT} Version:    {Style.RESET_ALL}{Fore.CYAN}{{version}}{Style.RESET_ALL}\n"
+        f"{Style.BRIGHT} Settings:   {Style.RESET_ALL}{Fore.CYAN}{{default_settings}}{Style.RESET_ALL}\n"
+        f"{Style.BRIGHT} Has Checks: {Style.RESET_ALL}{Fore.CYAN}{{has_checks}}{Style.RESET_ALL}\n"
+        f"{Fore.YELLOW}{'=' * width}{Style.RESET_ALL}\n\n"
+    )
+
+    def __init__(
+        self,
+        verbose=False,
+        no_color=False,
+        f_out=sys.stdout,
+        extension_registry=registry,
+    ):
         """
         Initialise check report
 
         :param verbose: Enable verbose output
-        :param no_color: Disable colourised output (if colorama is installed)
+        :param no_color: Disable colourised output
         :param f_out: File to output report to; default is ``stdout``
         :param extension_registry: Registry to source extensions from; defaults to the builtin registry.
 
         """
         self.verbose = verbose
         self.f_out = f_out
-        # Default color to be disabled if colorama is not installed.
-        self.no_color = no_color if colorama else True
+        self.no_color = no_color
         self.registry = extension_registry
 
         # Generate templates
         if self.no_color:
-            self.BASIC_TEMPLATE = "+ {name} ({version})\n"
-            self.VERBOSE_TEMPLATE = \
-                ("=" * self.width) + \
-                "\n Name:       {name}" +  \
-                "\n Version:    {version}" + \
-                "\n Package:    {package}" + \
-                "\n Settings:   {default_settings}" + \
-                "\n Has Checks: {has_checks}\n" + \
-                ("=" * self.width) + "\n\n"
-
+            self.basic_template = self.BASIC_TEMPLATE_MONO
+            self.verbose_template = self.VERBOSE_TEMPLATE_MONO
         else:
-            self.BASIC_TEMPLATE = Fore.YELLOW + "+" + Fore.CYAN + " {name}" + Style.RESET_ALL + " ({version})\n"
-            self.VERBOSE_TEMPLATE = \
-                Fore.YELLOW + ("=" * self.width) + Style.RESET_ALL + \
-                Style.BRIGHT + "\n Name:       " + Style.RESET_ALL + Fore.CYAN + "{name}" + Style.RESET_ALL + \
-                Style.BRIGHT + "\n Version:    " + Style.RESET_ALL + "{version}" + \
-                Style.BRIGHT + "\n Package:    " + Style.RESET_ALL + "{package}" + \
-                Style.BRIGHT + "\n Settings:   " + Style.RESET_ALL + "{default_settings}" + \
-                Style.BRIGHT + "\n Has Checks: " + Style.RESET_ALL + "{has_checks}\n" + \
-                Fore.YELLOW + ("=" * self.width) + Style.RESET_ALL + "\n\n"
+            self.basic_template = self.BASIC_TEMPLATE
+            self.verbose_template = self.VERBOSE_TEMPLATE
 
-    def output_result(self, extension):
+    def output_result(self, extension: ExtensionDetail):
         """
         Output a result to output file.
-
-        :type extension: pyapp.extensions.register.Extension
-
         """
         format_args = dict(
             name=extension.name,
-            version=extension.version or 'Unknown',
-            package=extension.package,
-            default_settings=extension.default_settings or 'None',
-            has_checks='Yes' if bool(extension.checks_module) else 'No',
+            version=extension.version or "Unknown",
+            default_settings=extension.default_settings or "None",
+            has_checks="Yes" if bool(extension.checks_module) else "No",
         )
 
         if self.verbose:
-            self.f_out.write(self.VERBOSE_TEMPLATE.format(**format_args))
+            self.f_out.write(self.verbose_template.format(**format_args))
         else:
-            self.f_out.write(self.BASIC_TEMPLATE.format(**format_args))
+            self.f_out.write(self.basic_template.format(**format_args))
 
     def run(self):
         """

@@ -1,11 +1,7 @@
-from __future__ import unicode_literals
-
-
 class InvalidConfiguration(Exception):
     """
     Invalid configuration was detected.
     """
-    pass
 
 
 class ProviderException(Exception):
@@ -23,4 +19,10 @@ class ProviderNotFound(KeyError, ProviderException):
 class ProviderConfigNotFound(ProviderException):
     """
     Specified provider configuration could not be loaded.
+    """
+
+
+class UnsupportedContentType(Exception):
+    """
+    Content type of the file is not supported
     """

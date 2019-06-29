@@ -1,5 +1,0 @@
--r requirements.txt
--r requirements-optional.txt
-mock
-pytest
-pytest-cov
