@@ -2,13 +2,13 @@ import csv
 import io
 import logging
 import sys
-import textwrap
 
 from colorama import Style, Fore, Back
 from io import StringIO
 from typing import Sequence, Optional, Any
 
 from .registry import CheckRegistry, Check, CheckMessage, registry, import_checks
+from ..utils import wrap_text
 
 COLOURS = {
     # Type: (Title, Border),
@@ -140,43 +140,22 @@ class CheckReport(BaseReport):
             self.TITLE_TEMPLATE = " {level}: {title}"
             self.HINT_TEMPLATE = ("-" * self.width) + "\n HINT: {hint}\n"
             self.MESSAGE_TEMPLATE = (
-                ("=" * self.width) + "\n{title}\n{hint}" + ("=" * self.width) + "\n\n"
+                f"{'=' * self.width}\n{{title}}\n{{hint}}{'=' * self.width}\n\n"
             )
 
         else:
             self.VERBOSE_CHECK_TEMPLATE = (
-                Fore.YELLOW + "+ " + Fore.CYAN + "{name}\n" + Style.RESET_ALL
+                f"{Fore.YELLOW}+ {Fore.CYAN}{{name}}{Style.RESET_ALL}\n"
             )
-            self.TITLE_TEMPLATE = (
-                "{style} "
-                + Style.BRIGHT
-                + "{level}:"
-                + Style.NORMAL
-                + " {title}"
-                + Style.RESET_ALL
-            )
+            self.TITLE_TEMPLATE = f"{{style}} {Style.BRIGHT}{{level:7s}}{Style.NORMAL} {{title}}{Style.RESET_ALL}"
             self.HINT_TEMPLATE = (
-                "{border_style}"
-                + ("-" * self.width)
-                + Style.RESET_ALL
-                + "\n"
-                + Style.BRIGHT
-                + " HINT: "
-                + Style.DIM
-                + Fore.WHITE
-                + " {hint}"
-                + Style.RESET_ALL
-                + "\n"
+                f"{{border_style}}{'-' * self.width}{Style.RESET_ALL}\n "
+                f"{Style.BRIGHT}HINT:{Style.DIM} {Fore.WHITE}{{hint}}{Style.RESET_ALL}\n"
             )
             self.MESSAGE_TEMPLATE = (
-                "{border_style}"
-                + ("=" * self.width)
-                + Style.RESET_ALL
-                + "\n{title}\n{hint}"
-                + "{border_style}"
-                + ("=" * self.width)
-                + Style.RESET_ALL
-                + "\n\n"
+                f"{{border_style}}{'=' * self.width}{Style.RESET_ALL}\n"
+                f"{{title}}\n{{hint}}"
+                f"{{border_style}}{'=' * self.width}{Style.RESET_ALL}\n\n"
             )
 
     def render_header(self):
@@ -188,21 +167,6 @@ class CheckReport(BaseReport):
             self.f_out.write(
                 self.VERBOSE_CHECK_TEMPLATE.format(name=get_check_name(obj))
             )
-
-    def wrap_text(self, text: str, indent_width: int, line_sep: str = "\n") -> str:
-        """
-        Perform word wrapping on text
-
-        :param text: Text to wrap.
-        :param indent_width: Size of text indent.
-        :param line_sep: Line separator
-
-        """
-        indent = " " * (indent_width + 1)
-        lines = textwrap.wrap(
-            text, self.width - 2, initial_indent=indent, subsequent_indent=indent
-        )
-        return line_sep.join(l + (" " * (self.width - len(l))) for l in lines)
 
     def format_title(self, message: CheckMessage) -> str:
         """
@@ -224,7 +188,7 @@ class CheckReport(BaseReport):
         return self.TITLE_TEMPLATE.format(
             style=title_style,
             level=level_name,
-            title=self.wrap_text(msg, len(level_name) + 2, line_sep).lstrip(),
+            title=wrap_text(msg, self.width, indent=9, line_sep=line_sep).lstrip(),
         )
 
     def format_hint(self, message: CheckMessage) -> str:
@@ -245,11 +209,10 @@ class CheckReport(BaseReport):
                 line_sep = Style.RESET_ALL + "\n" + Style.DIM + Fore.WHITE
                 border_style = COLOURS[message.level][1]
 
-            indent_width = len(" Hint: ")
             return self.HINT_TEMPLATE.format(
                 border_style=border_style,
                 hint="\n\n".join(
-                    self.wrap_text(p, indent_width, line_sep) for p in hint
+                    wrap_text(p, self.width, indent=8, line_sep=line_sep) for p in hint
                 ).lstrip(),
             )
         else:
