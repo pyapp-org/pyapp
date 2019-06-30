@@ -1,4 +1,5 @@
 from pyapp.app import CliApplication, argument
+from pyapp.app.argument_actions import KeyValueAction
 from pyapp.conf import settings
 
 import sample
@@ -27,9 +28,10 @@ bar_group = app.create_command_group("bar")
 
 @bar_group.command(name="do")
 @argument("--repeat", type=int, default=1)
+@argument("--option", dest="options", action=KeyValueAction)
 def do_bar(opts):
     for _ in range(opts.repeat):
-        print("Doing bar...")
+        print(f"Doing bar with {opts.options}")
 
 
 def main():
