@@ -2,7 +2,7 @@ import asyncio
 
 from typing import Callable, Awaitable
 
-from pyapp.events import Event, AsyncEvent
+from pyapp.events import Event, AsyncEvent, listen_to
 
 
 class MyClass:
@@ -10,13 +10,21 @@ class MyClass:
     new_message = AsyncEvent[Callable[[str, "MyClass"], Awaitable]]()
 
     def start(self):
-        self.started.trigger()
+        self.started()
 
     async def process_message(self, message):
-        await self.new_message.trigger(message, self)
+        await self.new_message(message, self)
+
+
+class ProxyClass:
+    new_message = AsyncEvent[Callable[[str, MyClass], Awaitable]]()
+
+    def __init__(self, my_class: MyClass):
+        my_class.new_message += self.new_message
 
 
 instance = MyClass()
+proxy = ProxyClass(instance)
 
 
 def on_started():
@@ -26,11 +34,9 @@ def on_started():
 instance.started += on_started
 
 
+@listen_to(instance.started)
 def on_another_started():
     print("Started: 2...")
-
-
-instance.started += on_another_started
 
 
 async def on_new_message(message: str, source: MyClass):
@@ -38,7 +44,7 @@ async def on_new_message(message: str, source: MyClass):
 
 
 instance.new_message += on_new_message
-
+proxy.new_message.add(on_new_message)
 
 instance.start()
 aw = instance.process_message("Hi!")
