@@ -1,4 +1,5 @@
 import importlib
+import textwrap
 
 from typing import Any
 
@@ -42,3 +43,23 @@ def import_type(type_name: str) -> type:
     module_name, type_name = type_name.rsplit(".", 1)
     mod = importlib.import_module(module_name)
     return getattr(mod, type_name)
+
+
+def wrap_text(
+    text: str, width: int, *, indent: int = 0, padding: int = 1, line_sep: str = "\n"
+) -> str:
+    """
+    Perform word wrapping on text
+
+    :param text: Text to wrap.
+    :param width: Width of text to wrap
+    :param indent: Size of text indent.
+    :param padding: On the start and end of lines
+    :param line_sep: Line separator
+
+    """
+    indent = " " * indent
+    lines = textwrap.wrap(
+        text, width - (padding * 2), initial_indent=indent, subsequent_indent=indent
+    )
+    return line_sep.join(f"{l}{' ' * (width - len(l))}" for l in lines)

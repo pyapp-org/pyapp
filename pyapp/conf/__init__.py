@@ -50,6 +50,7 @@ ModuleLoader
 
 .. autoclass:: ModuleLoader
 
+
 .. automodule:: pyapp.conf.loaders.file_loader
 
 FileLoader
@@ -57,14 +58,22 @@ FileLoader
 
 .. autoclass:: FileLoader
 
+
+.. automodule:: pyapp.conf.loaders.http_loader
+
+HttpLoader
+----------
+
+.. autoclass:: HttpLoader
+
 """
 import logging
 import os
 import warnings
 
-from typing import Sequence
+from typing import Sequence, List
 
-from . import default_settings
+from . import base_settings
 from .loaders import factory, ModuleLoader, Loader
 
 logger = logging.getLogger(__name__)
@@ -158,10 +167,10 @@ class Settings:
     Settings container
     """
 
-    def __init__(self, base_settings=default_settings):
+    def __init__(self, base_settings_=base_settings):
         # Copy values from base settings file.
         self.__dict__.update(
-            (k, getattr(base_settings, k)) for k in dir(base_settings) if k.upper()
+            (k, getattr(base_settings_, k)) for k in dir(base_settings_) if k.upper()
         )
 
         self.SETTINGS_SOURCES = []
@@ -211,9 +220,7 @@ class Settings:
             for source_url in include_settings:
                 self.load(factory(source_url), apply_method)
 
-    def load_from_loaders(
-        self, loader_list: Sequence[ModuleLoader], override: bool = True
-    ):
+    def load_from_loaders(self, loader_list: Sequence[Loader], override: bool = True):
         """
         Load settings from a list of loaders.
 
@@ -229,7 +236,7 @@ class Settings:
 
     def configure(
         self,
-        application_settings: str,
+        default_settings: Sequence[str],
         runtime_settings: str = None,
         additional_loaders: Sequence[Loader] = None,
         env_settings_key: str = DEFAULT_ENV_KEY,
@@ -237,7 +244,7 @@ class Settings:
         """
         Configure the settings object
 
-        :param application_settings: Your applications default settings file.
+        :param default_settings: Your applications and extensions default settings.
         :param runtime_settings: Settings defined for the current runtime (eg from the command line)
         :param additional_loaders: Additional loaders to execute
         :param env_settings_key: Environment variable key used to override the runtime_settings.
@@ -245,7 +252,7 @@ class Settings:
         """
         logger.debug("Configuring settings...")
 
-        loader_list = [ModuleLoader(application_settings)]
+        loader_list: List[Loader] = [ModuleLoader(s) for s in default_settings]
 
         # Add run time settings (which can be overridden or specified by an
         # environment variable).

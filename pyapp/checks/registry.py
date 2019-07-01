@@ -1,9 +1,8 @@
-from collections import namedtuple
 from itertools import chain
-from typing import Iterable, Sequence
+from typing import Iterable, Sequence, NamedTuple, Union, Callable
 
 from pyapp import extensions
-from pyapp.conf import settings
+from pyapp.conf import settings, Settings
 from .messages import CheckMessage
 
 
@@ -15,11 +14,16 @@ class Tags:
     security = "security"
 
 
-CheckResult = namedtuple("CheckResult", "check, messages")
+Check = Callable[[Settings], Union[CheckMessage, Sequence[CheckMessage]]]
+
+
+class CheckResult(NamedTuple):
+    check: Check
+    messages: Sequence[CheckMessage]
 
 
 class CheckRegistry(list):
-    def register(self, check=None, *tags):
+    def register(self, check: Check = None, *tags):
         """
         Can be used as a function or a decorator. Register given function
         `func` labeled with given `tags`. The function should receive **kwargs

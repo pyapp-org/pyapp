@@ -1,16 +1,21 @@
-__name__ = "Sample Extension"
-__version__ = "3.2.1"
-
-# Default settings file to use
-__default_settings__ = ".default_settings"
-
-# Checks module
-__checks__ = "tests.sample_ext.checks"
+"""
+A Sample Extension
+"""
 
 
-set_ready = False
+class SampleExtension:
+    """
+    Sample Extension
+    """
 
+    default_settings = ".default_settings"
+    checks = ".checks"
 
-def ready(**_):
-    global set_ready
-    set_ready = True
+    ready_called = False
+    register_commands_called = False
+
+    def ready(self):
+        self.ready_called = True
+
+    def register_commands(self, group):
+        self.register_commands_called = group

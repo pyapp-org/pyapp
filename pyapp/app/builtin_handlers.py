@@ -1,20 +1,66 @@
-import argparse
 import sys
 
+from argparse import FileType
 
-def extensions(app):
-    from pyapp.app import argument
+from .arguments import argument, CommandGroup
 
-    # Register extension report handler
-    @argument("--verbose", dest="verbose", action="store_true", help="Verbose output.")
+
+def checks(app):
+    # Register the checks handler
+    @argument(
+        "-t",
+        "--tag",
+        dest="tags",
+        action="append",
+        help_text="Run checks associated with a tag.",
+    )
+    @argument(
+        "--verbose", dest="verbose", action="store_true", help_text="Verbose output."
+    )
     @argument(
         "--out",
         dest="out",
         default=sys.stdout,
-        type=argparse.FileType(mode="w"),
-        help="File to output extension report to; default is stdout.",
+        type=FileType(mode="w"),
+        help_text="File to output check report to; default is stdout.",
     )
-    def _handler(opts, **_):
+    @argument(
+        "--table",
+        dest="table",
+        action="store_true",
+        help_text="Output report in tabular format.",
+    )
+    @app.command(name="checks", help_text="Run a check report")
+    def check_report(opts, **_):
+        from pyapp.checks.report import execute_report
+
+        if execute_report(
+            opts.out,
+            app.application_checks,
+            opts.checks_message_level,
+            tags=opts.tags,
+            verbose=opts.verbose,
+            no_color=opts.no_color,
+            table=opts.table,
+            header=f"Check report for {app.application_summary}",
+        ):
+            exit(4)
+
+
+def extensions(app: CommandGroup):
+    # Register extension report handler
+    @argument(
+        "--verbose", dest="verbose", action="store_true", help_text="Verbose output."
+    )
+    @argument(
+        "--out",
+        dest="out",
+        default=sys.stdout,
+        type=FileType(mode="w"),
+        help_text="File to output extension report to; default is stdout.",
+    )
+    @app.command(name="extensions")
+    def _handler(opts):
         """
         Report of installed PyApp extensions.
         """
@@ -22,21 +68,17 @@ def extensions(app):
 
         return ExtensionReport(opts.verbose, opts.no_color, opts.out).run()
 
-    app.command(_handler, cli_name="extensions")
 
-
-def settings(app):
-    from pyapp.app import argument
-
+def settings(app: CommandGroup):
     # Register settings report handler
     @argument(
         "--out",
         dest="out",
         default=sys.stdout,
-        type=argparse.FileType(mode="w"),
-        help="File to output settings report to; default is stdout.",
+        type=FileType(mode="w"),
+        help_text="File to output settings report to; default is stdout.",
     )
-    def _handler(opts, **_):
+    def _handler(opts):
         """
         Report of current settings.
         """
@@ -44,4 +86,4 @@ def settings(app):
 
         return SettingsReport(False, opts.no_color, opts.out).run()
 
-    app.command(_handler, cli_name="settings")
+    app.command(_handler, name="settings")

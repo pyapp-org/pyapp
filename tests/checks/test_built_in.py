@@ -1,10 +1,10 @@
 from pyapp.conf import settings
-from pyapp.checks.built_in import security
+from pyapp.checks import built_in
 
 
 class TestSecurityChecks(object):
     def test_debug_enabled__check_defaults(self):
-        result = security.debug_enabled(settings)
+        result = built_in.debug_enabled(settings)
 
         # The default is for DEBUG to be False
         assert result is None
@@ -13,6 +13,6 @@ class TestSecurityChecks(object):
         with settings.modify() as patch:
             patch.DEBUG = True
 
-            result = security.debug_enabled(settings)
+            result = built_in.debug_enabled(settings)
 
-        assert result == security.W001
+        assert result == built_in.W001

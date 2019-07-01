@@ -6,6 +6,10 @@ from pyapp.conf import helpers
 
 
 class TestNamedConfiguration:
+    def test_init__invalid_name(self):
+        with pytest.raises(ValueError):
+            helpers.NamedConfiguration("test_named_config")
+
     def test_get_default(self):
         target = helpers.NamedConfiguration("TEST_NAMED_CONFIG")
 
