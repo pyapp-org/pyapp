@@ -53,14 +53,14 @@ Extensions
 ==========
 
 - SQLAlchemy - `pyapp.sqlalchemy <https://www.github.com/pyapp-org/pyapp.sqlalchemy>`_
-- SMTP - `pyapp.SMTP <https://www.github.com/pyapp-org/pyapp.SMTP>`_
 - Redis - `pyapp.redis <https://www.github.com/pyapp-org/pyapp.redis>`_
+- AIOBotocore - `pyapp.aiobotocore <https://www.github.com/pyapp-org/pyapp.aiobotocore>`_
 
 In development
 --------------
 
+- SMTP - `pyapp.SMTP <https://www.github.com/pyapp-org/pyapp.SMTP>`_
 - Boto3 - `pyapp.boto3 <https://www.github.com/pyapp-org/pyapp.boto3>`_
-- AIOBotocore - `pyapp.aiobotocore <https://www.github.com/pyapp-org/pyapp.aiobotocore>`_
 
 Coming soon
 -----------
