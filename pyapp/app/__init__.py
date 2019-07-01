@@ -39,7 +39,12 @@ CliApplication
 --------------
 
 .. autoclass:: CliApplication
-    :members: register_handler, dispatch
+    :members: command, create_command_group, default, dispatch
+
+Arguments
+---------
+
+.. automodule::
 
 """
 import argcomplete
@@ -57,6 +62,7 @@ from pyapp import extensions
 from pyapp.app import builtin_handlers
 from pyapp.conf import settings
 from .arguments import *
+from .argument_actions import *
 
 logger = logging.getLogger(__name__)
 
