@@ -5,6 +5,7 @@ from colorama import Style, Fore
 from typing import TextIO
 
 from pyapp import conf
+from pyapp.utils import wrap_text
 
 
 class SettingsReport:
@@ -12,7 +13,7 @@ class SettingsReport:
     Report of all settings in use.
     """
 
-    width = 80
+    width = 96
 
     def __init__(
         self,
@@ -54,7 +55,11 @@ class SettingsReport:
         Output a result to output file.
         """
         format_args = dict(
-            key=key, setting=setting, ppsetting=pprint.pformat(setting, 2)
+            key=key,
+            setting=setting,
+            ppsetting=wrap_text(
+                pprint.pformat(setting, 2), width=self.width, indent=25
+            ).strip(),
         )
 
         self.f_out.write(self.BASIC_TEMPLATE.format(**format_args))
