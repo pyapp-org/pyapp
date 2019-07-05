@@ -29,6 +29,7 @@ from types import FunctionType
 from typing import Callable, Dict, TypeVar, Optional
 
 __all__ = (
+    "Args",
     "FactoryRegistry",
     "default_registry",
     "register_factory",
@@ -83,7 +84,7 @@ class FactoryRegistry(Dict[type, Callable]):
         Resolve an abstract type from an `Parameter`.
         """
         default = parameter.default
-        if isinstance(default, FactoryArgs):
+        if isinstance(default, Args):
             if parameter.kind is not parameter.KEYWORD_ONLY:
                 raise InjectionSetupError(
                     "Only keyword-only arguments can be injected."
@@ -104,12 +105,16 @@ default_registry = FactoryRegistry()
 register_factory = default_registry.register
 
 
-class FactoryArgs:
+class Args:
     __slots__ = ("args", "kwargs")
 
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
+
+
+# Fallback
+FactoryArgs = Args
 
 
 def _build_dependencies(func: FunctionType, registry: FactoryRegistry):
