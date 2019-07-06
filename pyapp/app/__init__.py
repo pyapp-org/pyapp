@@ -57,10 +57,10 @@ import sys
 from argparse import ArgumentParser, Namespace as CommandOptions
 from typing import Sequence, Optional
 
-from pyapp import conf
-from pyapp import extensions
-from pyapp.app import builtin_handlers
-from pyapp.conf import settings
+from .. import conf
+from .. import extensions
+from ..app import builtin_handlers
+from ..injection import register_factory
 from .arguments import *
 from .argument_actions import *
 
@@ -260,27 +260,27 @@ class CliApplication(CommandGroup):
         extensions.registry.load_from(entry_points.extensions())
         extensions.registry.register_commands(self)
 
-    def configure_settings(self, opts):
+    def configure_settings(self, opts: CommandOptions):
         """
         Configure settings container.
         """
         application_settings = list(extensions.registry.default_settings)
         application_settings.append(self.application_settings)
 
-        settings.configure(
+        conf.settings.configure(
             application_settings, opts.settings, env_settings_key=self.env_settings_key
         )
 
     @staticmethod
-    def configure_logging(opts):
+    def configure_logging(opts: CommandOptions):
         """
         Configure the logging framework.
         """
-        if settings.LOGGING:
+        if conf.settings.LOGGING:
             logger.info("Applying logging configuration.")
 
             # Set a default version if not supplied by settings
-            dict_config = settings.LOGGING.copy()
+            dict_config = conf.settings.LOGGING.copy()
             dict_config.setdefault("version", 1)
             logging.config.dictConfig(dict_config)
 
@@ -308,6 +308,15 @@ class CliApplication(CommandGroup):
                 exit(4)
             else:
                 logger.info("Check results:\n%s", out.getvalue())
+
+    @staticmethod
+    def register_factories(opts: CommandOptions):
+        """
+        Register any abstract interface factories.
+        """
+        from asyncio import AbstractEventLoop, get_event_loop
+
+        register_factory(AbstractEventLoop, get_event_loop)
 
     def exception_report(self, exception: BaseException, opts: CommandOptions):
         """
@@ -338,6 +347,8 @@ class CliApplication(CommandGroup):
             self.checks_on_startup(opts)
         else:
             self.configure_settings(opts)
+
+        self.register_factories(opts)
 
         _set_running_application(self)
         extensions.registry.ready()
