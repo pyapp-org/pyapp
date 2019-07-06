@@ -149,7 +149,7 @@ def inject(func: FunctionType = None, *, from_registry: FactoryRegistry = None):
     A specific registry can be provided, else the global registry is used.
     """
     if func is None:
-        return lambda f: inject_into(f, from_registry=from_registry)
+        return lambda f: inject(f, from_registry=from_registry)
 
     dependencies = _build_dependencies(func, from_registry or default_registry)
     if not dependencies:
