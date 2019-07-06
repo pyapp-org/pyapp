@@ -252,6 +252,15 @@ class CliApplication(CommandGroup):
         # Apply handler to root logger and set level.
         logging.root.handlers = [handler]
 
+    @staticmethod
+    def register_factories():
+        """
+        Register any abstract interface factories.
+        """
+        from asyncio import AbstractEventLoop, get_event_loop
+
+        register_factory(AbstractEventLoop, get_event_loop)
+
     def load_extensions(self):
         """
         Load/Configure extensions.
@@ -309,15 +318,6 @@ class CliApplication(CommandGroup):
             else:
                 logger.info("Check results:\n%s", out.getvalue())
 
-    @staticmethod
-    def register_factories(opts: CommandOptions):
-        """
-        Register any abstract interface factories.
-        """
-        from asyncio import AbstractEventLoop, get_event_loop
-
-        register_factory(AbstractEventLoop, get_event_loop)
-
     def exception_report(self, exception: BaseException, opts: CommandOptions):
         """
         Generate a report for any unhandled exceptions caught by the framework.
@@ -334,6 +334,7 @@ class CliApplication(CommandGroup):
         Dispatch command to registered handler.
         """
         self.pre_configure_logging()
+        self.register_factories()
         self.load_extensions()
 
         argcomplete.autocomplete(self.parser)
@@ -347,8 +348,6 @@ class CliApplication(CommandGroup):
             self.checks_on_startup(opts)
         else:
             self.configure_settings(opts)
-
-        self.register_factories(opts)
 
         _set_running_application(self)
         extensions.registry.ready()
