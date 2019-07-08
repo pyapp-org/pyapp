@@ -9,12 +9,12 @@ These methods are built around *data annotations* and `abc` module.
 Usage::
 
     # Register factory with framework
-    pyapp.injection.register_factory(FooABC, foo_factory)
+    >>> pyapp.injection.register_factory(FooABC, foo_factory)
 
     # Mark functions for injection and specify type
-    @inject_into
-    def my_function(foo: FooABC):
-        ...
+    >>> @inject
+    ... def my_function(foo: FooABC = Args(name="second")):
+    ...    ...
 
 What `my_function` is called a concrete instance that implements `FooABC` is
 passed into the function.
@@ -29,9 +29,11 @@ from types import FunctionType
 from typing import Callable, Dict, TypeVar, Optional
 
 __all__ = (
+    "Args",
     "FactoryRegistry",
     "default_registry",
     "register_factory",
+    "inject",
     "inject_into",
     "InjectionError",
     "InjectionSetupError",
@@ -83,7 +85,7 @@ class FactoryRegistry(Dict[type, Callable]):
         Resolve an abstract type from an `Parameter`.
         """
         default = parameter.default
-        if isinstance(default, FactoryArgs):
+        if isinstance(default, Args):
             if parameter.kind is not parameter.KEYWORD_ONLY:
                 raise InjectionSetupError(
                     "Only keyword-only arguments can be injected."
@@ -104,12 +106,25 @@ default_registry = FactoryRegistry()
 register_factory = default_registry.register
 
 
-class FactoryArgs:
+class Args:
+    """
+    Arguments to provide to factory.
+
+    These are commonly used for named config factories where a particular
+    configuration is expected. A good example might be the name of a message
+    queue.
+
+    """
+
     __slots__ = ("args", "kwargs")
 
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
+
+
+# Fallback
+FactoryArgs = Args
 
 
 def _build_dependencies(func: FunctionType, registry: FactoryRegistry):
@@ -127,14 +142,14 @@ def _build_dependencies(func: FunctionType, registry: FactoryRegistry):
     return tuple(dependencies)
 
 
-def inject_into(func: FunctionType = None, *, from_registry: FactoryRegistry = None):
+def inject(func: FunctionType = None, *, from_registry: FactoryRegistry = None):
     """
     Mark a function to have arguments injected.
 
     A specific registry can be provided, else the global registry is used.
     """
     if func is None:
-        return lambda f: inject_into(f, from_registry=from_registry)
+        return lambda f: inject(f, from_registry=from_registry)
 
     dependencies = _build_dependencies(func, from_registry or default_registry)
     if not dependencies:
@@ -156,3 +171,7 @@ def inject_into(func: FunctionType = None, *, from_registry: FactoryRegistry = N
         return func(*args, **kwargs)
 
     return wrapper
+
+
+# Backwards compatibility
+inject_into = inject

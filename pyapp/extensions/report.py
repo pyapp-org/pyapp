@@ -15,7 +15,7 @@ class ExtensionReport:
     BASIC_TEMPLATE_MONO = "+ {name} ({version})\n"
     VERBOSE_TEMPLATE_MONO = (
         f"{'=' * width}\n"
-        f" Name:       {{name}}\n"
+        f" Name:       {{name}} ({{key}})\n"
         f" Version     {{version}}\n"
         f" Settings:   {{default_settings}}\n"
         f" Has Checks: {{has_checks}}\n"
@@ -26,7 +26,7 @@ class ExtensionReport:
     )
     VERBOSE_TEMPLATE = (
         f"{Fore.YELLOW}{'=' * width}{Style.RESET_ALL}\n"
-        f"{Style.BRIGHT} Name:       {Style.RESET_ALL}{Fore.CYAN}{{name}}{Style.RESET_ALL}\n"
+        f"{Style.BRIGHT} Name:       {Style.RESET_ALL}{Fore.CYAN}{{name}} ({{key}}){Style.RESET_ALL}\n"
         f"{Style.BRIGHT} Version:    {Style.RESET_ALL}{Fore.CYAN}{{version}}{Style.RESET_ALL}\n"
         f"{Style.BRIGHT} Settings:   {Style.RESET_ALL}{Fore.CYAN}{{default_settings}}{Style.RESET_ALL}\n"
         f"{Style.BRIGHT} Has Checks: {Style.RESET_ALL}{Fore.CYAN}{{has_checks}}{Style.RESET_ALL}\n"
@@ -68,6 +68,7 @@ class ExtensionReport:
         """
         format_args = dict(
             name=extension.name,
+            key=extension.key,
             version=extension.version or "Unknown",
             default_settings=extension.default_settings or "None",
             has_checks="Yes" if bool(extension.checks_module) else "No",

@@ -97,7 +97,7 @@ def test_inject_into__with_args():
     actual = None
 
     @injection.inject_into(from_registry=local_registry)
-    def get_value(*, value: ThingBase = injection.FactoryArgs("b")):
+    def get_value(*, value: ThingBase = injection.Args("b")):
         nonlocal actual
         actual = value
 
@@ -110,7 +110,7 @@ def test_inject_into__with_factory_args_and_not_kwarg():
     with pytest.raises(injection.InjectionSetupError):
 
         @injection.inject_into()
-        def get_value(value: ThingBase = injection.FactoryArgs("*")):
+        def get_value(value: ThingBase = injection.Args("*")):
             pass
 
 
@@ -118,7 +118,7 @@ def test_inject_into__with_factory_args_and_no_type_annotation():
     with pytest.raises(injection.InjectionSetupError):
 
         @injection.inject_into()
-        def get_value(*, value=injection.FactoryArgs("*")):
+        def get_value(*, value=injection.Args("*")):
             pass
 
 
@@ -128,7 +128,7 @@ def test_inject_into__factory_raises_error():
     """
 
     @injection.inject_into(from_registry=local_registry)
-    def get_value(*, value: ThingBase = injection.FactoryArgs("c")):
+    def get_value(*, value: ThingBase = injection.Args("c")):
         pass
 
     with pytest.raises(injection.InjectionError):

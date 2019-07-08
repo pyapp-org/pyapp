@@ -20,9 +20,12 @@ class ExtensionDetail(NamedTuple):
     version: str
 
     @property
-    def default_settings(self) -> str:
-        module = getattr(self.extension, "default_settings", "default_settings")
-        if module.startswith("."):
+    def default_settings(self) -> Optional[str]:
+        """
+        Get reference to optional default settings.
+        """
+        module = getattr(self.extension, "default_settings", None)
+        if module and module.startswith("."):
             return f"{self.extension.__module__}{module}"
         else:
             return module
@@ -32,7 +35,7 @@ class ExtensionDetail(NamedTuple):
         """
         Get reference to optional checks module.
         """
-        module = getattr(self.extension, "checks", "checks")
+        module = getattr(self.extension, "checks", None)
         if module and module.startswith("."):
             return f"{self.extension.__module__}{module}"
         else:
