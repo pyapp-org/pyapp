@@ -12,7 +12,7 @@ Usage::
     >>> pyapp.injection.register_factory(FooABC, foo_factory)
 
     # Mark functions for injection and specify type
-    >>> @inject_into
+    >>> @inject
     ... def my_function(foo: FooABC = Args(name="second")):
     ...    ...
 
@@ -33,6 +33,7 @@ __all__ = (
     "FactoryRegistry",
     "default_registry",
     "register_factory",
+    "inject",
     "inject_into",
     "InjectionError",
     "InjectionSetupError",
@@ -141,14 +142,14 @@ def _build_dependencies(func: FunctionType, registry: FactoryRegistry):
     return tuple(dependencies)
 
 
-def inject_into(func: FunctionType = None, *, from_registry: FactoryRegistry = None):
+def inject(func: FunctionType = None, *, from_registry: FactoryRegistry = None):
     """
     Mark a function to have arguments injected.
 
     A specific registry can be provided, else the global registry is used.
     """
     if func is None:
-        return lambda f: inject_into(f, from_registry=from_registry)
+        return lambda f: inject(f, from_registry=from_registry)
 
     dependencies = _build_dependencies(func, from_registry or default_registry)
     if not dependencies:
@@ -170,3 +171,7 @@ def inject_into(func: FunctionType = None, *, from_registry: FactoryRegistry = N
         return func(*args, **kwargs)
 
     return wrapper
+
+
+# Backwards compatibility
+inject_into = inject
