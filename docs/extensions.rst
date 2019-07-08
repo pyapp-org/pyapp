@@ -23,7 +23,7 @@ These are extensions supplied by `pyApp`.
 
 These extensions are in development.
 
-- `pyapp-messaging <https://github.com/pyapp-org/pyapp-messaging>`_ ` -
+- `pyapp-messaging <https://github.com/pyapp-org/pyapp-messaging>`_ -
   Abstract messaging framework for interacting with Pub/Sub and Message Queues.
 
 - `pyapp.boto3 <https://github.com/pyapp-org/pyapp.boto3>`_ -
