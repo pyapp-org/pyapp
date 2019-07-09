@@ -2,21 +2,22 @@
 Events
 ~~~~~~
 
-A simple framework publish events from a class to subscribed listeners.
+A simple framework publish events or callbacks from a class to subscribed listener(s).
 
-Async events are also supported via the `AsyncEvent` descriptor.
+Async events/callbacks are also supported via the `AsyncEvent` and `AsyncCallback`
+descriptors.
 
 Example::
 
     class MyClass:
         started = Event[Callable[[], None]]()
-        new_message = AsyncEvent[Callable[[str], Awaitable]]()
+        handle_message = AsyncCallback[Callable[[str], Awaitable]]()
 
         def start(self):
             self.started()
 
         async def process_message(self, message):
-            await self.new_message(message)
+            await self.handle_message(message)
 
 
     instance = MyClass()
@@ -39,9 +40,9 @@ Example::
 """
 import asyncio
 
-from typing import Callable, Union, Generic, TypeVar, Set, Coroutine
+from typing import Callable, Union, Generic, TypeVar, Set, Coroutine, Optional
 
-__all__ = ("Event", "AsyncEvent", "listen_to")
+__all__ = ("Event", "AsyncEvent", "listen_to", "Callback", "AsyncCallback", "bind_to")
 
 
 _CT = TypeVar("_CT")
@@ -72,7 +73,7 @@ class ListenerSet(Set[_CT]):
     Set of event listeners.
     """
 
-    __slots__ = tuple()
+    __slots__ = ()
 
     def __repr__(self):
         listeners = sorted(c.__qualname__ for c in self)
@@ -141,7 +142,7 @@ class AsyncListenerSet(ListenerSet[_ACT]):
     List of event listeners.
     """
 
-    __slots__ = tuple()
+    __slots__ = ()
 
     async def __call__(self, *args, **kwargs):
         """
@@ -149,7 +150,7 @@ class AsyncListenerSet(ListenerSet[_ACT]):
         """
         aw = [c(*args, **kwargs) for c in self]
         if aw:
-            await asyncio.wait(aw)
+            await asyncio.wait(aw, return_when=asyncio.ALL_COMPLETED)
 
 
 class AsyncEvent(Generic[_ACT]):
@@ -180,6 +181,103 @@ def listen_to(event: ListenerSet[_CT]) -> _CT:
 
     def decorator(func: _CT) -> _CT:
         event.add(func)
+        return func
+
+    return decorator
+
+
+class CallbackBinding(Generic[_CT]):
+    """
+    Descriptor binding instance that provides a single method binding.
+    """
+
+    __slots__ = ('_callback',)
+
+    def __init__(self):
+        self._callback: Optional[_CT] = None
+
+    def __iadd__(self, callback: _CT) -> "CallbackBinding[_CT]":
+        self._callback = callback
+        return self
+
+    def bind(self, callback: _CT):
+        """
+        Bind callback
+        """
+        self._callback = callback
+
+    def unbind(self):
+        """
+        Unbind the callback
+        """
+        self._callback = None
+
+    def __call__(self, *args, **kwargs):
+        if self._callback:
+            self._callback(*args, **kwargs)
+
+
+class Callback(Generic[_CT]):
+    """
+    Callback descriptor.
+
+    Used to attach a single callback.
+
+    """
+
+    __slots__ = ("_instances",)
+
+    def __init__(self):
+        self._instances = {}
+
+    def __get__(self, instance, owner) -> CallbackBinding[_CT]:
+        try:
+            self._instances[id(instance)]
+        except KeyError:
+            self._instances[id(instance)] = wrapper = CallbackBinding[_CT]()
+            return wrapper
+
+
+class AsyncCallbackBinding(CallbackBinding[_ACT]):
+    """
+    Descriptor binding instance that provides a single method binding.
+    """
+
+    __slots__ = ()
+
+    async def __call__(self, *args, **kwargs):
+        if self._callback:
+            return await self._callback(*args, **kwargs)
+
+
+class AsyncCallback(Generic[_ACT]):
+    """
+    Async callback descriptor
+
+    Use to attach a single async callback
+
+    """
+
+    __slots__ = ('_instances',)
+
+    def __init__(self):
+        self._instances = {}
+
+    def __get__(self, instance, owner) -> AsyncCallbackBinding[_ACT]:
+        try:
+            return self._instances[id(instance)]
+        except KeyError:
+            self._instances[id(instance)] = wrapper = AsyncCallbackBinding[_ACT]()
+            return wrapper
+
+
+def bind_to(callback: CallbackBinding[_CT]) -> _CT:
+    """
+    Decorator for attaching a listener to a callback
+    """
+
+    def decorator(func: _CT) -> _CT:
+        callback.bind(func)
         return func
 
     return decorator
