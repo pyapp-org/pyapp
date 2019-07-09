@@ -191,7 +191,7 @@ class CallbackBinding(Generic[_CT]):
     Descriptor binding instance that provides a single method binding.
     """
 
-    __slots__ = ('_callback',)
+    __slots__ = ("_callback",)
 
     def __init__(self):
         self._callback: Optional[_CT] = None
@@ -232,7 +232,7 @@ class Callback(Generic[_CT]):
 
     def __get__(self, instance, owner) -> CallbackBinding[_CT]:
         try:
-            self._instances[id(instance)]
+            return self._instances[id(instance)]
         except KeyError:
             self._instances[id(instance)] = wrapper = CallbackBinding[_CT]()
             return wrapper
@@ -258,7 +258,7 @@ class AsyncCallback(Generic[_ACT]):
 
     """
 
-    __slots__ = ('_instances',)
+    __slots__ = ("_instances",)
 
     def __init__(self):
         self._instances = {}
