@@ -135,3 +135,15 @@ class TestAsyncEvent:
         instance.target += on_target
 
         assert len(instance.target) == 1
+
+
+class TestCallbackBinding:
+    def test_iadd(self):
+        target = events.CallbackBinding()
+
+        def on_target(test):
+            pass
+
+        target += on_target
+
+        assert target._callback is on_target
