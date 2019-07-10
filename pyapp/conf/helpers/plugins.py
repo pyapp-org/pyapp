@@ -45,10 +45,15 @@ __all__ = (
     "NamedPluginFactory",
     "NamedSingletonPluginFactory",
     "ThreadLocalNamedSingletonPluginFactory",
+    "NoDefault"
 )
 
 
 PT = TypeVar("PT", covariant=True)
+
+
+class NoDefault(str):
+    pass
 
 
 class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
@@ -72,7 +77,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
 
     """
 
-    def __init__(self, setting: str, *, abc: Type[PT] = None, default_name: str = None):
+    def __init__(self, setting: str, *, abc: Type[PT] = None, default_name: str = "default"):
         """
         Initialise a named factory.
 
@@ -88,7 +93,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
             raise ValueError(f"Setting `{setting}` must be upper-case")
         self.setting = setting
         self.abc = abc
-        self.default_name = default_name or "default"
+        self.default_name = default_name
 
         self._type_definitions = DefaultCache(self._get_type_definition)
         self._type_definitions_lock = threading.RLock()
@@ -98,6 +103,10 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
     @cached_property
     def _instance_definitions(self):
         return getattr(settings, self.setting, {})
+
+    @cached_property
+    def has_default(self) -> bool:
+        return self.default_name is not NoDefault
 
     @property
     def available(self):
@@ -129,6 +138,11 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         :returns: New instance of the named type.
 
         """
+        if self.has_default:
+            name = name or self.default_name
+        elif not name:
+            raise TypeError("A name is required if no default is specified.")
+
         with self._type_definitions_lock:
             instance_type, kwargs = self._type_definitions[name or self.default_name]
         return instance_type(**kwargs)
@@ -174,7 +188,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
                 messages = []
 
                 # Check default is defined
-                if self.default_name not in instance_definitions:
+                if self.has_default and self.default_name not in instance_definitions:
                     messages.append(
                         checks.Warn(
                             "Default definition not defined.",
