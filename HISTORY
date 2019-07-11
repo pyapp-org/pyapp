@@ -1,3 +1,20 @@
+4.0.4
+=====
+
+Features
+--------
+
+- Added callbacks in addition to events
+- Added specific exceptions for NamedFactories
+- Added NoDefault mode
+- Updated extension report to report code (so extensions that register multiple
+  items don't just look like duplicates)
+- Shorted name of inject_into to inject (left alias of inject_into)
+- Shorted name of FactoryArgs to Args (left alias of FactoryArgs)
+- Added registration of factories into CliApplication, initially supports the
+  asyncio event loop.
+
+
 4.0.2
 =====
 
