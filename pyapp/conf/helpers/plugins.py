@@ -33,6 +33,7 @@ from typing import TypeVar, Type
 
 from pyapp import checks
 from pyapp.conf import settings
+from pyapp.exceptions import InvalidSubType, NotProvided, NotFound
 from pyapp.utils import cached_property, import_type
 from .bases import (
     DefaultCache,
@@ -119,11 +120,11 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         try:
             type_name, kwargs = self._instance_definitions[name]
         except KeyError:
-            raise KeyError(f"Setting definition `{name}` not found")
+            raise NotFound(f"Setting definition `{name}` not found") from None
 
         type_ = import_type(type_name)
         if self.abc and not issubclass(type_, self.abc):
-            raise TypeError(
+            raise InvalidSubType(
                 f"Setting definition `{type_name}` is not a subclass of `{self.abc}`"
             )
 
@@ -141,7 +142,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         if self.has_default:
             name = name or self.default_name
         elif not name:
-            raise TypeError("A name is required if no default is specified.")
+            raise NotProvided("A name is required if no default is specified.")
 
         with self._type_definitions_lock:
             instance_type, kwargs = self._type_definitions[name or self.default_name]

@@ -4,6 +4,7 @@ import pytest
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.conf.helpers import plugins as conf_factory
+from pyapp.exceptions import InvalidSubType, NotProvided
 
 from tests import factory
 
@@ -87,8 +88,16 @@ class TestNamedFactory:
             "TEST_NAMED_FACTORY", abc=factory.BarABC
         )
 
-        with pytest.raises(TypeError):
+        with pytest.raises(InvalidSubType):
             target.create("steel")
+
+    def test_with_no_default(self):
+        target = conf_factory.NamedPluginFactory(
+            "TEST_NAMED_FACTORY", default_name=conf_factory.NoDefault
+        )
+
+        with pytest.raises(NotProvided):
+            target.create()
 
     def test_get_type_definition_is_cached(self, monkeypatch):
         mock_import = mock.Mock()
