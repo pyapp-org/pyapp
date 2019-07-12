@@ -46,7 +46,7 @@ __all__ = (
     "NamedPluginFactory",
     "NamedSingletonPluginFactory",
     "ThreadLocalNamedSingletonPluginFactory",
-    "NoDefault"
+    "NoDefault",
 )
 
 
@@ -78,7 +78,9 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
 
     """
 
-    def __init__(self, setting: str, *, abc: Type[PT] = None, default_name: str = "default"):
+    def __init__(
+        self, setting: str, *, abc: Type[PT] = None, default_name: str = "default"
+    ):
         """
         Initialise a named factory.
 
