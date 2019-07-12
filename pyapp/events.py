@@ -7,11 +7,14 @@ A simple framework publish events or callbacks from a class to subscribed listen
 Async events/callbacks are also supported via the `AsyncEvent` and `AsyncCallback`
 descriptors.
 
+Event can have multiple listening functions where callbacks can only have a single
+function bound (assigning a second will remove the previous).
+
 Example::
 
     class MyClass:
         started = Event[Callable[[], None]]()
-        handle_message = AsyncCallback[Callable[[str], Awaitable]]()
+        new_message = AsyncCallback[Callable[[str], Awaitable]]()
 
         def start(self):
             self.started()
@@ -26,10 +29,9 @@ Example::
     def on_started():
         pass
 
+    @bind_to(instance.new_message)
     async def on_new_message(message: str):
         pass
-
-    instance.new_message += on_new_message
 
 
 .. hint::
