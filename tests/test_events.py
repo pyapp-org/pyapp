@@ -135,3 +135,99 @@ class TestAsyncEvent:
         instance.target += on_target
 
         assert len(instance.target) == 1
+
+
+class TestCallbackBinding:
+    def test_iadd(self):
+        target = events.CallbackBinding()
+
+        def on_target():
+            pass
+
+        target += on_target
+
+        assert target._callback is on_target
+
+    def test_bind(self):
+        target = events.CallbackBinding()
+
+        def on_target():
+            pass
+
+        target.bind(on_target)
+
+        assert target._callback is on_target
+
+        target.unbind()
+
+        assert target._callback is None
+
+    def test_call__bound(self):
+        actual = []
+
+        target = events.CallbackBinding()
+
+        @events.bind_to(target)
+        def on_target(*args, **kwargs):
+            actual.extend((args, kwargs))
+
+        target("a", "b", c="d", e="f")
+
+        assert actual == [("a", "b"), {"c": "d", "e": "f"}]
+
+    def test_call__unbound(self):
+        # Should just do nothing
+        target = events.CallbackBinding()
+
+        target("a", "b", c="d", e="f")
+
+
+class TestCallback:
+    def test_get(self):
+        class MyObject:
+            target = events.Callback[Callable[[], None]]()
+
+        instance = MyObject()
+
+        @events.bind_to(instance.target)
+        def on_target():
+            pass
+
+        target = instance.target
+        assert target._callback is on_target
+
+
+class TestAsyncCallbackBinding:
+    def test_call__bound(self, event_loop):
+        actual = []
+
+        target = events.AsyncCallbackBinding()
+
+        @events.bind_to(target)
+        async def on_target(*args, **kwargs):
+            actual.extend((args, kwargs))
+
+        event_loop.run_until_complete(target("a", "b", c="d", e="f"))
+
+        assert actual == [("a", "b"), {"c": "d", "e": "f"}]
+
+    def test_call__unbound(self, event_loop):
+        # Should just do nothing
+        target = events.AsyncCallbackBinding()
+
+        event_loop.run_until_complete(target("a", "b", c="d", e="f"))
+
+
+class TestAsyncCallback:
+    def test_get(self):
+        class MyObject:
+            target = events.AsyncCallback[Callable[[], Awaitable]]()
+
+        instance = MyObject()
+
+        @events.bind_to(instance.target)
+        async def on_target():
+            pass
+
+        target = instance.target
+        assert target._callback is on_target

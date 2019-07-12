@@ -10,7 +10,8 @@ Contents:
    app
    checks
    conf
-   conf/default_settings
+   conf/base_settings
    conf/helpers
+   events
    injection
    extensions
