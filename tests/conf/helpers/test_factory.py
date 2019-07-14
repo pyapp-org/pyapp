@@ -3,8 +3,8 @@ import pytest
 
 from pyapp import checks
 from pyapp.conf import settings
-from pyapp.conf.helpers import plugins as conf_factory
-from pyapp.exceptions import InvalidSubType, NotProvided
+from pyapp.conf.helpers import plugins as conf_factory, NoDefault
+from pyapp.exceptions import InvalidSubType, NotProvided, BadAlias, NotFound
 
 from tests import factory
 
@@ -51,6 +51,21 @@ class TestNamedFactory:
         assert str(actual) == "Bar"
         assert actual.length == 42
 
+    def test_no_default(self):
+        target = conf_factory.NamedPluginFactory(
+            "TEST_NAMED_FACTORY", default_name=NoDefault
+        )
+        actual = target.create("iron")
+        assert isinstance(actual, factory.IronBar)
+
+    def test_no_default_with_no_name(self):
+        target = conf_factory.NamedPluginFactory(
+            "TEST_NAMED_FACTORY", default_name=NoDefault
+        )
+
+        with pytest.raises(NotProvided):
+            target.create()
+
     def test_get_specific(self):
         target = conf_factory.NamedPluginFactory("TEST_NAMED_FACTORY")
 
@@ -74,6 +89,37 @@ class TestNamedFactory:
 
         with pytest.raises(KeyError):
             target.create("copper")
+
+    def test_alias_definition(self):
+        target = conf_factory.NamedPluginFactory("TEST_ALIAS_FACTORY")
+
+        actual = target.create("metal")
+        assert isinstance(actual, factory.SteelBeam)
+
+    @pytest.mark.parametrize("name", ("plastic", "nylon", "polythene"))
+    def test_alias_bad_definition(self, name):
+        target = conf_factory.NamedPluginFactory("TEST_ALIAS_FACTORY")
+
+        with pytest.raises(BadAlias) as err:
+            target.create(name)
+
+        assert "not defined" in str(err.value)
+
+    def test_alias_not_found(self):
+        target = conf_factory.NamedPluginFactory("TEST_ALIAS_FACTORY")
+
+        with pytest.raises(NotFound) as err:
+            target.create("polypropylene")
+
+        assert "not found" in str(err.value)
+
+    def test_alias_circular(self):
+        target = conf_factory.NamedPluginFactory("TEST_ALIAS_FACTORY")
+
+        with pytest.raises(BadAlias) as err:
+            target.create("stone")
+
+        assert "Circular" in str(err.value)
 
     def test_with_abc_defined(self):
         target = conf_factory.NamedPluginFactory(
@@ -211,6 +257,60 @@ class TestNamedFactory:
         message = actual[0]
         assert isinstance(message, checks.Error)
         assert "UNABLE TO IMPORT TYPE" in message.msg.upper()
+        assert message.obj == "settings.FACTORY[default]"
+
+    def test_checks_alias(self):
+        with settings.modify() as patch:
+            patch.FACTORY = {
+                "default": ("Alias", {"name": "foo"}),
+                "foo": ("tests.factory.IronBar", {}),
+            }
+
+            target = conf_factory.NamedPluginFactory("FACTORY")
+            actual = target.checks(settings=settings)
+
+        assert len(actual) == 0
+
+    def test_checks_alias_no_name(self):
+        with settings.modify() as patch:
+            patch.FACTORY = {"default": ("Alias", {})}
+
+            target = conf_factory.NamedPluginFactory("FACTORY")
+            actual = target.checks(settings=settings)
+
+        assert len(actual) == 1
+        message = actual[0]
+        assert isinstance(message, checks.Critical)
+        assert "Name of alias target not defined" in message.msg
+        assert message.obj == "settings.FACTORY[default]"
+
+    def test_checks_alias_unknown_name(self):
+        with settings.modify() as patch:
+            patch.FACTORY = {"default": ("Alias", {"name": "foo"})}
+
+            target = conf_factory.NamedPluginFactory("FACTORY")
+            actual = target.checks(settings=settings)
+
+        assert len(actual) == 1
+        message = actual[0]
+        assert isinstance(message, checks.Critical)
+        assert "Alias target not defined" in message.msg
+        assert message.obj == "settings.FACTORY[default][foo]"
+
+    def test_checks_alias_additional_args(self):
+        with settings.modify() as patch:
+            patch.FACTORY = {
+                "default": ("Alias", {"name": "foo", "bar": "123"}),
+                "foo": ("tests.factory.IronBar", {}),
+            }
+
+            target = conf_factory.NamedPluginFactory("FACTORY")
+            actual = target.checks(settings=settings)
+
+        assert len(actual) == 1
+        message = actual[0]
+        assert isinstance(message, checks.Warn)
+        assert "Alias contains unknown arguments" in message.msg
         assert message.obj == "settings.FACTORY[default]"
 
 
