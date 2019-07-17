@@ -85,6 +85,7 @@ Table of Contents
 
    getting-started
    extensions
+   developers
    reference/index
 
 Indices and tables
