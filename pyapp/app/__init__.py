@@ -44,7 +44,7 @@ CliApplication
 Arguments
 ---------
 
-.. automodule::
+.. automodule:: pyapp.app.arguments
 
 """
 import argcomplete
