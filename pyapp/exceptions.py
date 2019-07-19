@@ -22,6 +22,12 @@ class NotFound(FactoryException, KeyError):
     """
 
 
+class CannotImport(FactoryException, ImportError):
+    """
+    The plugin defined in settings cannot be imported.
+    """
+
+
 class BadAlias(FactoryException, KeyError):
     """
     Alias is not configured correctly.
