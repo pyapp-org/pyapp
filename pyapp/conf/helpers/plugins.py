@@ -33,7 +33,13 @@ from typing import TypeVar, Type
 
 from pyapp import checks
 from pyapp.conf import settings
-from pyapp.exceptions import InvalidSubType, NotProvided, NotFound, BadAlias, CannotImport
+from pyapp.exceptions import (
+    InvalidSubType,
+    NotProvided,
+    NotFound,
+    BadAlias,
+    CannotImport,
+)
 from pyapp.utils import cached_property, import_type
 from .bases import (
     DefaultCache,
@@ -146,7 +152,9 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         try:
             type_ = import_type(type_name)
         except (ImportError, AttributeError) as ex:
-            raise CannotImport(f"Cannot import type `{type_name}` from config '{name}'.") from ex
+            raise CannotImport(
+                f"Cannot import type `{type_name}` from config '{name}'."
+            ) from ex
 
         if self.abc and not issubclass(type_, self.abc):
             raise InvalidSubType(

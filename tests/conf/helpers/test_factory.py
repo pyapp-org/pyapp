@@ -4,7 +4,13 @@ import pytest
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.conf.helpers import plugins as conf_factory, NoDefault
-from pyapp.exceptions import InvalidSubType, NotProvided, BadAlias, NotFound, CannotImport
+from pyapp.exceptions import (
+    InvalidSubType,
+    NotProvided,
+    BadAlias,
+    NotFound,
+    CannotImport,
+)
 
 from tests import factory
 
