@@ -4,7 +4,7 @@ import pytest
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.conf.helpers import plugins as conf_factory, NoDefault
-from pyapp.exceptions import InvalidSubType, NotProvided, BadAlias, NotFound
+from pyapp.exceptions import InvalidSubType, NotProvided, BadAlias, NotFound, CannotImport
 
 from tests import factory
 
@@ -144,6 +144,18 @@ class TestNamedFactory:
 
         with pytest.raises(NotProvided):
             target.create()
+
+    @pytest.mark.parametrize("exception", (ImportError, AttributeError))
+    def test_get_type_definition__import_error(self, monkeypatch, exception):
+        mock_import = mock.Mock(side_effect=exception)
+        monkeypatch.setattr(conf_factory, "import_type", mock_import)
+
+        target = conf_factory.NamedPluginFactory("TEST_NAMED_FACTORY")
+
+        with pytest.raises(CannotImport):
+            target.create()
+
+        mock_import.assert_called_once_with("tests.factory.Bar")
 
     def test_get_type_definition_is_cached(self, monkeypatch):
         mock_import = mock.Mock()
