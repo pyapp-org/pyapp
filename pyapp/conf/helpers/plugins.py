@@ -303,7 +303,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         else:
             try:
                 import_type(type_name)
-            except (ImportError, ValueError):
+            except (ImportError, ValueError, AttributeError):
                 messages.append(
                     checks.Error(
                         f"Unable to import type `{type_name}`.",

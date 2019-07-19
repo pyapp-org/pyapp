@@ -1,4 +1,4 @@
-4.0.5
+4.0.6
 =====
 
 Features
@@ -9,7 +9,9 @@ Features
 Changes
 -------
 
-- Generate explicit CannotImport exception if an invalid object is specified to a NamedFactory
+- Generate explicit CannotImport exception if an invalid object is specified to
+  a NamedFactory.
+- Have checks handle import errors
 
 
 4.0.4
