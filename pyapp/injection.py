@@ -165,7 +165,7 @@ def inject(func: FunctionType = None, *, from_registry: FactoryRegistry = None):
                     kwargs[name] = factory()
             except Exception as ex:
                 raise InjectionError(
-                    f"Unable to instantiate argument `{name}`: {ex}"
+                    f"Unable to instantiate argument `{name}`: {ex!r}"
                 ) from ex
 
         return func(*args, **kwargs)

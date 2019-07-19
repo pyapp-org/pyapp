@@ -33,7 +33,13 @@ from typing import TypeVar, Type
 
 from pyapp import checks
 from pyapp.conf import settings
-from pyapp.exceptions import InvalidSubType, NotProvided, NotFound
+from pyapp.exceptions import (
+    InvalidSubType,
+    NotProvided,
+    NotFound,
+    BadAlias,
+    CannotImport,
+)
 from pyapp.utils import cached_property, import_type
 from .bases import (
     DefaultCache,
@@ -53,8 +59,7 @@ __all__ = (
 PT = TypeVar("PT", covariant=True)
 
 
-class NoDefault(str):
-    pass
+NoDefault = "__NoDefault__"
 
 
 class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
@@ -109,7 +114,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
 
     @cached_property
     def has_default(self) -> bool:
-        return self.default_name is not NoDefault
+        return self.default_name != NoDefault
 
     @property
     def available(self):
@@ -118,13 +123,39 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         """
         return self._instance_definitions.keys()
 
-    def _get_type_definition(self, name: str):
-        try:
-            type_name, kwargs = self._instance_definitions[name]
-        except KeyError:
-            raise NotFound(f"Setting definition `{name}` not found") from None
+    def _resolve_instance_definition(self, name):
+        alias_names = {name}
+        while True:
+            try:
+                type_name, kwargs = self._instance_definitions[name]
+            except KeyError:
+                raise NotFound(f"Setting definition `{name}` not found") from None
 
-        type_ = import_type(type_name)
+            if type_name.upper() == "ALIAS":
+                # Alias found
+                name = kwargs.get("name")
+                if not name:
+                    raise BadAlias(f"Name not defined for alias `{name}`")
+
+                # Circular alias protection
+                if name in alias_names:
+                    raise BadAlias(f"Circular aliases detected: {alias_names!r}")
+
+                alias_names.add(name)
+
+            else:
+                return type_name, kwargs
+
+    def _get_type_definition(self, name: str):
+        type_name, kwargs = self._resolve_instance_definition(name)
+
+        try:
+            type_ = import_type(type_name)
+        except (ImportError, AttributeError) as ex:
+            raise CannotImport(
+                f"Cannot import type `{type_name}` from config '{name}'."
+            ) from ex
+
         if self.abc and not issubclass(type_, self.abc):
             raise InvalidSubType(
                 f"Setting definition `{type_name}` is not a subclass of `{self.abc}`"
@@ -147,7 +178,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
             raise NotProvided("A name is required if no default is specified.")
 
         with self._type_definitions_lock:
-            instance_type, kwargs = self._type_definitions[name or self.default_name]
+            instance_type, kwargs = self._type_definitions[name]
         return instance_type(**kwargs)
 
     def _register_checks(self):
@@ -239,25 +270,56 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         type_name, kwargs = definition
         messages = []
 
-        try:
-            import_type(type_name)
-        except (ImportError, ValueError):
-            messages.append(
-                checks.Error(
-                    f"Unable to import type `{type_name}`.",
-                    hint="Check the type name in definition.",
-                    obj=f"settings.{self.setting}[{name}]",
+        if type_name.upper() == "ALIAS":
+            target_name = kwargs.get("name")
+            if not target_name:
+                messages.append(
+                    checks.Critical(
+                        "Name of alias target not defined",
+                        hint="An alias entry must provide a `name` value that refers to another entry.",
+                        obj=f"settings.{self.setting}[{name}]",
+                    )
                 )
-            )
 
-        if not isinstance(kwargs, dict):
-            messages.append(
-                checks.Critical(
-                    "Instance kwargs is not a dict.",
-                    hint="Change kwargs definition to be a dict.",
-                    obj=f"settings.{self.setting}[{name}]",
+            else:
+                if target_name not in instance_definitions:
+                    messages.append(
+                        checks.Critical(
+                            "Alias target not defined",
+                            hint="The target specified by the alias does not exist, check the `name` value.",
+                            obj=f"settings.{self.setting}[{name}][{target_name}]",
+                        )
+                    )
+
+            if len(kwargs) > 1:
+                messages.append(
+                    checks.Warn(
+                        "Alias contains unknown arguments",
+                        hint="An alias entry must only provide a `name` value.",
+                        obj=f"settings.{self.setting}[{name}]",
+                    )
                 )
-            )
+
+        else:
+            try:
+                import_type(type_name)
+            except (ImportError, ValueError):
+                messages.append(
+                    checks.Error(
+                        f"Unable to import type `{type_name}`.",
+                        hint="Check the type name in definition.",
+                        obj=f"settings.{self.setting}[{name}]",
+                    )
+                )
+
+            if not isinstance(kwargs, dict):
+                messages.append(
+                    checks.Critical(
+                        "Instance kwargs is not a dict.",
+                        hint="Change kwargs definition to be a dict.",
+                        obj=f"settings.{self.setting}[{name}]",
+                    )
+                )
 
         return messages
 

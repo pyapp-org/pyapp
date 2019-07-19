@@ -1,3 +1,17 @@
+4.0.5
+=====
+
+Features
+--------
+
+- Aliases for NamedPluginFactory entries
+
+Changes
+-------
+
+- Generate explicit CannotImport exception if an invalid object is specified to a NamedFactory
+
+
 4.0.4
 =====
 

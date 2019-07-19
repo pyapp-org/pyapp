@@ -23,6 +23,21 @@ TEST_NAMED_FACTORY_NO_DEFAULT = {
     "steel": ("tests.factory.SteelBeam", {}),
 }
 
+TEST_ALIAS_FACTORY = {
+    "steel": ("tests.factory.SteelBeam", {}),
+    "metal": ("alias", {"name": "steel"}),
+    # Bad entries
+    "plastic": ("alias", {}),
+    "nylon": ("alias", {"name": ""}),
+    "polythene": ("alias", {"name": "plastic"}),
+    "polypropylene": ("alias", {"name": "oil"}),
+    # Circular
+    "stone": ("alias", {"name": "marble"}),
+    "marble": ("alias", {"name": "brick"}),
+    "brick": ("alias", {"name": "stone"}),
+}
+
+
 # Config sample values
 TEST_NAMED_CONFIG = {
     "default": {"length": 42, "foo": "bar"},

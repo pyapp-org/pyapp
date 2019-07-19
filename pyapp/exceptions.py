@@ -22,6 +22,18 @@ class NotFound(FactoryException, KeyError):
     """
 
 
+class CannotImport(FactoryException, ImportError):
+    """
+    The plugin defined in settings cannot be imported.
+    """
+
+
+class BadAlias(FactoryException, KeyError):
+    """
+    Alias is not configured correctly.
+    """
+
+
 class InvalidSubType(FactoryException, TypeError):
     """
     Instance type specified in settings does not match a subclass of the factory ABC
