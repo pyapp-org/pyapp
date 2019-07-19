@@ -15,3 +15,4 @@ from .versioning import get_installed_version
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 __author__ = "Tim Savage <tim@savage.company>"
+version_info = tuple(int(p) for p in __version__.split("."))
