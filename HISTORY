@@ -1,6 +1,11 @@
 4.0.5
 =====
 
+Features
+--------
+
+- Aliases for NamedPluginFactory entries
+
 Changes
 -------
 
