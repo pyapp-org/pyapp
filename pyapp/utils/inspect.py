@@ -1,6 +1,5 @@
 import importlib
 import inspect
-import sys
 
 from pathlib import Path
 
@@ -27,7 +26,7 @@ def determine_root_module(stack_offset: int = 2):
         else:
             raise RuntimeError("Not able to determine root module.")
     else:
-        root_package = package_name.split()[0]
+        root_package = package_name.split(".")[0]
 
     try:
         return importlib.import_module(root_package)
