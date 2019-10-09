@@ -61,6 +61,7 @@ from .. import conf
 from .. import extensions
 from ..app import builtin_handlers
 from ..injection import register_factory
+from ..utils.inspect import determine_root_module
 from .arguments import *
 from .argument_actions import *
 
@@ -116,7 +117,7 @@ class CliApplication(CommandGroup):
 
     def __init__(
         self,
-        root_module,
+        root_module=None,
         *,
         prog: str = None,
         description: str = None,
@@ -128,6 +129,7 @@ class CliApplication(CommandGroup):
         env_settings_key: str = None,
         env_loglevel_key: str = None,
     ):
+        root_module = root_module or determine_root_module()
         self.root_module = root_module
         super().__init__(ArgumentParser(prog, description=description, epilog=epilog))
         self.application_version = version or getattr(
