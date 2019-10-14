@@ -9,14 +9,12 @@ Quick demo::
     >>> import sample
     >>> from pyapp.app import CliApplication, add_argument
     >>> app = CliApplication(sample)
-
     >>> @add_argument('--verbose', target='verbose', action='store_true')
     >>> @app.register_handler()
     >>> def hello(opts):
     ...     if opts.verbose:
     ...         print("Being verbose!")
     ...     print("Hello")
-
     >>> if __name__ == '__main__':
     ...     app.dispatch()
 
@@ -57,7 +55,7 @@ import os
 import sys
 
 # Type annotation imports
-from typing import List, Callable, Any  # noqa
+from typing import List, Callable, Any, Dict, Union, Optional  # noqa
 
 from pyapp import conf
 from pyapp import extensions
@@ -72,6 +70,7 @@ class HandlerProxy(object):
     Proxy object that wraps a handler.
     """
     def __init__(self, handler, sub_parser):
+        # type: (Callable, argparse.ArgumentParser) -> None
         """
         Initialise proxy
 
@@ -105,6 +104,7 @@ class HandlerProxy(object):
 
 
 def add_argument(*args, **kwargs):
+    # type: (str, Any) -> Callable[[Callable], Callable]
     """
     Decorator for adding arguments to a handler.
 
@@ -113,6 +113,7 @@ def add_argument(*args, **kwargs):
 
     """
     def wrapper(func):
+        # type: (Union[Callable, HandlerProxy]) -> Union[Callable, HandlerProxy]
         if isinstance(func, HandlerProxy):
             func.add_argument(*args, **kwargs)
         else:
@@ -228,10 +229,12 @@ class CliApplication(object):
 
     @property
     def application_name(self):
+        # type: () -> str
         return self.parser.prog
 
     @property
     def application_summary(self):
+        # type: () -> str
         description = self.parser.description
         if description:
             return "{} version {} - {}".format(self.application_name, self.application_version, description)
@@ -239,6 +242,7 @@ class CliApplication(object):
             return "{} version {}".format(self.application_name, self.application_version)
 
     def command(self, handler=None, cli_name=None):
+        # type: (Callable, str) -> Union[Callable, Callable[[Callable], Callable]]
         """
         Decorator for registering handlers.
 
@@ -251,6 +255,7 @@ class CliApplication(object):
 
         """
         def inner(func):
+            # type: (Callable) -> Callable
             name = cli_name or func.__name__
 
             # Setup sub parser
@@ -270,7 +275,7 @@ class CliApplication(object):
     register_handler = command
 
     def run_checks(self, output, message_level=logging.INFO, tags=None, verbose=False, no_color=False, table=False):
-        # type: (io.StringIO, int, List[str], bool, bool, bool) -> bool
+        # type: (io.StringIO, int, Optional[List[str]], bool, bool, bool) -> bool
         """
         Run application checks.
 
@@ -305,6 +310,7 @@ class CliApplication(object):
                                                               "Checks for {}".format(self.application_summary))
 
     def register_builtin_handlers(self):
+        # type: () -> None
         """
         Register any built in handlers.
         """
@@ -320,6 +326,7 @@ class CliApplication(object):
                       help='Output report in tabular format.')
         @self.command(cli_name='checks')
         def check_report(opts):
+            # type: (argparse.Namespace) -> None
             """
             Run a check report.
             """
@@ -332,6 +339,7 @@ class CliApplication(object):
             additional_handler(self)
 
     def pre_configure_logging(self, opts):
+        # type: (argparse.Namespace) -> None
         """
         Set some default logging so setting are logged.
 
@@ -347,12 +355,15 @@ class CliApplication(object):
         logging.root.setLevel(opts.log_level)
 
     def configure_settings(self, opts):
+        # type: (argparse.Namespace) -> None
         """
         Configure settings container.
         """
         settings.configure(self.application_settings, opts.settings, env_settings_key=self.env_settings_key)
 
-    def configure_logging(self, opts):
+    @staticmethod
+    def configure_logging(opts):
+        # type: (argparse.Namespace) -> None
         """
         Configure the logging framework.
         """
@@ -367,7 +378,9 @@ class CliApplication(object):
             # Configure root log level
             logging.root.setLevel(opts.log_level)
 
-    def configure_extensions(self, _):
+    @staticmethod
+    def configure_extensions(_):
+        # type: (argparse.Namespace) -> None
         """
         Load/Configure extensions.
         """
@@ -386,6 +399,7 @@ class CliApplication(object):
         extensions.registry.trigger_ready()
 
     def checks_on_startup(self, opts):
+        # type: (argparse.Namespace) -> None
         """
         Run checks on startup.
         """
@@ -399,7 +413,9 @@ class CliApplication(object):
             else:
                 logger.info("Check results:\n%s", out.getvalue())
 
-    def exception_report(self, exception, opts):
+    @staticmethod
+    def exception_report(exception, opts):
+        # type: (Exception, argparse.Namespace) -> bool
         """
         Generate a report for any unhandled exceptions caught by the framework.
         """
@@ -407,6 +423,7 @@ class CliApplication(object):
         return False
 
     def default_handler(self, opts):
+        # type: (argparse.Namespace) -> int
         """
         Handler called if no handler is specified
         """
@@ -419,7 +436,7 @@ class CliApplication(object):
 
     @staticmethod
     def call_handler(handler, *args, **kwargs):
-        # type: (Callable, Any) -> int
+        # type: (Callable, Any, Any) -> int
         """
         Actually call the handler and return the status code.
 
@@ -429,6 +446,7 @@ class CliApplication(object):
         return handler(*args, **kwargs)
 
     def dispatch(self, args=None):
+        # type: (Dict[str, str]) -> None
         """
         Dispatch command to registered handler.
         """
