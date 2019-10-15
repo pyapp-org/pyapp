@@ -6,6 +6,18 @@ Support for automatic resolution of dependencies from factories.
 
 These methods are built around *data annotations* and the `abc` module.
 
+Usage:
+
+    >>> from pyapp.injection import register_factory, inject, Arg
+    >>> register_factory(FooObject, foo_factory)
+    # Markup methods for injection
+    >>> @inject
+    >>> def my_function(foo=Arg(FooObject)):
+    ...     ...
+
+When `my_function` is called `foo_factory` is used to instantiate a concrete
+instance of a FooObject.
+
 """
 from __future__ import absolute_import, print_function, unicode_literals
 
@@ -77,8 +89,15 @@ class FactoryRegistry(dict):
         # type: (AT_co, Callable[..., AT_co]) -> None
         self[abstract_type] = factory
 
+    def resolve(self, abstract_type):
+        # type: (AT_co) -> Optional[Callable[[], AT_co]]
+        """
+        Resolve an abstract type to a factory.
+        """
+        return self.get(abstract_type)
+
     def resolve_from_arg(self, arg):
-        # type: (Arg) -> Callable[[], Any]
+        # type: (Arg) -> Callable[[], AT_co]
         factory = self.get(arg.type_)
         if not factory:
             raise InjectionSetupError("A factory for type `{}` cannot be found.".format(arg.type_))
@@ -97,23 +116,22 @@ def _build_dependencies(func, registry):
     Build a list of dependency objects
     """
     arg_spec = inspect.getargspec(func)
-    defaults = reversed(arg_spec.defaults)
-    args = reversed(arg_spec.args)
+    defaults = reversed(arg_spec.defaults) if arg_spec.defaults else tuple()
+    args = reversed(arg_spec.args) if arg_spec.args else tuple()
 
     last_arg = 0
     dependencies = []
     for idx, (default, name) in enumerate(zip(defaults, args)):
         if isinstance(default, Arg):
+            last_arg = idx
             factory = registry.resolve_from_arg(default)
-            if factory:
-                last_arg = idx
-                dependencies.append((name, factory))
+            dependencies.append((name, factory))
 
-    return len(arg_spec.args) - last_arg, dependencies
+    return len(arg_spec.args) - last_arg, tuple(dependencies)
 
 
 def inject(func=None, from_registry=None):
-    # type: (Optional[FunctionType], Optional[FactoryRegistry]) -> Callable
+    # type: (Optional[FunctionType], Optional[FactoryRegistry]) -> FunctionType
     """
     Mark and function or method to have argument injected.
 
@@ -127,9 +145,9 @@ def inject(func=None, from_registry=None):
         # If no dependencies are found just return the original function
         return func
 
-    @functools.wraps
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        if len(args) > arg_count:
+        if len(args) >= arg_count:
             raise InjectionArgumentError("Injected args must be passed as keyword arguments.")
 
         for name, factory in dependencies:
