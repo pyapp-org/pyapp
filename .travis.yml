@@ -10,6 +10,7 @@ branches:
   only:
     - master
     - development
+    - support/3.4
 
 install:
   - travis_retry pip install -Ur requirements-dev.txt bandit
