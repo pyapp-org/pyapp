@@ -36,7 +36,7 @@ def deprecated(message: str, category: Warning = DeprecationWarning):
 
         else:
 
-            @functools.wraps(func)
+            @functools.wraps(obj)
             def func_wrapper(*args, **kwargs):
                 warnings.warn(
                     "{obj.__name__} is deprecated and scheduled for removal. {message}",

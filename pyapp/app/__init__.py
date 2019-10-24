@@ -6,9 +6,9 @@ Application
 
 Quick demo::
 
-    >>> import sample
     >>> from pyapp.app import CliApplication, argument
-    >>> app = CliApplication(sample)
+    >>> app = CliApplication()
+
     >>> @argument('--verbose', target='verbose', action='store_true')
     >>> @app.command()
     >>> def hello(opts):
@@ -18,6 +18,7 @@ Quick demo::
 
     >>> if __name__ == '__main__':
     ...     app.dispatch()
+
 
 This example provides an application with a command `hello` that takes an
 optional `verbose` flag. The framework also provides help, configures and loads
@@ -381,4 +382,4 @@ def _set_running_application(app: CliApplication):
 
 
 def get_running_application() -> CliApplication:
-    return CURRENT_APP
+`    return CURRENT_APP
