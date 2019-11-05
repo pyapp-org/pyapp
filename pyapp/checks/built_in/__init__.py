@@ -1,5 +1,5 @@
-from .registry import register, Tags
-from .messages import Warn
+from ..registry import register, Tags
+from ..messages import Warn
 
 
 W001 = Warn(
@@ -15,3 +15,4 @@ def debug_enabled(settings, **_):
     """
     if settings.DEBUG:
         return W001
+
