@@ -1,12 +1,23 @@
 import colorama
 import logging
 
+RESET_ALL = colorama.Style.RESET_ALL
+
 
 class ColourFormatter(logging.Formatter):
     """
     Formatter that adds colourised versions of log levels
+
+    Extends LogRecord with:
+
+    %(clevelno)s        Numeric logging level for the message (DEBUG, INFO,
+                        WARNING, ERROR, CRITICAL) with ANSI terminal colours
+                        applied.
+    %(clevelname)s      Text logging level for the message ("DEBUG", "INFO",
+                        "WARNING", "ERROR", "CRITICAL") with ANSI terminal
+                        colours applied.
     """
-    level_colours = {
+    COLOURS = {
         logging.CRITICAL: colorama.Fore.RED + colorama.Style.BRIGHT,
         logging.ERROR: colorama.Fore.RED,
         logging.WARNING: colorama.Fore.BLUE,
@@ -16,8 +27,9 @@ class ColourFormatter(logging.Formatter):
     }
 
     def formatMessage(self, record: logging.LogRecord):
-        color = self.level_colours[record.levelno]
-        record.clevelname = f"{color}{record.levelname}{colorama.Style.RESET_ALL}"
+        color = self.COLOURS[record.levelno]
+        record.clevelname = f"{color}{record.levelname}{RESET_ALL}"
+        record.clevelno = f"{color}{record.levelno}{RESET_ALL}"
         return super().formatMessage(record)
 
 
