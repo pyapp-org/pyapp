@@ -69,6 +69,15 @@ from .logging_formatter import ColourFormatter
 logger = logging.getLogger(__name__)
 
 
+def _key_help(key: str) -> str:
+    """
+    Helper method that formats a key value from the environment vars
+    """
+    if key in os.environ:
+        return f"{key} [{os.environ[key]}]"
+    return key
+
+
 class CliApplication(CommandGroup):
     """
     Application interface that provides a CLI interface.
@@ -191,16 +200,11 @@ class CliApplication(CommandGroup):
             return f"{self.application_name} version {self.application_version}"
 
     def _init_parser(self):
-        def key_help(key):
-            if key in os.environ:
-                return f"{key} [{os.environ[key]}]"
-            return key
-
         # Create argument parser
         self.argument(
             "--settings",
             help="Settings to load; either a Python module or settings URL. "
-            f"Defaults to the env variable: {key_help(self.env_settings_key)}",
+            f"Defaults to the env variable: {_key_help(self.env_settings_key)}",
         )
         self.argument(
             "--nocolor",
@@ -221,7 +225,7 @@ class CliApplication(CommandGroup):
             default=os.environ.get(self.env_loglevel_key, "INFO"),
             choices=("DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"),
             help="Specify the log level to be used. "
-            f"Defaults to env variable: {key_help(self.env_loglevel_key)}",
+            f"Defaults to env variable: {_key_help(self.env_loglevel_key)}",
         )
         self.argument(
             "--log-color",
@@ -305,11 +309,10 @@ class CliApplication(CommandGroup):
             application_settings, opts.settings, env_settings_key=self.env_settings_key
         )
 
-    def configure_logging(self, opts: CommandOptions):
+    def get_log_formatter(self, log_color) -> logging.Formatter:
         """
-        Configure the logging framework.
+        Get log formatter
         """
-        log_color = opts.log_color
         log_handler = self.default_log_handler
 
         # Auto-detect colour mode
@@ -319,7 +322,15 @@ class CliApplication(CommandGroup):
 
         # Enable colour if specified.
         if log_color:
-            log_handler.formatter = self.default_color_log_formatter
+            return self.default_color_log_formatter
+        
+        return self.default_log_formatter
+
+    def configure_logging(self, opts: CommandOptions):
+        """
+        Configure the logging framework.
+        """
+        self.default_log_handler.formatter = self.get_log_formatter(opts.log_color)
 
         if conf.settings.LOGGING:
             logger.info("Applying logging configuration.")
