@@ -49,6 +49,7 @@ Arguments
 
 """
 import argcomplete
+import colorama
 import io
 import logging
 import logging.config
@@ -65,8 +66,18 @@ from ..injection import register_factory
 from ..utils.inspect import determine_root_module
 from .arguments import *
 from .argument_actions import *
+from .logging_formatter import ColourFormatter
 
 logger = logging.getLogger(__name__)
+
+
+def _key_help(key: str) -> str:
+    """
+    Helper method that formats a key value from the environment vars
+    """
+    if key in os.environ:
+        return f"{key} [{os.environ[key]}]"
+    return key
 
 
 class CliApplication(CommandGroup):
@@ -92,6 +103,16 @@ class CliApplication(CommandGroup):
 
     default_log_formatter = logging.Formatter(
         "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+    )
+    """
+    Log formatter applied by default to root logger handler.
+    """
+
+    default_color_log_formatter = ColourFormatter(
+        f"{colorama.Fore.YELLOW}%(asctime)s{colorama.Fore.RESET} "
+        f"%(clevelname)s "
+        f"{colorama.Fore.LIGHTBLUE_EX}%(name)s{colorama.Fore.RESET} "
+        f"%(message)s"
     )
     """
     Log formatter applied by default to root logger handler.
@@ -182,17 +203,11 @@ class CliApplication(CommandGroup):
             return f"{self.application_name} version {self.application_version}"
 
     def _init_parser(self):
-        def key_help(key):
-            if key in os.environ:
-                return f"{key} [{os.environ[key]}]"
-            return key
-
         # Create argument parser
         self.argument(
             "--settings",
-            dest="settings",
             help="Settings to load; either a Python module or settings URL. "
-            f"Defaults to the env variable: {key_help(self.env_settings_key)}",
+            f"Defaults to the env variable: {_key_help(self.env_settings_key)}",
         )
         self.argument(
             "--nocolor",
@@ -210,11 +225,25 @@ class CliApplication(CommandGroup):
         # Log configuration
         self.argument(
             "--log-level",
-            dest="log_level",
             default=os.environ.get(self.env_loglevel_key, "INFO"),
             choices=("DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"),
             help="Specify the log level to be used. "
-            f"Defaults to env variable: {key_help(self.env_loglevel_key)}",
+            f"Defaults to env variable: {_key_help(self.env_loglevel_key)}",
+        )
+        self.argument(
+            "--log-color",
+            "--log-colour",
+            dest="log_color",
+            default=None,
+            action="store_true",
+            help="Force coloured output from logger (on console).",
+        )
+        self.argument(
+            "--log-nocolor",
+            "--log-nocolour",
+            dest="log_color",
+            action="store_false",
+            help="Disable coloured output from logger (on console).",
         )
 
         # Global check values
@@ -283,11 +312,31 @@ class CliApplication(CommandGroup):
             application_settings, opts.settings, env_settings_key=self.env_settings_key
         )
 
-    @staticmethod
-    def configure_logging(opts: CommandOptions):
+    def get_log_formatter(self, log_color) -> logging.Formatter:
+        """
+        Get log formatter
+        """
+        log_handler = self.default_log_handler
+
+        # Auto-detect colour mode
+        if log_color is None:
+            if isinstance(log_handler, logging.StreamHandler) and hasattr(
+                log_handler.stream, "isatty"
+            ):
+                log_color = log_handler.stream.isatty()
+
+        # Enable colour if specified.
+        if log_color:
+            return self.default_color_log_formatter
+
+        return self.default_log_formatter
+
+    def configure_logging(self, opts: CommandOptions):
         """
         Configure the logging framework.
         """
+        self.default_log_handler.formatter = self.get_log_formatter(opts.log_color)
+
         if conf.settings.LOGGING:
             logger.info("Applying logging configuration.")
 
@@ -382,4 +431,7 @@ def _set_running_application(app: CliApplication):
 
 
 def get_running_application() -> CliApplication:
-`    return CURRENT_APP
+    """
+    Get the current running application instance
+    """
+    return CURRENT_APP
