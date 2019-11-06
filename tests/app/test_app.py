@@ -1,9 +1,17 @@
-from typing import Any, Dict
-
 import pytest
 import tests.sample_app
 
-from pyapp.app import argument, CliApplication
+from pyapp.app import argument, CliApplication, _key_help
+from pyapp.app.logging_formatter import ColourFormatter
+
+
+@pytest.mark.parametrize("key, expected", (("FOO", "FOO [eek]"), ("BAR", "BAR")))
+def test_key_help(monkeypatch, key, expected):
+    monkeypatch.setenv("FOO", "eek")
+
+    actual = _key_help(key)
+
+    assert actual == expected
 
 
 class TestCliApplication:
@@ -63,6 +71,13 @@ class TestCliApplication:
             target.dispatch(args=("angry",))
 
         assert str(ex.value) == "Grrrr"
+
+    def test_get_log_formatter__force_colour(self):
+        target = tests.sample_app.__main__.app
+
+        actual = target.get_log_formatter(True)
+
+        assert isinstance(actual, ColourFormatter)
 
     def test_loading_logging(self):
         import logging
