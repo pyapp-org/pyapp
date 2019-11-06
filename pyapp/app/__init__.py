@@ -428,4 +428,7 @@ def _set_running_application(app: CliApplication):
 
 
 def get_running_application() -> CliApplication:
+    """
+    Get the current running application instance
+    """
     return CURRENT_APP
