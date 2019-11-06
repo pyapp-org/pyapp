@@ -17,6 +17,7 @@ class ColourFormatter(logging.Formatter):
                         "WARNING", "ERROR", "CRITICAL") with ANSI terminal
                         colours applied.
     """
+
     COLOURS = {
         logging.CRITICAL: colorama.Fore.RED + colorama.Style.BRIGHT,
         logging.ERROR: colorama.Fore.RED,

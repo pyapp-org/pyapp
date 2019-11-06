@@ -5,10 +5,7 @@ from pyapp.app import argument, CliApplication, _key_help
 from pyapp.app.logging_formatter import ColourFormatter
 
 
-@pytest.mark.parametrize("key, expected", (
-    ("FOO", "FOO [eek]"),
-    ("BAR", "BAR"),
-))
+@pytest.mark.parametrize("key, expected", (("FOO", "FOO [eek]"), ("BAR", "BAR")))
 def test_key_help(monkeypatch, key, expected):
     monkeypatch.setenv("FOO", "eek")
 

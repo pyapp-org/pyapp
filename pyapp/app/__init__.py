@@ -233,14 +233,14 @@ class CliApplication(CommandGroup):
             dest="log_color",
             default=None,
             action="store_true",
-            help="Force coloured output from logger (on console)."
+            help="Force coloured output from logger (on console).",
         )
         self.argument(
             "--log-nocolor",
             "--log-nocolour",
             dest="log_color",
             action="store_false",
-            help="Disable coloured output from logger (on console)."
+            help="Disable coloured output from logger (on console).",
         )
 
         # Global check values
@@ -317,13 +317,15 @@ class CliApplication(CommandGroup):
 
         # Auto-detect colour mode
         if log_color is None:
-            if isinstance(log_handler, logging.StreamHandler) and hasattr(log_handler.stream, "isatty"):
+            if isinstance(log_handler, logging.StreamHandler) and hasattr(
+                log_handler.stream, "isatty"
+            ):
                 log_color = log_handler.stream.isatty()
 
         # Enable colour if specified.
         if log_color:
             return self.default_color_log_formatter
-        
+
         return self.default_log_formatter
 
     def configure_logging(self, opts: CommandOptions):
