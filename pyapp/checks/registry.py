@@ -12,6 +12,7 @@ class Tags:
     """
 
     security = "security"
+    settings = "settings"
 
 
 Check = Callable[[Settings], Union[CheckMessage, Sequence[CheckMessage]]]
