@@ -26,10 +26,11 @@ CLI `extensions` command will list all installed extensions. You will also likel
 see additional settings files being loaded on startup.
 
 Control of the extension version and availability of extensions is left up to the
-standard packaging tools and processes. I would recommend using
-`pipenv <https://docs.pipenv.org/en/latest/>`_ to control this. If you project has
-specific security requirements a whitelist can be provided to `CliApplication` to
-only allow specific extensions to be loaded.
+standard packaging tools and processes. I would recommend using pipenv_ to control
+this. If you project has specific security requirements a whitelist can be provided
+to `CliApplication` to only allow specific extensions to be loaded.
+
+.. _pipenv: https://docs.pipenv.org/en/latest/
 
 
 Developing an extension
