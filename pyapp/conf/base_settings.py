@@ -4,7 +4,7 @@ Default Settings
 
 .. auto
 """
-from typing import Sequence, Dict, Any
+from typing import List, Dict, Any
 
 DEBUG: bool = False
 """
@@ -46,7 +46,7 @@ The following configuration is applied by default::
 ###############################################################################
 # Checks
 
-CHECK_LOCATIONS: Sequence[str] = []
+CHECK_LOCATIONS: List[str] = []
 """
 Locations to import to ensure checks are registered.
 """
