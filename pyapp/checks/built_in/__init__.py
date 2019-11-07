@@ -1,6 +1,11 @@
 from ..registry import register, Tags
 from ..messages import Warn
 
+try:
+    from .settings_schema import settings_schema
+except ImportError:
+    settings_schema = None
+
 
 W001 = Warn(
     "You should not have DEBUG set to True in deployment.",
@@ -16,3 +21,6 @@ def debug_enabled(settings, **_):
     if settings.DEBUG:
         return W001
 
+
+if settings_schema:
+    register(Tags.settings)(settings_schema)
