@@ -1,10 +1,10 @@
 import abc
 
-from typing import Iterable, Tuple, Any, Union, Sequence
+from typing import Iterable, Tuple, Any, Union, Sequence, Type, Optional
 from yarl import URL
 
 
-class Loader(abc.ABC, Iterable[Tuple[str, Any]]):
+class Loader(abc.ABC, Iterable[Tuple[str, Any, Optional[Type]]]):
     """
     ABC class to define the loader interface.
     """
@@ -12,6 +12,11 @@ class Loader(abc.ABC, Iterable[Tuple[str, Any]]):
     scheme: Union[str, Sequence[str]]
     """
     Scheme that this loader provides handling of.
+    """
+
+    default_module: bool = False
+    """
+    Is this a default module that can be used to validate settings schema
     """
 
     def __enter__(self) -> "Loader":

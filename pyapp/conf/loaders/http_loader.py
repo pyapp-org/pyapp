@@ -107,7 +107,7 @@ class HttpLoader(Loader):
                 f"Invalid root object, expected a JSON Object: {self}"
             )
 
-        return ((k, v) for k, v in data.items() if k.isupper())
+        return ((k, v, None) for k, v in data.items() if k.isupper())
 
     def __str__(self):
         return str(self.url)

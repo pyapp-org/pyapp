@@ -7,7 +7,7 @@ application settings.
 """
 import importlib
 
-from typing import Iterator, Tuple, Any, Dict, Type, Union
+from typing import Iterator, Tuple, Any, Dict, Type, Union, get_type_hints, Optional
 from yarl import URL
 
 from pyapp.exceptions import InvalidConfiguration
@@ -38,19 +38,23 @@ class ModuleLoader(Loader):
         """
         return cls(url.path)
 
-    def __init__(self, module: str):
+    def __init__(self, module: str, *, default_module: bool = False):
         """
         :param module: Fully qualify python module path.
         """
         self.module = module
+        self.default_module = default_module
 
-    def __iter__(self) -> Iterator[Tuple[str, Any]]:
+    def __iter__(self) -> Iterator[Tuple[str, Any, Optional[Type]]]:
         try:
             mod = importlib.import_module(self.module)
         except ImportError as ex:
             raise InvalidConfiguration(f"Unable to load module: {self}\n{ex}")
 
-        return ((k, getattr(mod, k)) for k in dir(mod) if k.isupper())
+        type_hints = get_type_hints(mod)
+        return (
+            (k, getattr(mod, k), type_hints.get(k)) for k in dir(mod) if k.isupper()
+        )
 
     def __str__(self):
         return f"{self.scheme}:{self.module}"
