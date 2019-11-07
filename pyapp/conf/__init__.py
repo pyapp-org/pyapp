@@ -174,6 +174,7 @@ class Settings:
         )
 
         self.SETTINGS_SOURCES = []
+        self.default_loaders: List[Loader] = []
 
     def __repr__(self) -> str:
         sources = self.SETTINGS_SOURCES or "UN-CONFIGURED"
@@ -207,12 +208,16 @@ class Settings:
 
         # Apply values from loader
         with loader:
-            for key, value in loader:
+            for key, value, _ in loader:
                 logger.debug("Importing setting: %s", key)
                 apply_method(key, value)
 
         # Store loader key to prevent circular loading
         self.SETTINGS_SOURCES.append(loader_key)
+
+        # Store default loaders
+        if loader.default_module:
+            self.default_loaders.append(loader)
 
         # Handle instances of INCLUDE entries
         include_settings = self.__dict__.pop("INCLUDE_SETTINGS", None)
@@ -252,7 +257,9 @@ class Settings:
         """
         logger.debug("Configuring settings...")
 
-        loader_list: List[Loader] = [ModuleLoader(s) for s in default_settings]
+        loader_list: List[Loader] = [
+            ModuleLoader(s, default_module=True) for s in default_settings
+        ]
 
         # Add run time settings (which can be overridden or specified by an
         # environment variable).
