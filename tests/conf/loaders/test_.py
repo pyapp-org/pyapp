@@ -9,10 +9,10 @@ class TestModuleLoader:
     def test__module_exists(self):
         target = loaders.ModuleLoader("tests.settings")
 
-        actual = dict(target)
+        actual = list(target)
 
         assert str(target) == "python:tests.settings"
-        assert all(key.isupper() for key in actual)
+        assert all(key.isupper() for key, *_ in actual)
 
     def test__module_not_found(self):
         target = loaders.ModuleLoader("tests.unknown.settings")

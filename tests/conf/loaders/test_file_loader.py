@@ -11,10 +11,10 @@ class TestFileLoader:
         file = fixture_path / "settings.json"
         target = file_loader.FileLoader(file, "application/json")
 
-        actual = dict(target)
+        actual = list(target)
 
         assert str(target) == f"file://{file}?type=application/json"
-        assert actual == {"UPPER_CASE": "foo"}
+        assert actual == [("UPPER_CASE", "foo", None)]
 
     def test__missing_file(self, fixture_path: Path):
         file = fixture_path / "missing-file.json"

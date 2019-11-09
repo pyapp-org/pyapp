@@ -93,7 +93,7 @@ class TestHttpLoader:
         with target:
             actual = list(target)
 
-        assert actual == [("FOO", "bar")]
+        assert actual == [("FOO", "bar", None)]
 
     def test_iter__io_error(self, target: http_loader.HttpLoader, monkeypatch):
         retrieve_file_mock = mock.Mock(side_effect=IOError)

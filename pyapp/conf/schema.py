@@ -58,6 +58,8 @@ class SettingsSchema(Dict[str, Tuple[Loader, Sequence[AnyCallable]]]):
                 warnings.append(
                     f"Setting name `{name}` {loader} already defined in {existing[0]}"
                 )
+            elif type_ is None:
+                self[name] = (loader, [])
             else:
                 validators = list(find_validators(type_, SettingsSchemaConfig))
                 self[name] = (loader, validators)
