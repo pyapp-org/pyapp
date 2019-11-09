@@ -1,7 +1,8 @@
-import colorama
 import logging
 
-RESET_ALL = colorama.Style.RESET_ALL
+from colorama import Fore, Back, Style
+
+RESET_ALL = Style.RESET_ALL
 
 
 class ColourFormatter(logging.Formatter):
@@ -19,12 +20,12 @@ class ColourFormatter(logging.Formatter):
     """
 
     COLOURS = {
-        logging.CRITICAL: colorama.Fore.RED + colorama.Style.BRIGHT,
-        logging.ERROR: colorama.Fore.RED,
-        logging.WARNING: colorama.Fore.BLUE,
-        logging.INFO: colorama.Fore.GREEN,
-        logging.DEBUG: colorama.Fore.LIGHTBLACK_EX,
-        logging.NOTSET: colorama.Fore.WHITE,
+        logging.CRITICAL: Fore.WHITE + Back.RED,
+        logging.ERROR: Fore.RED + Style.BRIGHT,
+        logging.WARNING: Fore.YELLOW + Style.BRIGHT,
+        logging.INFO: Fore.CYAN + Style.BRIGHT,
+        logging.DEBUG: Fore.MAGENTA + Style.BRIGHT,
+        logging.NOTSET: Fore.LIGHTBLACK_EX,
     }
 
     def formatMessage(self, record: logging.LogRecord):
