@@ -123,17 +123,17 @@ class Event(Generic[_CT]):
 
     """
 
-    __slots__ = ("_instances",)
-
-    def __init__(self):
-        self._instances = {}
+    __slots__ = ("name",)
 
     def __get__(self, instance, owner) -> ListenerSet[_CT]:
         try:
-            return self._instances[id(instance)]
+            return instance.__dict__[self.name]
         except KeyError:
-            self._instances[id(instance)] = listeners = ListenerSet()
+            instance.__dict__[self.name] = listeners = ListenerSet()
             return listeners
+
+    def __set_name__(self, owner, name):
+        self.name = name
 
 
 _ACT = TypeVar("_ACT", bound=Union[Callable[..., Coroutine], "AsyncListenerList"])
@@ -163,17 +163,17 @@ class AsyncEvent(Generic[_ACT]):
 
     """
 
-    __slots__ = ("_instances",)
-
-    def __init__(self):
-        self._instances = {}
+    __slots__ = ("name",)
 
     def __get__(self, instance, owner) -> ListenerSet[_ACT]:
         try:
-            return self._instances[id(instance)]
+            return instance.__dict__[self.name]
         except KeyError:
-            self._instances[id(instance)] = listeners = AsyncListenerSet()
+            instance.__dict__[self.name] = listeners = AsyncListenerSet()
             return listeners
+
+    def __set_name__(self, owner, name):
+        self.name = name
 
 
 def listen_to(event: ListenerSet[_CT]) -> _CT:
@@ -227,17 +227,17 @@ class Callback(Generic[_CT]):
 
     """
 
-    __slots__ = ("_instances",)
-
-    def __init__(self):
-        self._instances = {}
+    __slots__ = ("name",)
 
     def __get__(self, instance, owner) -> CallbackBinding[_CT]:
         try:
-            return self._instances[id(instance)]
+            return instance.__dict__[self.name]
         except KeyError:
-            self._instances[id(instance)] = wrapper = CallbackBinding[_CT]()
+            instance.__dict__[self.name] = wrapper = CallbackBinding[_CT]()
             return wrapper
+
+    def __set_name__(self, owner, name):
+        self.name = name
 
 
 class AsyncCallbackBinding(CallbackBinding[_ACT]):
@@ -260,17 +260,17 @@ class AsyncCallback(Generic[_ACT]):
 
     """
 
-    __slots__ = ("_instances",)
-
-    def __init__(self):
-        self._instances = {}
+    __slots__ = ("name",)
 
     def __get__(self, instance, owner) -> AsyncCallbackBinding[_ACT]:
         try:
-            return self._instances[id(instance)]
+            return instance.__dict__[self.name]
         except KeyError:
-            self._instances[id(instance)] = wrapper = AsyncCallbackBinding[_ACT]()
+            instance.__dict__[self.name] = wrapper = AsyncCallbackBinding[_ACT]()
             return wrapper
+
+    def __set_name__(self, owner, name):
+        self.name = name
 
 
 def bind_to(callback: CallbackBinding[_CT]) -> _CT:
