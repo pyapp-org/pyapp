@@ -185,8 +185,9 @@ class ProviderFactoryBase(Generic[PT], metaclass=ABCMeta):
 
     checks.check_name = "{obj.setting}.check_configuration"
 
-    def check_instance(self, idx: int, provider_ref: str, **_) \
-            -> Union["checks.CheckMessage", Sequence["checks.CheckMessage"]]:
+    def check_instance(
+        self, idx: int, provider_ref: str, **_
+    ) -> Union["checks.CheckMessage", Sequence["checks.CheckMessage"]]:
         """
         Checks for individual providers.
         """

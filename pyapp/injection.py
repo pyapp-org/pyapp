@@ -179,4 +179,3 @@ def inject(func: FunctionType = None, *, from_registry: FactoryRegistry = None):
 @deprecated("This method will be removed in 4.2, please migrate to plain @inject")
 def inject_into(*args, **kwargs):
     return inject(*args, **kwargs)
-

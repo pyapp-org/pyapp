@@ -19,7 +19,7 @@ def find_root_folder(start_file: Path):
     while (package_path.parent / "__init__.py").exists():
         package_path = package_path.parent
 
-    return package_path       
+    return package_path
 
 
 def import_root_module(stack_offset: int = 2):
