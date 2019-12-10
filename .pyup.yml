@@ -1,0 +1,8 @@
+Update: insecure
+Search: True
+Pin: False
+Default Branch: development
+Branch pre-fix: pyup-
+Close PRs: True
+Label PRs: False
+Update hashes: True

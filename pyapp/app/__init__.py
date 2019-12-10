@@ -366,7 +366,7 @@ class CliApplication(CommandGroup):
             )
             if serious_error:
                 logger.error("Check results:\n%s", out.getvalue())
-                exit(4)
+                sys.exit(4)
             else:
                 logger.info("Check results:\n%s", out.getvalue())
 
@@ -414,12 +414,12 @@ class CliApplication(CommandGroup):
 
         except KeyboardInterrupt:
             print("\n\nInterrupted.", file=sys.stderr)
-            exit(-2)
+            sys.exit(-2)
 
         else:
             # Provide exit code.
             if exit_code:
-                exit(exit_code)
+                sys.exit(exit_code)
 
 
 CURRENT_APP: Optional[CliApplication] = None

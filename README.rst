@@ -4,13 +4,13 @@ pyApp - A python application framework
 
 *Let us handle the boring stuff!*
 
-.. image:: https://readthedocs.org/projects/pyapp/badge/?version=latest
-   :target: https://docs.pyapp.info/
-   :alt: ReadTheDocs
-
 .. image:: https://img.shields.io/travis/pyapp-org/pyapp.svg?style=flat
    :target: https://travis-ci.org/pyapp-org/pyapp
    :alt: Travis CI Status
+
+.. image:: https://pyup.io/repos/github/pyapp-org/pyapp/shield.svg
+   :target: https://pyup.io/repos/github/pyapp-org/pyapp/
+   :alt: Updates
 
 .. image:: https://img.shields.io/pypi/wheel/pyapp.svg
    :target: https://pypi.io/pypi/pyapp/
@@ -33,6 +33,10 @@ pyApp - A python application framework
 .. image:: https://img.shields.io/pypi/l/pyapp.svg
    :target: https://pypi.io/pypi/pyapp/
 
+.. image:: https://readthedocs.org/projects/pyapp/badge/?version=latest
+   :target: https://docs.pyapp.info/
+   :alt: ReadTheDocs
+   
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/ambv/black
    :alt: Once you go Black...
