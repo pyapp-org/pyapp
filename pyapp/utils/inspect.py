@@ -8,21 +8,23 @@ def find_root_folder(start_file: Path):
     """
     Find the root package folder from a file within the package
     """
-    package_path = start_file.parent
-    
+    # Get starting location
+    package_path = start_file if start_file.is_dir() else start_file.parent
+
+    # Check current location isn't a path
+    if not (package_path / "__init__.py").exists():
+        raise ValueError("File not part of a package")
+
     # Walk up folders to find top level package path
     while (package_path.parent / "__init__.py").exists():
         package_path = package_path.parent
-    
-    if not (package_path / "__init__.py").exists():
-        raise ValueError("File not part of a packge")
-    
+
     return package_path       
 
 
-def determine_root_module(stack_offset: int = 2):
+def import_root_module(stack_offset: int = 2):
     """
-    Determine namespace root from an object instance
+    Identify and import the root module.
     """
     stack = inspect.stack()
     app_frame = stack[stack_offset]
@@ -33,12 +35,9 @@ def determine_root_module(stack_offset: int = 2):
         # the package name some assumptions need to be made.
         try:
             root_package = find_root_folder(Path(app_frame.filename)).name
-        except ValueError:
-            raise RuntimeError("Not able to determine root module.")
+        except ValueError as ex:
+            raise RuntimeError(f"Unable to determine root module: {ex}")
     else:
         root_package = package_name.split(".")[0]
 
-    try:
-        return importlib.import_module(root_package)
-    except ImportError:
-        raise RuntimeError("Not able to determine root module.")
+    return importlib.import_module(root_package)

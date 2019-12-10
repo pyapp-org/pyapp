@@ -19,13 +19,22 @@ class ProviderBaseTest:
 class ProviderFactoryTest(providers.ProviderFactoryBase):
     setting = "TEST_PROVIDERS"
 
-    def __init__(self, ref=None, config=None):
+    def __init__(self, ref=None, config=None, multi_messages=False):
         super().__init__(self.setting)
         self.ref = ref
         self.config = config or {}
+        self.multi_messages = multi_messages
 
     def load_config(self, *args, **kwargs):
         return self.ref, self.config
+
+    def check_instance(self, idx: int, provider_ref: str, **kwargs):
+        message = super().check_instance(idx, provider_ref, **kwargs)
+        if message:
+            return message
+
+        if self.multi_messages:
+            return checks.Info("foo"), checks.Warn("bar")
 
 
 class TestProviderFactoryBase:

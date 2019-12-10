@@ -63,7 +63,7 @@ from .. import conf
 from .. import extensions
 from ..app import builtin_handlers
 from ..injection import register_factory
-from ..utils.inspect import determine_root_module
+from ..utils.inspect import import_root_module
 from .arguments import *
 from .argument_actions import *
 from .logging_formatter import ColourFormatter
@@ -151,7 +151,7 @@ class CliApplication(CommandGroup):
         env_settings_key: str = None,
         env_loglevel_key: str = None,
     ):
-        root_module = root_module or determine_root_module()
+        root_module = root_module or import_root_module()
         self.root_module = root_module
         super().__init__(ArgumentParser(prog, description=description, epilog=epilog))
         self.application_version = version or getattr(

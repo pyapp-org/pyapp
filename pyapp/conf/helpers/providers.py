@@ -29,7 +29,7 @@ Setup::
 Usage::
 
     >>> instance = foo_factory(db_session, 1)
-Example::
+Example::CheckMessage
 
     from pyapp.conf.helpers.providers import ProviderFactory
 
@@ -58,7 +58,7 @@ Example::
 """
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple, OrderedDict
-from typing import Any, Dict, Sequence, Tuple, TypeVar, Type, Generic
+from typing import Any, Dict, Sequence, Tuple, TypeVar, Type, Generic, Union
 
 from pyapp import checks
 from pyapp.conf import settings
@@ -179,13 +179,14 @@ class ProviderFactoryBase(Generic[PT], metaclass=ABCMeta):
             if isinstance(message, checks.CheckMessage):
                 messages.append(message)
             elif message:
-                messages += message
+                messages.extend(message)
 
         return messages
 
     checks.check_name = "{obj.setting}.check_configuration"
 
-    def check_instance(self, idx, provider_ref, **_):
+    def check_instance(self, idx: int, provider_ref: str, **_) \
+            -> Union["checks.CheckMessage", Sequence["checks.CheckMessage"]]:
         """
         Checks for individual providers.
         """
