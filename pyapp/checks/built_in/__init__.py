@@ -22,5 +22,5 @@ def debug_enabled(settings, **_):
         return W001
 
 
-if settings_schema:
-    register(Tags.settings)(settings_schema)
+# if settings_schema:
+#     register(Tags.settings)(settings_schema)

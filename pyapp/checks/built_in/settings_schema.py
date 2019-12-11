@@ -1,3 +1,11 @@
+"""
+Settings Schema Checks
+~~~~~~~~~~~~~~~~~~~~~~
+
+This requires the ``pydantic``_ package to be installed which is used to generate
+a schema that can be used to be validate settings against a known set of types.
+
+"""
 from typing import Sequence
 
 from pyapp.conf import Settings
@@ -19,7 +27,7 @@ def settings_schema(settings: Settings, **_) -> Sequence[CheckMessage]:
                 Warn(
                     f"Duplicate value {warn}.",
                     hint="This value is defined multiple times check that extensions"
-                         "are not conflicting.",
+                    "are not conflicting.",
                 )
             )
 

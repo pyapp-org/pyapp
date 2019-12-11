@@ -1,24 +1,26 @@
 # Test only upper values are included
-UPPER_VALUE = "foo"
-lower_value = "bar"
-mixed_VALUE = "eek"
+from typing import Any, Dict
+
+UPPER_VALUE: str = "foo"
+lower_value: str = "bar"
+mixed_VALUE: str = "eek"
 
 # Helpful test placeholders.
-SETTING_1 = 1
-SETTING_2 = 2
-SETTING_3 = 3
-SETTING_4 = 4
-SETTING_5 = 5
+SETTING_1: int = 1
+SETTING_2: int = 2
+SETTING_3: int = 3
+SETTING_4: int = 4
+SETTING_5: int = 5
 
 # Factory sample values
-TEST_NAMED_FACTORY = {
+TEST_NAMED_FACTORY: Any = {
     "default": ("tests.factory.Bar", {"length": 42}),
     "iron": ("tests.factory.IronBar", {"length": 24}),
     "steel": ("tests.factory.SteelBeam", {}),
 }
 
 # Factory sample values
-TEST_NAMED_FACTORY_NO_DEFAULT = {
+TEST_NAMED_FACTORY_NO_DEFAULT: Dict[str, Any] = {
     "iron": ("tests.factory.IronBar", {"length": 24}),
     "steel": ("tests.factory.SteelBeam", {}),
 }
