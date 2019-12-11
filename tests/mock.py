@@ -1,4 +1,4 @@
-class InstanceOf:
+class _AnyInstanceOf:
     """
     A helper object that compares the type of anything.
 
@@ -21,3 +21,6 @@ class InstanceOf:
         return f"<InstanceOf {self.type!r}>"
 
     __hash__ = None
+
+
+ANY_INSTANCE_OF = _AnyInstanceOf
