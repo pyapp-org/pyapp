@@ -1,3 +1,14 @@
+4.1.0
+=====
+
+Features
+--------
+
+- Coloured log output be default (for ttys)
+- Root module no longer required for CliApplication, is auto resolved (most of
+  the time)
+  
+
 4.0.6
 =====
 
