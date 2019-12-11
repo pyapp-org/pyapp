@@ -2,9 +2,7 @@ from pyapp.app import CliApplication, argument
 from pyapp.app.argument_actions import KeyValueAction
 from pyapp.conf import settings
 
-import sample
-
-app = CliApplication(sample, prog="sample", description="Sample pyApp application.")
+app = CliApplication(prog="sample", description="Sample pyApp application.")
 
 
 @app.command

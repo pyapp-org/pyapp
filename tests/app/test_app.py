@@ -1,5 +1,7 @@
 import pytest
+
 import tests.sample_app
+import tests.sample_app_simple.__main__
 
 from pyapp.app import argument, CliApplication, _key_help
 from pyapp.app.logging_formatter import ColourFormatter
@@ -21,6 +23,12 @@ class TestCliApplication:
         assert target.root_module is tests.sample_app
         assert target.application_settings == "tests.sample_app.default_settings"
         assert len(target._handlers) == 3
+
+    def test_initialisation__no_root(self):
+        target = tests.sample_app_simple.__main__.app
+
+        assert target.root_module is tests
+        assert target.application_settings == "tests.default_settings"
 
     def test_initialisation_alternate_settings(self):
         target = CliApplication(

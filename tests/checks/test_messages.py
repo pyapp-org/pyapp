@@ -28,6 +28,9 @@ class TestCheckMessage(object):
     def test_eq__equal_to_same_constructor_values(self):
         assert messages.Info("Info") == messages.Info("Info")
 
+    def test_eq__unknown_type(self):
+        assert messages.Info("Info") != 123
+
     def test_ne___not_equal_to_different_constructor_values(self):
         assert messages.Error("Error") != messages.Error("Error2")
 

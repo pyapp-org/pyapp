@@ -28,6 +28,8 @@ import inspect
 from types import FunctionType
 from typing import Callable, Dict, TypeVar, Optional
 
+from .utils.compatibility import deprecated
+
 __all__ = (
     "Args",
     "FactoryRegistry",
@@ -174,4 +176,6 @@ def inject(func: FunctionType = None, *, from_registry: FactoryRegistry = None):
 
 
 # Backwards compatibility
-inject_into = inject
+@deprecated("This method will be removed in 4.2, please migrate to plain @inject")
+def inject_into(*args, **kwargs):
+    return inject(*args, **kwargs)

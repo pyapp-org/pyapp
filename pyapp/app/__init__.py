@@ -6,9 +6,9 @@ Application
 
 Quick demo::
 
-    >>> import sample
     >>> from pyapp.app import CliApplication, argument
-    >>> app = CliApplication(sample)
+    >>> app = CliApplication()
+
     >>> @argument('--verbose', target='verbose', action='store_true')
     >>> @app.command()
     >>> def hello(opts):
@@ -18,6 +18,7 @@ Quick demo::
 
     >>> if __name__ == '__main__':
     ...     app.dispatch()
+
 
 This example provides an application with a command `hello` that takes an
 optional `verbose` flag. The framework also provides help, configures and loads
@@ -62,6 +63,7 @@ from .. import conf
 from .. import extensions
 from ..app import builtin_handlers
 from ..injection import register_factory
+from ..utils.inspect import import_root_module
 from .arguments import *
 from .argument_actions import *
 from .logging_formatter import ColourFormatter
@@ -137,7 +139,7 @@ class CliApplication(CommandGroup):
 
     def __init__(
         self,
-        root_module,
+        root_module=None,
         *,
         prog: str = None,
         description: str = None,
@@ -149,6 +151,7 @@ class CliApplication(CommandGroup):
         env_settings_key: str = None,
         env_loglevel_key: str = None,
     ):
+        root_module = root_module or import_root_module()
         self.root_module = root_module
         super().__init__(ArgumentParser(prog, description=description, epilog=epilog))
         self.application_version = version or getattr(
@@ -363,7 +366,7 @@ class CliApplication(CommandGroup):
             )
             if serious_error:
                 logger.error("Check results:\n%s", out.getvalue())
-                exit(4)
+                sys.exit(4)
             else:
                 logger.info("Check results:\n%s", out.getvalue())
 
@@ -411,12 +414,12 @@ class CliApplication(CommandGroup):
 
         except KeyboardInterrupt:
             print("\n\nInterrupted.", file=sys.stderr)
-            exit(-2)
+            sys.exit(-2)
 
         else:
             # Provide exit code.
             if exit_code:
-                exit(exit_code)
+                sys.exit(exit_code)
 
 
 CURRENT_APP: Optional[CliApplication] = None

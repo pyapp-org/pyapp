@@ -1,12 +1,11 @@
-from urllib.error import ContentTooShortError
-
 import mock
 import pytest
 
 from io import StringIO
+from urllib.error import ContentTooShortError
 from yarl import URL
 
-from tests.utils import InstanceOf
+from tests.mock import ANY_INSTANCE_OF
 
 from pyapp.conf.loaders import http_loader
 from pyapp.exceptions import UnsupportedContentType, InvalidConfiguration
@@ -23,7 +22,7 @@ class TestRetrieveFile:
             (URL("http://hostname/foo/bar.json"), None),
             (
                 URL("https://hostname/foo/bar.json"),
-                InstanceOf(http_loader.ssl.SSLContext),
+                ANY_INSTANCE_OF(http_loader.ssl.SSLContext),
             ),
         ),
     )

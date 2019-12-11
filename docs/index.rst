@@ -8,38 +8,38 @@ Welcome to PyApp's documentation!
 
 *Let us handle the boring stuff!*
 
-.. image:: https://readthedocs.org/projects/pyapp/badge/?version=latest
-   :target: https://docs.pyapp.info/
-   :alt: ReadTheDocs
-
-.. image:: https://img.shields.io/travis/pyapp-org/pyapp.svg?style=flat
-   :target: https://travis-ci.org/pyapp-org/pyapp
-   :alt: Travis CI Status
-
-.. image:: https://img.shields.io/pypi/wheel/pyapp.svg
-   :target: https://pypi.io/pypi/pyapp/
-
-.. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/test_coverage
-   :target: https://codeclimate.com/github/pyapp-org/pyapp/test_coverage
-   :alt: Test Coverage
-
-.. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/maintainability
-   :target: https://codeclimate.com/github/pyapp-org/pyapp/maintainability
-   :alt: Maintainability
-
-.. image:: https://img.shields.io/pypi/v/pyapp.svg
-   :target: https://pypi.io/pypi/pyapp/
-   :alt: Latest Version
-
-.. image:: https://img.shields.io/pypi/pyversions/pyapp.svg
-   :target: https://pypi.io/pypi/pyapp/
-
-.. image:: https://img.shields.io/pypi/l/pyapp.svg
-   :target: https://pypi.io/pypi/pyapp/
-
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-   :target: https://github.com/ambv/black
-   :alt: Once you go Black...
++---------+---------------------------------------------------------------------------------------+
+| Docs    | .. image:: https://readthedocs.org/projects/pyapp/badge/?version=latest               |
+|         |    :target: https://docs.pyapp.info/                                                  |
+|         |    :alt: ReadTheDocs                                                                  |
++---------+---------------------------------------------------------------------------------------+
+| Build   | .. image:: https://img.shields.io/travis/pyapp-org/pyapp.svg?style=flat               |
+|         |    :target: https://travis-ci.org/pyapp-org/pyapp                                     |
+|         |    :alt: Travis CI Status                                                             |
+|         | .. image:: https://pyup.io/repos/github/pyapp-org/pyapp/shield.svg                    |
+|         |    :target: https://pyup.io/repos/github/pyapp-org/pyapp/                             |
+|         |    :alt: Updates                                                                      |
++---------+---------------------------------------------------------------------------------------+
+| Quality | .. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/maintainability |
+|         |    :target: https://codeclimate.com/github/pyapp-org/pyapp/maintainability            |
+|         |    :alt: Maintainability                                                              |
+|         | .. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/test_coverage   |
+|         |    :target: https://codeclimate.com/github/pyapp-org/pyapp/test_coverage              |
+|         |    :alt: Test Coverage                                                                |
+|         | .. image:: https://img.shields.io/badge/code%20style-black-000000.svg                 |
+|         |    :target: https://github.com/ambv/black                                             |
+|         |    :alt: Once you go Black...                                                         |
++---------+---------------------------------------------------------------------------------------+
+| Package | .. image:: https://img.shields.io/pypi/v/pyapp.svg                                    |
+|         |    :target: https://pypi.io/pypi/pyapp/                                               |
+|         |    :alt: Latest Version                                                               |
+|         | .. image:: https://img.shields.io/pypi/pyversions/pyapp.svg                           |
+|         |    :target: https://pypi.io/pypi/pyapp/                                               |
+|         | .. image:: https://img.shields.io/pypi/l/pyapp.svg                                    |
+|         |    :target: https://pypi.io/pypi/pyapp/                                               |
+|         | .. image:: https://img.shields.io/pypi/wheel/pyapp.svg                                |
+|         |    :target: https://pypi.io/pypi/pyapp/                                               |
++---------+---------------------------------------------------------------------------------------+
 
 Many features inspired by Django, but modified to be more general for use
 outside of web applications.
@@ -87,6 +87,7 @@ Table of Contents
    extensions
    developers
    reference/index
+   change-history
 
 Indices and tables
 ==================
