@@ -32,7 +32,7 @@ class KeyValueAction(Action):
         values = value.split("=", 1)
         if len(values) != 2:
             raise ArgumentError(self, "Expected in the form KEY=VALUE")
-        return values
+        return tuple(values)
 
     def __call__(
         self,

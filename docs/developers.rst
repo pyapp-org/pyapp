@@ -1,19 +1,22 @@
 Developers
 ==========
 
-The pyApp project (and sub projects) are open to accept pull requests.
+We welcome contributions to the pyApp project (and sub projects).
 
-There are however some requirements for any pull requests that must be met:
+To get our PR accepted quickly please ensure the following requirements are
+met:
 
-* Install the `pre-commit <https://github.com/pre-commit/pre-commit>`_ hooks to
-  ensure you code is processed by `black <https://github.com/ambv/black>`_.
+- Install the `pre-commit <https://github.com/pre-commit/pre-commit>`_ hooks to
+  ensure you code is formatted by `black <https://github.com/ambv/black>`_.
 
-* Use `black <https://github.com/ambv/black>`_ on all code (including tests).
+- Ensure your code has unit test coverage (we use pytest). Unit tests should be
+  designed to be as fast as possible.
 
-* Unit tests are required (we use pytest). Please ensure you only write *unit 
-  tests* and these tests must be fast!
+- Update the docs with the details if required.
 
-* Update the docs with the details (if required).
+- The API matters, ensure any features provide a nice API for end users.
 
-* The API matters, ensure any features provide a nice API for end users.
 
+The core pyApp package is intended to be fairly light and mainly made up of 
+plumbing code. If you want to add support for a particular service or server
+an extension is the best way to do that.
