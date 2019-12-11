@@ -7,7 +7,14 @@ Features
 - Coloured log output be default (for ttys)
 - Root module no longer required for CliApplication, is auto resolved (most of
   the time)
-  
+
+Fixes
+-----
+
+- Change ``exit`` to ``sys.exit`` for compatibility with `pyinstaller`_.
+
+.. _pyinstaller: https://www.pyinstaller.org/
+
 
 4.0.6
 =====
