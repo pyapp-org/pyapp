@@ -24,7 +24,17 @@ class CheckMessage:
     Check message base class
     """
 
-    def __init__(self, level: int, msg: str, hint: str = None, obj: Any = None):
+    __slots__ = ("level", "msg", "hint", "obj", "exc_info")
+
+    def __init__(
+        self,
+        level: int,
+        msg: str,
+        hint: str = None,
+        obj: Any = None,
+        *,
+        exc_info: bool = False,
+    ):
         """
         Messages returned from check functions.
 
@@ -37,18 +47,20 @@ class CheckMessage:
             for display.
         :param obj: An object this message relates to (useful in the case of
             multiple database connections for example).
+        :param exc_info: Include exception info in hint (eg stack trace).
 
         """
         self.level = level
         self.msg = msg
         self.hint = hint
         self.obj = obj
+        self.exc_info = exc_info
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return all(
                 getattr(self, attr) == getattr(other, attr)
-                for attr in ("level", "msg", "hint", "obj")
+                for attr in ("level", "msg", "_hint", "obj")
             )
         return NotImplemented
 
@@ -64,8 +76,13 @@ class CheckMessage:
         return f"{obj}: {self.msg}{hint}"
 
     def __repr__(self):
-        return "{}(level={!r}, msg={!r}, hint={!r}, obj={!r})".format(
-            self.__class__.__name__, self.level, self.msg, self.hint, self.obj
+        return (
+            f"{self.__class__.__name__}("
+            f"level={self.level!r}, "
+            f"msg={self.msg!r}, "
+            f"hint={self.hint!r}, "
+            f"obj={self.obj!r}, "
+            f"exec_info={self.exc_info!r})"
         )
 
     @property
@@ -87,6 +104,8 @@ class Debug(CheckMessage):
     Debug check message
     """
 
+    __slots__ = ()
+
     def __init__(self, *args, **kwargs):
         super().__init__(DEBUG, *args, **kwargs)
 
@@ -95,6 +114,8 @@ class Info(CheckMessage):
     """
     Info check message
     """
+
+    __slots__ = ()
 
     def __init__(self, *args, **kwargs):
         super().__init__(INFO, *args, **kwargs)
@@ -105,6 +126,8 @@ class Warn(CheckMessage):
     Warning check message
     """
 
+    __slots__ = ()
+
     def __init__(self, *args, **kwargs):
         super().__init__(WARNING, *args, **kwargs)
 
@@ -113,6 +136,8 @@ class Error(CheckMessage):
     """
     Error check message
     """
+
+    __slots__ = ()
 
     def __init__(self, *args, **kwargs):
         super().__init__(ERROR, *args, **kwargs)
@@ -123,5 +148,16 @@ class Critical(CheckMessage):
     Critical check message
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(CRITICAL, *args, **kwargs)
+    __slots__ = ()
+
+    def __init__(self, msg: str, hint: str = None, obj: Any = None):
+        super().__init__(CRITICAL, msg, hint, obj)
+
+
+class UnhandledException(Error):
+    """
+    Special case of error message for unhandled exceptions
+    """
+
+    def __init__(self, msg: str, hint: str = None, obj: Any = None):
+        super().__init__(msg, hint, obj, exc_info=True)
