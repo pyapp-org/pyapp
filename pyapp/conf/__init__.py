@@ -50,6 +50,10 @@ ModuleLoader
 
 .. autoclass:: ModuleLoader
 
+ObjectLoader
+------------
+
+.. autoclass:: ObjectLoader
 
 .. automodule:: pyapp.conf.loaders.file_loader
 
@@ -57,7 +61,6 @@ FileLoader
 ----------
 
 .. autoclass:: FileLoader
-
 
 .. automodule:: pyapp.conf.loaders.http_loader
 
