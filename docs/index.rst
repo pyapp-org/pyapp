@@ -84,6 +84,7 @@ Table of Contents
    :maxdepth: 2
 
    getting-started
+   recipes/index
    extensions
    developers
    reference/index
