@@ -56,6 +56,35 @@ class ModuleLoader(Loader):
         return f"{self.scheme}:{self.module}"
 
 
+class ObjectLoader(Loader):
+    """
+    Load configuration variables from any object. This can be used to mirror
+    settings from Django settings.
+
+    Loader will only read UPPERCASE attributes from the object.
+
+    Usage:
+
+        >>> from django.conf import settings as django_settings
+        >>> from pyapp.conf import settings as pyapp_settings
+        >>> loader = ObjectLoader(django_settings)
+        >>> pyapp_settings.load(loader)
+
+    .. version-added:: 4.2
+
+    """
+    @classmethod
+    def from_url(cls, url: URL) -> "Loader":
+        raise NotImplementedError("This loader does not support from_url.")
+
+    def __init__(self, obj: object):
+        self.obj = obj
+
+    def __iter__(self) -> Iterator[Tuple[str, Any]]:
+        obj = self.obj
+        return ((k, getattr(obj, k)) for k in dir(obj) if k.isupper())
+
+
 LoaderType = Type[Loader]
 
 

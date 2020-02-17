@@ -23,6 +23,23 @@ class TestModuleLoader:
         assert str(target) == "python:tests.unknown.settings"
 
 
+class TestObjectLoader:
+    def test_extracts_attributes(self):
+        class MyObject:
+            FOO = "abc"
+            BAR = 2
+            eek = "def"
+
+        target = loaders.ObjectLoader(MyObject)
+
+        actual = dict(target)
+
+        assert actual == {
+            "FOO": "abc",
+            "BAR": 2
+        }
+
+
 class TestSettingsLoaderRegistry:
     def test_register__as_decorator(self):
         target = loaders.SettingsLoaderRegistry()
