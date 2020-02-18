@@ -73,11 +73,13 @@ HttpLoader
 import logging
 import os
 import warnings
-
-from typing import Sequence, List
+from typing import List
+from typing import Sequence
 
 from . import base_settings
-from .loaders import factory, ModuleLoader, Loader
+from .loaders import factory
+from .loaders import Loader
+from .loaders import ModuleLoader
 
 logger = logging.getLogger(__name__)
 
@@ -165,6 +167,7 @@ class ModifySettingsContext:
             pass
 
 
+# pylint: disable=no-member
 class Settings:
     """
     Settings container

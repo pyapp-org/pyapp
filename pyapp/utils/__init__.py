@@ -1,6 +1,9 @@
+"""
+PyApp Utils
+~~~~~~~~~~~
+"""
 import importlib
 import textwrap
-
 from typing import Any
 
 
@@ -33,7 +36,7 @@ class CachedProperty:
 
 
 # Alias to be consistent with Python.
-cached_property = CachedProperty
+cached_property = CachedProperty  # pylint: disable=invalid-name
 
 
 def import_type(type_name: str) -> type:

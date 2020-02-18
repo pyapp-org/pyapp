@@ -7,10 +7,10 @@ Commands that come builtin to the pyApp CLI.
 
 """
 import sys
-
 from argparse import FileType
 
-from .arguments import argument, CommandGroup
+from .arguments import argument
+from .arguments import CommandGroup
 
 
 def checks(app):
@@ -42,7 +42,7 @@ def checks(app):
         help_text="Output report in tabular format.",
     )
     @app.command(name="checks", help_text="Run a check report")
-    def check_report(opts, **_):
+    def check_report(opts):
         from pyapp.checks.report import execute_report
 
         if execute_report(
@@ -62,6 +62,7 @@ def extensions(app: CommandGroup):
     """
     Register extension report handler
     """
+
     @argument(
         "--verbose", dest="verbose", action="store_true", help_text="Verbose output."
     )
@@ -86,6 +87,7 @@ def settings(app: CommandGroup):
     """
     Register settings report handler
     """
+
     @argument(
         "--out",
         dest="out",

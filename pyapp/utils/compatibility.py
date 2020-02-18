@@ -34,16 +34,14 @@ def deprecated(message: str, category: Warning = DeprecationWarning):
             obj.__init__ = init_wrapper
             return obj
 
-        else:
+        @functools.wraps(obj)
+        def func_wrapper(*args, **kwargs):
+            warnings.warn(
+                "{obj.__name__} is deprecated and scheduled for removal. {message}",
+                category=category,
+            )
+            return obj(*args, **kwargs)
 
-            @functools.wraps(obj)
-            def func_wrapper(*args, **kwargs):
-                warnings.warn(
-                    "{obj.__name__} is deprecated and scheduled for removal. {message}",
-                    category=category,
-                )
-                return obj(*args, **kwargs)
-
-            return func_wrapper
+        return func_wrapper
 
     return decorator

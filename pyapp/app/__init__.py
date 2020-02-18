@@ -207,8 +207,7 @@ class CliApplication(CommandGroup):
         description = self.parser.description
         if description:
             return f"{self.application_name} version {self.application_version} - {description}"
-        else:
-            return f"{self.application_name} version {self.application_version}"
+        return f"{self.application_name} version {self.application_version}"
 
     def _init_parser(self):
         # Create argument parser
@@ -297,6 +296,7 @@ class CliApplication(CommandGroup):
         """
         Register any abstract interface factories.
         """
+        # pylint: disable=import-outside-toplevel
         from asyncio import AbstractEventLoop, get_event_loop
 
         register_factory(AbstractEventLoop, get_event_loop)
@@ -360,6 +360,7 @@ class CliApplication(CommandGroup):
         """
         Run checks on startup.
         """
+        # pylint: disable=import-outside-toplevel
         from pyapp.checks.report import execute_report
 
         if opts.checks_on_startup:
@@ -416,7 +417,7 @@ class CliApplication(CommandGroup):
         try:
             exit_code = self.dispatch_handler(opts)
 
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=broad-except
             if not self.exception_report(ex, opts):
                 raise
 
@@ -434,7 +435,7 @@ CURRENT_APP: Optional[CliApplication] = None
 
 
 def _set_running_application(app: CliApplication):
-    global CURRENT_APP
+    global CURRENT_APP  # pylint: disable=global-statement
     CURRENT_APP = app
 
 

@@ -56,14 +56,25 @@ Example::CheckMessage
 
 
 """
-from abc import ABCMeta, abstractmethod
-from collections import namedtuple, OrderedDict
-from typing import Any, Dict, Sequence, Tuple, TypeVar, Type, Generic, Union
+from abc import ABCMeta
+from abc import abstractmethod
+from collections import namedtuple
+from collections import OrderedDict
+from typing import Any
+from typing import Dict
+from typing import Generic
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Type
+from typing import TypeVar
+from typing import Union
 
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.exceptions import ProviderNotFound
-from pyapp.utils import import_type, cached_property
+from pyapp.utils import cached_property
+from pyapp.utils import import_type
 
 __all__ = ("ProviderSummary", "ProviderFactoryBase")
 
@@ -187,7 +198,7 @@ class ProviderFactoryBase(Generic[PT], metaclass=ABCMeta):
 
     def check_instance(
         self, idx: int, provider_ref: str, **_
-    ) -> Union["checks.CheckMessage", Sequence["checks.CheckMessage"]]:
+    ) -> Optional[Union["checks.CheckMessage", Sequence["checks.CheckMessage"]]]:
         """
         Checks for individual providers.
         """
