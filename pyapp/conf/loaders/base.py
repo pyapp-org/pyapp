@@ -1,3 +1,10 @@
+"""
+Base Loader
+~~~~~~~~~~~
+
+ABC for loader implementations.
+
+"""
 import abc
 
 from typing import Iterable, Tuple, Any, Union, Sequence

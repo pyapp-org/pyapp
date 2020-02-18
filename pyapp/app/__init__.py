@@ -4,9 +4,13 @@ Application
 
 *Application with bindings for commands*
 
+The application object handles all of the initial configuration to setup the
+run-time environment.
+
 Quick demo::
 
     >>> from pyapp.app import CliApplication, argument
+
     >>> app = CliApplication()
 
     >>> @argument('--verbose', target='verbose', action='store_true')
@@ -34,10 +38,13 @@ Your application should have the following structure::
     my_app/__init__.py          # Include a __version__ variable
            __main__.py          # This is where the quick demo is located
            default_settings.py  # The default settings file
+           checks.py            # Optional checks file
 
 
 CliApplication
 --------------
+
+
 
 .. autoclass:: CliApplication
     :members: command, create_command_group, default, dispatch

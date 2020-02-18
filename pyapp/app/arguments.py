@@ -1,5 +1,11 @@
 """
-Wrappers around argparse to provide a simplified interface
+Arguments
+~~~~~~~~~
+
+Any command associated with a pyApp application can be expanded with arguments.
+Arguments are a set of decorators that utilise ``argparse`` to simplify the
+process of accepting and validating input/flags for commands.
+
 """
 import argparse
 
@@ -64,7 +70,7 @@ def argument(
     nargs: Union[int, str] = None,
     const: Any = None,
     default: Any = None,
-    type: Type[Any] = None,
+    type: Type[Any] = None,  # pylint: disable=redefined-builtin
     choices: Sequence[Any] = None,
     required: bool = None,
     help_text: str = None,
@@ -142,6 +148,9 @@ class CommandGroup(ParserBase):
 
     @cached_property
     def handler_dest(self) -> str:
+        """
+        Destination of handler
+        """
         return f":handler:{self._prefix or ''}"
 
     def create_command_group(

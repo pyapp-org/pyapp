@@ -1,4 +1,7 @@
 """
+Conf Loaders
+~~~~~~~~~~~~
+
 Loaders are used to load settings from an external source, eg a Python module
 (using :py:class:`ModuleLoader`).
 
@@ -134,7 +137,7 @@ class SettingsLoaderRegistry(Dict[str, LoaderType]):
 
 
 # Singleton instance
-registry = SettingsLoaderRegistry(
+registry = SettingsLoaderRegistry(  # pylint: disable=invalid-name
     {
         "python": ModuleLoader,
         "file": FileLoader,
@@ -142,5 +145,5 @@ registry = SettingsLoaderRegistry(
         "https": HttpLoader,
     }
 )
-register = registry.register
-factory = registry.factory
+register = registry.register  # pylint: disable=invalid-name
+factory = registry.factory  # pylint: disable=invalid-name

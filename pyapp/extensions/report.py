@@ -1,8 +1,17 @@
+"""
+Extension Report
+~~~~~~~~~~~~~~~~
+
+Generates the report of the currently loaded/available extensions.
+
+"""
 import sys
 
-from colorama import Style, Fore
+from colorama import Fore
+from colorama import Style
 
-from .registry import registry, ExtensionDetail
+from .registry import ExtensionDetail
+from .registry import registry
 
 
 class ExtensionReport:

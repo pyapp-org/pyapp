@@ -1,11 +1,22 @@
+"""
+Content Type Support
+~~~~~~~~~~~~~~~~~~~~
+
+Used by File and HTTP loaders to handle both JSON and YAML content.
+
+"""
 import mimetypes
-
-from pathlib import Path
-from typing import Dict, Any, Callable, TextIO, Union, Sequence
-from yarl import URL
-
-# Supported content types
 from json import load as json_load
+from pathlib import Path
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Sequence
+from typing import TextIO
+from typing import Union
+
+from yarl import URL
+# Supported content types
 
 try:
     from yaml import safe_load as yaml_load
@@ -38,6 +49,8 @@ def content_type_from_url(url: URL) -> str:
 ContentTypeParser = Callable[[TextIO], Dict[str, Any]]
 
 
+# TODO: Remove when pylint handles typing.List correctly  pylint: disable=fixme
+# pylint: disable=unsupported-assignment-operation,no-member
 class ContentTypeParserRegistry(Dict[str, ContentTypeParser]):
     """
     Registry of content type parsers.
@@ -69,6 +82,6 @@ class ContentTypeParserRegistry(Dict[str, ContentTypeParser]):
             self[content_type] = parser
 
 
-registry = ContentTypeParserRegistry(
+registry = ContentTypeParserRegistry(  # pylint: disable=invalid-name
     {"application/json": json_load, "application/x-yaml": yaml_load}
 )

@@ -1,3 +1,10 @@
+"""
+App Builtin Handlers
+~~~~~~~~~~~~~~~~~~~~
+
+Commands that come builtin to the pyApp CLI.
+
+"""
 import sys
 
 from argparse import FileType
@@ -6,7 +13,10 @@ from .arguments import argument, CommandGroup
 
 
 def checks(app):
-    # Register the checks handler
+    """
+    Register the checks handler
+    """
+
     @argument(
         "-t",
         "--tag",

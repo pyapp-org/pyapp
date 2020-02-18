@@ -1,5 +1,13 @@
+"""
+Checks Registry
+~~~~~~~~~~~~~~~
+
+Location for registering and listing checks.
+
+"""
+
 from itertools import chain
-from typing import Iterable, Sequence, NamedTuple, Union, Callable
+from typing import Iterable, Sequence, NamedTuple, Union, Callable, List
 
 from pyapp import extensions
 from pyapp.conf import settings, Settings
@@ -18,11 +26,19 @@ Check = Callable[[Settings], Union[CheckMessage, Sequence[CheckMessage]]]
 
 
 class CheckResult(NamedTuple):
+    """
+    Result of a check execution.
+    """
     check: Check
     messages: Sequence[CheckMessage]
 
 
-class CheckRegistry(list):
+# TODO: Remove when pylint handles typing.List correctly  pylint: disable=fixme
+# pylint: disable=not-an-iterable,no-member
+class CheckRegistry(List[Check]):
+    """
+    Registry list for checks.
+    """
     def register(self, check: Check = None, *tags):
         """
         Can be used as a function or a decorator. Register given function
@@ -41,10 +57,10 @@ class CheckRegistry(list):
 
         if callable(check) or hasattr(check, "checks"):
             return inner(check)
-        else:
-            if check:
-                tags += (check,)
-            return inner
+
+        if check:
+            tags += (check,)
+        return inner
 
     def checks_by_tags(self, tags: Iterable[str] = None):
         """
@@ -57,8 +73,7 @@ class CheckRegistry(list):
                 for check in self
                 if set(getattr(check, "_check__tags", [])) & tags
             )
-        else:
-            return iter(self)
+        return iter(self)
 
     def run_checks_iter(self, tags: Iterable[str] = None, pre_callback=None):
         """
@@ -100,9 +115,9 @@ class CheckRegistry(list):
 
 
 # Singleton instance of registry
-registry = CheckRegistry()
-register = registry.register
-run_checks = registry.run_checks
+registry = CheckRegistry()  # pylint: disable=invalid-name
+register = registry.register  # pylint: disable=invalid-name
+run_checks = registry.run_checks  # pylint: disable=invalid-name
 
 
 def import_checks():

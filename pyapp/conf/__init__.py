@@ -176,7 +176,7 @@ class Settings:
             (k, getattr(base_settings_, k)) for k in dir(base_settings_) if k.upper()
         )
 
-        self.SETTINGS_SOURCES = []
+        self.SETTINGS_SOURCES = []  # pylint: disable=invalid-name
 
     def __repr__(self) -> str:
         sources = self.SETTINGS_SOURCES or "UN-CONFIGURED"
@@ -292,4 +292,4 @@ class Settings:
         return ModifySettingsContext(self)
 
 
-settings = Settings()
+settings = Settings()  # pylint: disable=invalid-name

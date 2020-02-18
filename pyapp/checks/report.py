@@ -1,14 +1,30 @@
+"""
+Checks Report
+~~~~~~~~~~~~~
+
+Generates and execute a report after executing checks.
+
+"""
 import csv
 import io
 import logging
 import sys
-
-from colorama import Style, Fore, Back
 from io import StringIO
-from typing import Sequence, Optional, Any, Union
+from typing import Any
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
-from .registry import CheckRegistry, Check, CheckMessage, registry, import_checks
+from colorama import Back
+from colorama import Fore
+from colorama import Style
+
 from ..utils import wrap_text
+from .registry import Check
+from .registry import CheckMessage
+from .registry import CheckRegistry
+from .registry import import_checks
+from .registry import registry
 
 COLOURS = {
     # Type: (Title, Border),
@@ -29,6 +45,10 @@ def get_check_name(obj: Any) -> str:
 
 
 class BaseReport:
+    """
+    Common base class of reports
+    """
+
     def __init__(self, f_out=sys.stdout, check_registry: CheckRegistry = registry):
         """
         :param f_out: File to output report to; default is ``stdout``
@@ -159,10 +179,18 @@ class CheckReport(BaseReport):
             )
 
     def render_header(self):
+        """
+        Render report header
+        """
         if self.header and self.verbose:
             self.f_out.write(self.header + "\n")
 
     def render_result_prefix(self, obj):
+        """
+        Render preface before a result.
+
+        This is used to display a reports name etc.
+        """
         if self.verbose:
             self.f_out.write(
                 self.VERBOSE_CHECK_TEMPLATE.format(name=get_check_name(obj))
@@ -215,8 +243,8 @@ class CheckReport(BaseReport):
                     wrap_text(p, self.width, indent=8, line_sep=line_sep) for p in hint
                 ).lstrip(),
             )
-        else:
-            return ""
+
+        return ""
 
     def render_result(self, _: Check, message: Optional[CheckMessage]):
         if message:
@@ -296,5 +324,5 @@ def execute_report(
     # Create report instance
     if table:
         return TabularCheckReport(output).run(message_level, tags)
-    else:
-        return CheckReport(verbose, no_color, header, output).run(message_level, tags)
+
+    return CheckReport(verbose, no_color, header, output).run(message_level, tags)

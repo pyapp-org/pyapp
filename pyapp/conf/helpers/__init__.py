@@ -167,7 +167,7 @@ class NamedConfiguration:
 
     def _get_config_definition(self, name: str) -> Dict[str, Any]:
         try:
-            kwargs = self._config_definitions[name]
+            kwargs = self._config_definitions[name]  # pylint: disable=unsubscriptable-object
         except KeyError:
             raise KeyError(f"Setting definition `{name}` not found")
 
@@ -205,7 +205,7 @@ class NamedConfiguration:
 
         config_definitions = getattr(settings_, self.setting)
         if config_definitions is None:
-            return  # Nothing is defined so end now.
+            return None  # Nothing is defined so end now.
 
         if not isinstance(config_definitions, dict):
             return checks.Critical(

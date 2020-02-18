@@ -1,3 +1,10 @@
+"""
+File Loader
+~~~~~~~~~~~
+
+Loads settings from a file
+
+"""
 from pathlib import Path
 from typing import Union
 from yarl import URL
@@ -43,19 +50,19 @@ class FileLoader(Loader):
 
     def __iter__(self):
         try:
-            with self.path.open(encoding=self.encoding) as f:
-                data = registry.parse_file(f, self.content_type)
+            with self.path.open(encoding=self.encoding) as fp:
+                data = registry.parse_file(fp, self.content_type)
 
         except IOError as ex:
             raise InvalidConfiguration(f"Unable to load settings: {self}\n{ex}")
 
         except ValueError as ex:
-            raise InvalidConfiguration(f"Unable to parse JSON file: {self}\n{ex}")
+            raise InvalidConfiguration(f"Unable to parse file: {self}\n{ex}")
 
         # Check we have a valid container object
         if not isinstance(data, dict):
             raise InvalidConfiguration(
-                f"Invalid root object, expected a JSON Object: {self}"
+                f"Invalid root object, expected an Object: {self}"
             )
 
         return ((k, v) for k, v in data.items() if k.isupper())

@@ -163,7 +163,7 @@ class ProviderFactoryBase(Generic[PT], metaclass=ABCMeta):
 
         provider_refs = getattr(settings_, self.setting)
         if provider_refs is None:
-            return  # Nothing is defined so end now.
+            return None  # Nothing is defined so end now.
 
         if not isinstance(provider_refs, (list, tuple)):
             return checks.Critical(
@@ -206,3 +206,5 @@ class ProviderFactoryBase(Generic[PT], metaclass=ABCMeta):
                 hint=str(ex),
                 obj=f"settings.{self.setting}[{idx}]",
             )
+
+        return None

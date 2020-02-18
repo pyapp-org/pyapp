@@ -1,3 +1,8 @@
+"""
+Conf Helper Bases
+~~~~~~~~~~~~~~~~~
+
+"""
 import abc
 import threading
 

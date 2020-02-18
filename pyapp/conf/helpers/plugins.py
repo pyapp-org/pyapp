@@ -59,7 +59,7 @@ __all__ = (
 PT = TypeVar("PT", covariant=True)
 
 
-NoDefault = "__NoDefault__"
+NoDefault = "__NoDefault__"  # pylint: disable=invalid-name
 
 
 class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
@@ -89,7 +89,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         """
         Initialise a named factory.
 
-        :param setting: Setting attribute that holds the definition of a 
+        :param setting: Setting attribute that holds the definition of a
             instance, this value should be an upper case.
         :param abc: The absolute base class that any new instance should be
             based on.
@@ -114,6 +114,9 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
 
     @cached_property
     def has_default(self) -> bool:
+        """
+        This plugin does not have a default instance type
+        """
         return self.default_name != NoDefault
 
     @property
@@ -201,7 +204,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
 
         instance_definitions = getattr(settings_, self.setting)
         if instance_definitions is None:
-            return  # Nothing is defined so end now.
+            return None  # Nothing is defined so end now.
 
         if not isinstance(instance_definitions, dict):
             return checks.Critical(

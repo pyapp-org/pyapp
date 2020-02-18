@@ -1,3 +1,10 @@
+"""
+HTTP Loader
+~~~~~~~~~~~
+
+Loads settings from an HTTP endpoint (HTTPS is recommended)
+
+"""
 import contextlib
 import ssl
 import tempfile
@@ -27,7 +34,7 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
     with contextlib.closing(
         urlopen(url, context=context)  # nosec - There is a check above for SSL
     ) as response:
-        bs = 1024 * 8
+        block_size = 1024 * 8
         size = -1
         read = 0
 
@@ -42,7 +49,7 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
 
         tfp = tempfile.TemporaryFile()
         while True:
-            block = response.read(bs)
+            block = response.read(block_size)
             if not block:
                 break
             read += len(block)
