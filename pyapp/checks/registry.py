@@ -5,13 +5,18 @@ Checks Registry
 Location for registering and listing checks.
 
 """
-
 from itertools import chain
-from typing import Iterable, Sequence, NamedTuple, Union, Callable, List
+from typing import Callable
+from typing import Iterable
+from typing import List
+from typing import NamedTuple
+from typing import Sequence
+from typing import Union
 
-from pyapp import extensions
-from pyapp.conf import settings, Settings
 from .messages import CheckMessage
+from pyapp import extensions
+from pyapp.conf import Settings
+from pyapp.conf import settings
 
 
 class Tags:
@@ -29,17 +34,21 @@ class CheckResult(NamedTuple):
     """
     Result of a check execution.
     """
+
     check: Check
     messages: Sequence[CheckMessage]
 
 
 # TODO: Remove when pylint handles typing.List correctly  pylint: disable=fixme
-# pylint: disable=not-an-iterable,no-member
+# pylint: disable=not-an-iterable,no-member,unsupported-membership-test
 class CheckRegistry(List[Check]):
     """
     Registry list for checks.
     """
-    def register(self, check: Check = None, *tags):
+
+    def register(
+        self, check: Check = None, *tags
+    ):  # pylint: disable=keyword-arg-before-vararg
         """
         Can be used as a function or a decorator. Register given function
         `func` labeled with given `tags`. The function should receive **kwargs

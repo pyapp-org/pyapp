@@ -4,6 +4,7 @@ disable =
     line-too-long,
     too-few-public-methods,
     no-self-use,
+    duplicate-code,
 
 good-names =
     logger,  # Logger instances

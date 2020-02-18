@@ -42,7 +42,7 @@ def checks(app):
         help_text="Output report in tabular format.",
     )
     @app.command(name="checks", help_text="Run a check report")
-    def check_report(opts):
+    def _handler(opts):
         from pyapp.checks.report import execute_report
 
         if execute_report(

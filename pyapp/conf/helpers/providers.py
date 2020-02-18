@@ -131,7 +131,7 @@ class ProviderFactoryBase(Generic[PT], metaclass=ABCMeta):
                 getattr(provider, "name", provider.__name__),
                 (provider.__doc__ or "").strip(),
             )
-            for code, provider in self.providers.items()
+            for code, provider in self.providers.items()  # pylint: disable=no-member
         )
 
     def get_provider(self, provider_code: str) -> PT:

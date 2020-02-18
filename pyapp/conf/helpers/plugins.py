@@ -27,26 +27,23 @@ factory::
 
 """
 import threading
-
 from abc import ABCMeta
-from typing import TypeVar, Type
+from typing import Type
+from typing import TypeVar
 
+from .bases import DefaultCache
+from .bases import FactoryMixin
+from .bases import SingletonFactoryMixin
+from .bases import ThreadLocalSingletonFactoryMixin
 from pyapp import checks
 from pyapp.conf import settings
-from pyapp.exceptions import (
-    InvalidSubType,
-    NotProvided,
-    NotFound,
-    BadAlias,
-    CannotImport,
-)
-from pyapp.utils import cached_property, import_type
-from .bases import (
-    DefaultCache,
-    FactoryMixin,
-    SingletonFactoryMixin,
-    ThreadLocalSingletonFactoryMixin,
-)
+from pyapp.exceptions import BadAlias
+from pyapp.exceptions import CannotImport
+from pyapp.exceptions import InvalidSubType
+from pyapp.exceptions import NotFound
+from pyapp.exceptions import NotProvided
+from pyapp.utils import cached_property
+from pyapp.utils import import_type
 
 __all__ = (
     "NamedPluginFactory",
@@ -109,7 +106,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         self._register_checks()
 
     @cached_property
-    def _instance_definitions(self):
+    def _instance_definitions(self):  # pylint: disable=method-hidden
         return getattr(settings, self.setting, {})
 
     @cached_property
@@ -175,7 +172,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         :returns: New instance of the named type.
 
         """
-        if self.has_default:
+        if self.has_default:  # pylint: disable=using-constant-test
             name = name or self.default_name
         elif not name:
             raise NotProvided("A name is required if no default is specified.")

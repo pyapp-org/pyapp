@@ -15,6 +15,6 @@ from .versioning import get_installed_version
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 __author__ = "Tim Savage <tim@savage.company>"
-version_info = tuple(
+version_info = tuple(  # pylint: disable=invalid-name
     int(p) for p in __version__.split(".")
-)  # pylint: disable=invalid-name
+)

@@ -130,44 +130,38 @@ class ModifySettingsContext:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        container = self._container
-
         # Restore the state by running the rollback actions in reverse
         for action, args in reversed(self._roll_back):
-            action(container, *args)
+            action(*args)
 
     def __getattr__(self, item):
         # Proxy the underlying settings container
         return getattr(self._container, item)
 
     def __setattr__(self, key, value):
-        container = self._container
+        items = self._container.__dict__
 
-        if hasattr(container, key):
+        if key in items:
             # Prepare an action that puts the current value back
-            action = setattr, (key, getattr(container, key))
+            action = items.__setitem__, (key, items.get(key))
         else:
             # Prepare an action to remove the key again
-            action = delattr, (key,)
+            action = items.__delitem__, (key,)
         self._roll_back.append(action)
 
-        setattr(container, key, value)
+        items[key] = value
 
     def __delattr__(self, item):
-        container = self._container
+        items = self._container.__dict__
 
-        if hasattr(container, item):
+        if item in items:
             # Prepare an action that puts the current value back
-            action = setattr, (item, getattr(container, item))
+            action = items.__setitem__, (item, items.get(item))
             self._roll_back.append(action)
 
-            delattr(container, item)
-        else:
-            # Do nothing...
-            pass
+            del items[item]
 
 
-# pylint: disable=no-member
 class Settings:
     """
     Settings container
@@ -179,7 +173,13 @@ class Settings:
             (k, getattr(base_settings_, k)) for k in dir(base_settings_) if k.upper()
         )
 
-        self.SETTINGS_SOURCES = []  # pylint: disable=invalid-name
+        self.__dict__["SETTINGS_SOURCES"] = []  # pylint: disable=invalid-name
+
+    def __getattr__(self, item):
+        raise AttributeError("Setting not defined {!r}".format(item))
+
+    def __setattr__(self, key, value):
+        raise AttributeError("Readonly object")
 
     def __repr__(self) -> str:
         sources = self.SETTINGS_SOURCES or "UN-CONFIGURED"
