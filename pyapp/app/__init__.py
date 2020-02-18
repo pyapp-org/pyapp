@@ -55,24 +55,25 @@ Arguments
 .. automodule:: pyapp.app.arguments
 
 """
-import argcomplete
-import colorama
 import io
-import logging
 import logging.config
 import os
 import sys
+from argparse import ArgumentParser
+from argparse import Namespace as CommandOptions
+from typing import Optional
+from typing import Sequence
 
-from argparse import ArgumentParser, Namespace as CommandOptions
-from typing import Sequence, Optional
+import argcomplete
+import colorama
 
 from .. import conf
 from .. import extensions
 from ..app import builtin_handlers
 from ..injection import register_factory
 from ..utils.inspect import import_root_module
-from .arguments import *
 from .argument_actions import *
+from .arguments import *
 from .logging_formatter import ColourFormatter
 
 logger = logging.getLogger(__name__)

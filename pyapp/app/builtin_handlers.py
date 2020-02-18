@@ -1,3 +1,4 @@
+# pylint: disable=import-outside-toplevel
 """
 App Builtin Handlers
 ~~~~~~~~~~~~~~~~~~~~
@@ -54,11 +55,13 @@ def checks(app):
             table=opts.table,
             header=f"Check report for {app.application_summary}",
         ):
-            exit(4)
+            sys.exit(4)
 
 
 def extensions(app: CommandGroup):
-    # Register extension report handler
+    """
+    Register extension report handler
+    """
     @argument(
         "--verbose", dest="verbose", action="store_true", help_text="Verbose output."
     )
@@ -80,7 +83,9 @@ def extensions(app: CommandGroup):
 
 
 def settings(app: CommandGroup):
-    # Register settings report handler
+    """
+    Register settings report handler
+    """
     @argument(
         "--out",
         dest="out",
