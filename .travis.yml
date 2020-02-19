@@ -51,5 +51,6 @@ deploy:
   on:
     branch: master
 
-directories:
-  - $HOME/.cache/pre-commit
+cache:
+  directories:
+    - $HOME/.cache/pre-commit
