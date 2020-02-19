@@ -1,5 +1,11 @@
-from .registry import register, Tags
+"""
+Builtin Checks
+~~~~~~~~~~~~~~
+
+"""
 from .messages import Warn
+from .registry import register
+from .registry import Tags
 
 
 W001 = Warn(
@@ -15,3 +21,4 @@ def debug_enabled(settings, **_):
     """
     if settings.DEBUG:
         return W001
+    return None

@@ -1,4 +1,5 @@
-from pyapp.app import CliApplication, argument
+from pyapp.app import argument
+from pyapp.app import CliApplication
 from pyapp.app.argument_actions import KeyValueAction
 from pyapp.conf import settings
 

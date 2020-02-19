@@ -107,4 +107,4 @@ An example extension class::
         def ready():
             pass
 """
-from .registry import *
+from pyapp.extensions.registry import *

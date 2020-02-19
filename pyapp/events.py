@@ -41,8 +41,13 @@ Example::
 
 """
 import asyncio
-
-from typing import Callable, Union, Generic, TypeVar, Set, Coroutine, Optional
+from typing import Callable
+from typing import Coroutine
+from typing import Generic
+from typing import Optional
+from typing import Set
+from typing import TypeVar
+from typing import Union
 
 __all__ = ("Event", "AsyncEvent", "listen_to", "Callback", "AsyncCallback", "bind_to")
 
@@ -70,6 +75,8 @@ class ListenerContext(Generic[_CT]):
         self.listeners.remove(self.listener)
 
 
+# TODO: Remove when pylint handles typing.Set correctly  pylint: disable=fixme
+# pylint: disable=not-an-iterable,no-member
 class ListenerSet(Set[_CT]):
     """
     Set of event listeners.
@@ -133,7 +140,7 @@ class Event(Generic[_CT]):
             return listeners
 
     def __set_name__(self, owner, name):
-        self.name = name
+        self.name = name  # pylint: disable=attribute-defined-outside-init
 
 
 _ACT = TypeVar("_ACT", bound=Union[Callable[..., Coroutine], "AsyncListenerList"])
@@ -150,9 +157,9 @@ class AsyncListenerSet(ListenerSet[_ACT]):
         """
         Trigger event and call listeners.
         """
-        aw = [c(*args, **kwargs) for c in self]
-        if aw:
-            await asyncio.wait(aw, return_when=asyncio.ALL_COMPLETED)
+        awaitables = [c(*args, **kwargs) for c in self]
+        if awaitables:
+            await asyncio.wait(awaitables, return_when=asyncio.ALL_COMPLETED)
 
 
 class AsyncEvent(Generic[_ACT]):
@@ -173,7 +180,7 @@ class AsyncEvent(Generic[_ACT]):
             return listeners
 
     def __set_name__(self, owner, name):
-        self.name = name
+        self.name = name  # pylint: disable=attribute-defined-outside-init
 
 
 def listen_to(event: ListenerSet[_CT]) -> _CT:
@@ -237,7 +244,7 @@ class Callback(Generic[_CT]):
             return wrapper
 
     def __set_name__(self, owner, name):
-        self.name = name
+        self.name = name  # pylint: disable=attribute-defined-outside-init
 
 
 class AsyncCallbackBinding(CallbackBinding[_ACT]):
@@ -270,7 +277,7 @@ class AsyncCallback(Generic[_ACT]):
             return wrapper
 
     def __set_name__(self, owner, name):
-        self.name = name
+        self.name = name  # pylint: disable=attribute-defined-outside-init
 
 
 def bind_to(callback: CallbackBinding[_CT]) -> _CT:

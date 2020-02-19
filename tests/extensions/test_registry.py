@@ -1,8 +1,8 @@
 import mock
 import pytest
 
-from pyapp.extensions.registry import ExtensionDetail, ExtensionRegistry
-
+from pyapp.extensions.registry import ExtensionDetail
+from pyapp.extensions.registry import ExtensionRegistry
 from tests.sample_ext import SampleExtension
 from tests.sample_ext_simple import SampleSimpleExtension
 

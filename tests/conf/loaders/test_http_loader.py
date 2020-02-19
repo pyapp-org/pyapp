@@ -1,14 +1,14 @@
-import mock
-import pytest
-
 from io import StringIO
 from urllib.error import ContentTooShortError
+
+import mock
+import pytest
 from yarl import URL
 
-from tests.mock import ANY_INSTANCE_OF
-
 from pyapp.conf.loaders import http_loader
-from pyapp.exceptions import UnsupportedContentType, InvalidConfiguration
+from pyapp.exceptions import InvalidConfiguration
+from pyapp.exceptions import UnsupportedContentType
+from tests.mock import ANY_INSTANCE_OF
 
 
 class TestRetrieveFile:

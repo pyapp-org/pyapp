@@ -34,10 +34,7 @@ class TestObjectLoader:
 
         actual = dict(target)
 
-        assert actual == {
-            "FOO": "abc",
-            "BAR": 2
-        }
+        assert actual == {"FOO": "abc", "BAR": 2}
 
 
 class TestSettingsLoaderRegistry:
