@@ -1,4 +1,7 @@
 """
+Conf Loaders
+~~~~~~~~~~~~
+
 Loaders are used to load settings from an external source, eg a Python module
 (using :py:class:`ModuleLoader`).
 
@@ -6,14 +9,19 @@ A loader provides key/value pairs to the settings container to merge into the
 application settings.
 """
 import importlib
+from typing import Any
+from typing import Dict
+from typing import Iterator
+from typing import Tuple
+from typing import Type
+from typing import Union
 
-from typing import Iterator, Tuple, Any, Dict, Type, Union
 from yarl import URL
 
+from pyapp.conf.loaders.base import Loader
+from pyapp.conf.loaders.file_loader import FileLoader
+from pyapp.conf.loaders.http_loader import HttpLoader
 from pyapp.exceptions import InvalidConfiguration
-from .base import Loader
-from .file_loader import FileLoader
-from .http_loader import HttpLoader
 
 
 class ModuleLoader(Loader):
@@ -53,7 +61,7 @@ class ModuleLoader(Loader):
         return ((k, getattr(mod, k)) for k in dir(mod) if k.isupper())
 
     def __str__(self):
-        return f"{self.scheme}:{self.module}"
+        return f"{self.scheme}:{self.module}"  # pylint: disable=no-member
 
 
 class ObjectLoader(Loader):
@@ -73,6 +81,7 @@ class ObjectLoader(Loader):
     .. version-added:: 4.2
 
     """
+
     @classmethod
     def from_url(cls, url: URL) -> "Loader":
         raise NotImplementedError("This loader does not support from_url.")
@@ -88,6 +97,8 @@ class ObjectLoader(Loader):
 LoaderType = Type[Loader]
 
 
+# TODO: Remove when pylint handles typing.Dict correctly  pylint: disable=fixme
+# pylint: disable=no-member,unsubscriptable-object,unsupported-assignment-operation
 class SettingsLoaderRegistry(Dict[str, LoaderType]):
     """
     Registry of settings loaders
@@ -134,7 +145,7 @@ class SettingsLoaderRegistry(Dict[str, LoaderType]):
 
 
 # Singleton instance
-registry = SettingsLoaderRegistry(
+registry = SettingsLoaderRegistry(  # pylint: disable=invalid-name
     {
         "python": ModuleLoader,
         "file": FileLoader,
@@ -142,5 +153,5 @@ registry = SettingsLoaderRegistry(
         "https": HttpLoader,
     }
 )
-register = registry.register
-factory = registry.factory
+register = registry.register  # pylint: disable=invalid-name
+factory = registry.factory  # pylint: disable=invalid-name

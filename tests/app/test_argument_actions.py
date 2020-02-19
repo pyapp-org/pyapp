@@ -1,6 +1,8 @@
-import pytest
+from argparse import ArgumentError
+from argparse import ArgumentParser
+from argparse import Namespace
 
-from argparse import ArgumentParser, Namespace, ArgumentError
+import pytest
 
 from pyapp.app import argument_actions
 

@@ -1,8 +1,7 @@
 import pytest
 
-from tests.sample_app.__main__ import app
-
 from pyapp.conf import report
+from tests.sample_app.__main__ import app
 
 
 @pytest.mark.parametrize("args", (("settings",), ("--nocolor", "settings")))

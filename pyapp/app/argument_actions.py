@@ -3,9 +3,13 @@ Argument Actions
 ~~~~~~~~~~~~~~~~
 
 """
-from argparse import Action, ArgumentParser, ArgumentError, Namespace
-
-from typing import Tuple, Union, Sequence
+from argparse import Action
+from argparse import ArgumentError
+from argparse import ArgumentParser
+from argparse import Namespace
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 __all__ = ("KeyValueAction",)
 
@@ -29,6 +33,9 @@ class KeyValueAction(Action):
         super().__init__(**kwargs)
 
     def parse_value(self, value: str) -> Tuple[str, str]:
+        """
+        Parse a argument into a key/value pair
+        """
         values = value.split("=", 1)
         if len(values) != 2:
             raise ArgumentError(self, "Expected in the form KEY=VALUE")

@@ -1,5 +1,13 @@
-import colorama
+"""
+App Logger Formatter
+~~~~~~~~~~~~~~~~~~~~
+
+Custom formatter for logging messages.
+
+"""
 import logging
+
+import colorama
 
 RESET_ALL = colorama.Style.RESET_ALL
 

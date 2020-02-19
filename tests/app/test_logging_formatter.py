@@ -1,6 +1,7 @@
+import logging
+
 import colorama
 import pytest
-import logging
 
 from pyapp.app import logging_formatter
 

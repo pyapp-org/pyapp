@@ -1,7 +1,6 @@
+import tests.sample_app
 from pyapp import checks
 from pyapp.app import CliApplication
-
-import tests.sample_app
 
 app = CliApplication(tests.sample_app)
 
