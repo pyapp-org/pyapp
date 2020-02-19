@@ -279,6 +279,8 @@ class NamedConfiguration:
         return messages
 
 
+# TODO: Remove when pylint handles typing.Dict correctly  pylint: disable=fixme
+# pylint: disable=unsubscriptable-object
 class NamedFactory(NamedConfiguration, FactoryMixin[FT], metaclass=ABCMeta):
     """
     Factory for creating instances from a named configuration.

@@ -59,6 +59,8 @@ PT = TypeVar("PT", covariant=True)
 NoDefault = "__NoDefault__"  # pylint: disable=invalid-name
 
 
+# TODO: Remove when pylint handles typing.Dict correctly  pylint: disable=fixme
+# pylint: disable=unsubscriptable-object
 class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
     """
     Factory object that generates a named instance from a definition in
