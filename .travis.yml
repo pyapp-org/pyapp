@@ -23,7 +23,7 @@ env:
     - CC_TEST_REPORTER_ID=767be575271677c6435197b16f142b6ded3332f4f5112ed30fcc760d02a7d762
 
 install:
-  - travis_retry pip install bandit coverage
+  - travis_retry pip install bandit coverage pre-commit
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
