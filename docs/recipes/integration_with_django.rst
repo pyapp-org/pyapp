@@ -11,13 +11,15 @@ Django. There are two options here:
 1. Create a new Django App
 2. Use an appropriate existing app.
 
-In the ``ready`` method of your *App* class add the following::
+Add to the ``ready`` method of your *App* class::
 
-    from django.conf import settings as django_settings
-    from pyapp.conf import settings as pyapp_settings
-    from pyapp.conf.loaders import ObjectLoader
-
-    pyapp_settings.load(ObjectLoader(django_settings))
+    class MyApp:
+        def ready(self):
+            # Merge Django config into pyApp config.
+            from django.conf import settings as django_settings
+            from pyapp.conf import settings as pyapp_settings
+            from pyapp.conf.loaders import ObjectLoader
+            pyapp_settings.load(ObjectLoader(django_settings))
 
 ``ObjectLoader`` is a special loader that reads configuration variable from an
 existing object or in this case a Django settings object.
