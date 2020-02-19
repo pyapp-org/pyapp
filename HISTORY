@@ -1,3 +1,18 @@
+4.2.0
+=====
+
+Features
+--------
+
+- Added Object config loader, to aid in integration into other frameworks eg
+  Django.
+
+Fixes
+-----
+
+- Utilisation of pylint to improve and maintain code quality.
+
+
 4.1.0
 =====
 
