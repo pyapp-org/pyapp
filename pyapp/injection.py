@@ -29,7 +29,7 @@ from typing import Dict
 from typing import Optional
 from typing import TypeVar
 
-from .utils.compatibility import deprecated
+from pyapp.utils.compatibility import deprecated
 
 __all__ = (
     "Args",

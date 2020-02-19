@@ -3,8 +3,9 @@ Builtin Checks
 ~~~~~~~~~~~~~~
 
 """
-from .registry import register, Tags
 from .messages import Warn
+from .registry import register
+from .registry import Tags
 
 
 W001 = Warn(

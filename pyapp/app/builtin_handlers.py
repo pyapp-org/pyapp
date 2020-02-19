@@ -9,8 +9,8 @@ Commands that come builtin to the pyApp CLI.
 import sys
 from argparse import FileType
 
-from .arguments import argument
-from .arguments import CommandGroup
+from pyapp.app.arguments import argument
+from pyapp.app.arguments import CommandGroup
 
 
 def checks(app):

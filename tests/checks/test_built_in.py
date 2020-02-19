@@ -1,5 +1,5 @@
-from pyapp.conf import settings
 from pyapp.checks import built_in
+from pyapp.conf import settings
 
 
 class TestSecurityChecks(object):

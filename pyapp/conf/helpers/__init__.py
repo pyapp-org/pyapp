@@ -64,22 +64,21 @@ configuration where configuration is obtained from data storage eg a database.
 
 """
 import itertools
-
 from abc import ABCMeta
-from typing import Dict, Any, Sequence
+from typing import Any
+from typing import Dict
+from typing import Sequence
 
 from pyapp import checks
 from pyapp.conf import settings
+from pyapp.conf.helpers.bases import DefaultCache
+from pyapp.conf.helpers.bases import FactoryMixin
+from pyapp.conf.helpers.bases import FT
+from pyapp.conf.helpers.bases import SingletonFactoryMixin
+from pyapp.conf.helpers.bases import ThreadLocalSingletonFactoryMixin
+from pyapp.conf.helpers.plugins import *
+from pyapp.conf.helpers.providers import *
 from pyapp.utils import cached_property
-from .bases import (
-    DefaultCache,
-    FT,
-    FactoryMixin,
-    SingletonFactoryMixin,
-    ThreadLocalSingletonFactoryMixin,
-)
-from .plugins import *
-from .providers import *
 
 __all__ = (
     "NamedConfiguration",
@@ -167,7 +166,9 @@ class NamedConfiguration:
 
     def _get_config_definition(self, name: str) -> Dict[str, Any]:
         try:
-            kwargs = self._config_definitions[name]  # pylint: disable=unsubscriptable-object
+            kwargs = self._config_definitions[  # pylint: disable=unsubscriptable-object
+                name
+            ]
         except KeyError:
             raise KeyError(f"Setting definition `{name}` not found")
 

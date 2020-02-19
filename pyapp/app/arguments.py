@@ -8,8 +8,13 @@ process of accepting and validating input/flags for commands.
 
 """
 import argparse
-
-from typing import Callable, Optional, Union, Any, Sequence, Type, Dict
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Optional
+from typing import Sequence
+from typing import Type
+from typing import Union
 
 from pyapp.utils import cached_property
 

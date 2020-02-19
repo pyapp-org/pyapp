@@ -3,9 +3,13 @@ Argument Actions
 ~~~~~~~~~~~~~~~~
 
 """
-from argparse import Action, ArgumentParser, ArgumentError, Namespace
-
-from typing import Tuple, Union, Sequence
+from argparse import Action
+from argparse import ArgumentError
+from argparse import ArgumentParser
+from argparse import Namespace
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 __all__ = ("KeyValueAction",)
 

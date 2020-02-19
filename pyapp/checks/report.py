@@ -19,12 +19,12 @@ from colorama import Back
 from colorama import Fore
 from colorama import Style
 
-from ..utils import wrap_text
-from .registry import Check
-from .registry import CheckMessage
-from .registry import CheckRegistry
-from .registry import import_checks
-from .registry import registry
+from pyapp.checks.registry import Check
+from pyapp.checks.registry import CheckMessage
+from pyapp.checks.registry import CheckRegistry
+from pyapp.checks.registry import import_checks
+from pyapp.checks.registry import registry
+from pyapp.utils import wrap_text
 
 COLOURS = {
     # Type: (Title, Border),

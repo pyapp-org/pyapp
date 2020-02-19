@@ -10,8 +10,8 @@ import sys
 from colorama import Fore
 from colorama import Style
 
-from .registry import ExtensionDetail
-from .registry import registry
+from pyapp.extensions.registry import ExtensionDetail
+from pyapp.extensions.registry import registry
 
 
 class ExtensionReport:

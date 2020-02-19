@@ -31,12 +31,12 @@ from abc import ABCMeta
 from typing import Type
 from typing import TypeVar
 
-from .bases import DefaultCache
-from .bases import FactoryMixin
-from .bases import SingletonFactoryMixin
-from .bases import ThreadLocalSingletonFactoryMixin
 from pyapp import checks
 from pyapp.conf import settings
+from pyapp.conf.helpers.bases import DefaultCache
+from pyapp.conf.helpers.bases import FactoryMixin
+from pyapp.conf.helpers.bases import SingletonFactoryMixin
+from pyapp.conf.helpers.bases import ThreadLocalSingletonFactoryMixin
 from pyapp.exceptions import BadAlias
 from pyapp.exceptions import CannotImport
 from pyapp.exceptions import InvalidSubType

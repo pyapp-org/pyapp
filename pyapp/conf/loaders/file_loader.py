@@ -7,11 +7,13 @@ Loads settings from a file
 """
 from pathlib import Path
 from typing import Union
+
 from yarl import URL
 
+from pyapp.conf.loaders.base import Loader
+from pyapp.conf.loaders.content_types import content_type_from_url
+from pyapp.conf.loaders.content_types import registry
 from pyapp.exceptions import InvalidConfiguration
-from .base import Loader
-from .content_types import content_type_from_url, registry
 
 
 class FileLoader(Loader):

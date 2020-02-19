@@ -2,8 +2,8 @@ import argparse
 
 import mock
 import pytest
-import tests.sample_app
 
+import tests.sample_app
 from pyapp.app import arguments
 
 

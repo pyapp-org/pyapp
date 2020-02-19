@@ -18,9 +18,9 @@ from typing import Union
 
 from yarl import URL
 
-from .base import Loader
-from .file_loader import FileLoader
-from .http_loader import HttpLoader
+from pyapp.conf.loaders.base import Loader
+from pyapp.conf.loaders.file_loader import FileLoader
+from pyapp.conf.loaders.http_loader import HttpLoader
 from pyapp.exceptions import InvalidConfiguration
 
 

@@ -76,10 +76,10 @@ import warnings
 from typing import List
 from typing import Sequence
 
-from . import base_settings
-from .loaders import factory
-from .loaders import Loader
-from .loaders import ModuleLoader
+from pyapp.conf import base_settings
+from pyapp.conf.loaders import factory
+from pyapp.conf.loaders import Loader
+from pyapp.conf.loaders import ModuleLoader
 
 logger = logging.getLogger(__name__)
 

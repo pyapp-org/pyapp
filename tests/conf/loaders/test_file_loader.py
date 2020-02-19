@@ -1,6 +1,6 @@
-import pytest
-
 from pathlib import Path
+
+import pytest
 
 from pyapp.conf.loaders import file_loader
 from pyapp.exceptions import InvalidConfiguration

@@ -16,6 +16,7 @@ from typing import TextIO
 from typing import Union
 
 from yarl import URL
+
 # Supported content types
 
 try:

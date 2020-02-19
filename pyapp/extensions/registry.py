@@ -72,6 +72,7 @@ class ExtensionEntryPoints:
     """
     Identifies and loads extensions.
     """
+
     def __init__(self, white_list: Sequence[str] = None):
         self.white_list = white_list
 

@@ -13,8 +13,8 @@ from typing import NamedTuple
 from typing import Sequence
 from typing import Union
 
-from .messages import CheckMessage
 from pyapp import extensions
+from pyapp.checks.messages import CheckMessage
 from pyapp.conf import Settings
 from pyapp.conf import settings
 

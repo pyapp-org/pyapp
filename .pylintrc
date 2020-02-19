@@ -10,6 +10,11 @@ good-names =
     logger,  # Logger instances
     ex,      # Exceptions
     fp,      # File pointer
+    app,     # Application instance
+
+ignore-patterns =
+    test_.*py,
+    conf\.py,
 
 [SIMILARITIES]
 
