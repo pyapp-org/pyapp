@@ -332,7 +332,7 @@ class CliApplication(object):
             """
             if self.run_checks(opts.out, opts.checks_message_level, opts.tags,
                                opts.verbose, opts.no_color, opts.table):
-                exit(4)
+                sys.exit(4)
 
         # Register any additional handlers
         for additional_handler in self.additional_handlers:
@@ -409,7 +409,7 @@ class CliApplication(object):
             serious_error = self.run_checks(out, opts.checks_message_level, None, True, False)
             if serious_error:
                 logger.error("Check results:\n%s", out.getvalue())
-                exit(4)
+                sys.exit(4)
             else:
                 logger.info("Check results:\n%s", out.getvalue())
 
@@ -487,9 +487,9 @@ class CliApplication(object):
 
         except KeyboardInterrupt:
             print("\n\nInterrupted.", file=sys.stderr)
-            exit(-1)
+            sys.exit(-1)
 
         else:
             # Provide exit code.
             if exit_code:
-                exit(exit_code)
+                sys.exit(exit_code)
