@@ -1,3 +1,10 @@
+import os
 from setuptools import setup
 
-setup(setup_requires=['pbr>=3.0', 'setuptools>=17.1'], pbr=True)
+here = os.path.dirname(__file__)
+
+about = {}
+exec(open(os.path.join(here, "pyapp/__version__.py")).read(), about)
+
+setup(version=about["__version__"])
+
