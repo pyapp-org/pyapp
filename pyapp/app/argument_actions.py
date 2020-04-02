@@ -84,15 +84,21 @@ class KeyValueAction(Action):
 
 class _EnumAction(Action):
     def __init__(self, **kwargs):
-        enum = kwargs.pop("type")
+        enum = kwargs.pop("type", None)
         if enum is None:
             raise ValueError("type must be assigned an Enum when using EnumAction")
         if not issubclass(enum, Enum):
             raise TypeError("type must be an Enum when using EnumAction")
         self._enum = enum
 
-        if kwargs.get("choices") is None:
-            kwargs["choices"] = self.get_choices()
+        choices = kwargs.get("choices")
+        if choices:
+            # Ensure all choices are from the enum
+            if not all(c in enum for c in choices):
+                raise ValueError("choices contains a non {} entry".format(enum))
+        else:
+            choices = enum
+        kwargs["choices"] = self.get_choices(choices)
 
         super().__init__(**kwargs)
 
@@ -100,17 +106,17 @@ class _EnumAction(Action):
         enum = self.to_enum(values)
         setattr(namespace, self.dest, enum)
 
-    def get_choices(self):
+    def get_choices(self, choices: Union[Enum, Sequence[Enum]]):
         """
         Get choices from the enum
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def to_enum(self, value):
         """
         Get enum from the supplied value.
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
 
 class EnumValue(_EnumAction):
@@ -139,8 +145,8 @@ class EnumValue(_EnumAction):
 
     """
 
-    def get_choices(self):
-        return tuple(e.value for e in self._enum)
+    def get_choices(self, choices: Union[Enum, Sequence[Enum]]):
+        return tuple(e.value for e in choices)
 
     def to_enum(self, value):
         return self._enum(value)
@@ -172,8 +178,8 @@ class EnumName(_EnumAction):
 
     """
 
-    def get_choices(self):
-        return tuple(e.name for e in self._enum)
+    def get_choices(self, choices: Union[Enum, Sequence[Enum]]):
+        return tuple(e.name for e in choices)
 
     def to_enum(self, value):
         return self._enum[value]
