@@ -29,15 +29,12 @@ from typing import Dict
 from typing import Optional
 from typing import TypeVar
 
-from pyapp.utils.compatibility import deprecated
-
 __all__ = (
     "Args",
     "FactoryRegistry",
     "default_registry",
     "register_factory",
     "inject",
-    "inject_into",
     "InjectionError",
     "InjectionSetupError",
 )
@@ -177,14 +174,3 @@ def inject(func: FunctionType = None, *, from_registry: FactoryRegistry = None):
         return func(*args, **kwargs)
 
     return wrapper
-
-
-# Backwards compatibility
-@deprecated("This method will be removed in 4.2, please migrate to plain @inject")
-def inject_into(*args, **kwargs):
-    """
-    Mark a function to have arguments injected.
-
-    A specific registry can be provided, else the global registry is used.
-    """
-    return inject(*args, **kwargs)
