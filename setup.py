@@ -3,10 +3,10 @@ from pathlib import Path
 
 from setuptools import setup
 
-here = Path(__file__).parent
+HERE = Path(__file__).parent
 
 about = {}
-exec((here / "pyapp" / "__version__.py").read_text(), about)
+exec((HERE / "pyapp" / "__version__.py").read_text(), about)
 
 
 if __name__ == "__main__":
