@@ -94,8 +94,15 @@ class _EnumAction(Action):
         choices = kwargs.get("choices")
         if choices:
             # Ensure all choices are from the enum
-            if not all(c in enum for c in choices):
+            try:
+                outcome = all(c in enum for c in choices)
+            except TypeError:
+                # This path is for Python 3.8+ that does type checks in Enum.__contains__
+                outcome = False
+
+            if not outcome:
                 raise ValueError("choices contains a non {} entry".format(enum))
+
         else:
             choices = enum
         kwargs["choices"] = self.get_choices(choices)
