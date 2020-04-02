@@ -167,7 +167,9 @@ class Settings:
     Settings container
     """
 
-    def __init__(self, base_settings_=base_settings):
+    def __init__(self, base_settings_=None):
+        base_settings_ = base_settings_ or base_settings
+
         # Copy values from base settings file.
         self.__dict__.update(
             (k, getattr(base_settings_, k)) for k in dir(base_settings_) if k.upper()
