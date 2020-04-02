@@ -44,15 +44,20 @@ Your application should have the following structure::
 CliApplication
 --------------
 
-
-
 .. autoclass:: CliApplication
     :members: command, create_command_group, default, dispatch
+
 
 Arguments
 ---------
 
 .. automodule:: pyapp.app.arguments
+
+
+Argument Actions
+----------------
+
+.. automodule:: pyapp.app.argument_actions
 
 """
 import io
