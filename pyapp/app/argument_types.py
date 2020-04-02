@@ -31,6 +31,8 @@ class RegexType:
         > my_app m_command --alpha abc
         abc
 
+    .. versionadded:: 4.2
+
     """
 
     def __init__(self, regex, message: str = None):

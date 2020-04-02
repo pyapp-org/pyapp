@@ -17,6 +17,15 @@ Fixes
 
 - Utilisation of pylint to improve and maintain code quality.
 
+- Use `sys.exit` instead of the `exit`.
+
+
+Backwards Compatibility
+-----------------------
+
+- The ``inject_into`` decorator has been removed use the simpler ``inject``
+  decorator in it's place.
+
 
 4.1.0
 =====

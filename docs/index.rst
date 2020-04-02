@@ -16,9 +16,6 @@ Welcome to PyApp's documentation!
 | Build   | .. image:: https://img.shields.io/travis/pyapp-org/pyapp.svg?style=flat               |
 |         |    :target: https://travis-ci.org/pyapp-org/pyapp                                     |
 |         |    :alt: Travis CI Status                                                             |
-|         | .. image:: https://pyup.io/repos/github/pyapp-org/pyapp/shield.svg                    |
-|         |    :target: https://pyup.io/repos/github/pyapp-org/pyapp/                             |
-|         |    :alt: Updates                                                                      |
 +---------+---------------------------------------------------------------------------------------+
 | Quality | .. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/maintainability |
 |         |    :target: https://codeclimate.com/github/pyapp-org/pyapp/maintainability            |

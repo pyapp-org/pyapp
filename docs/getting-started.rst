@@ -23,7 +23,7 @@ project::
     cookiecutter gh:pyapp-org/pyapp.cookiecutter
 
 
-.. info:: You can skip this step if you want to just get the info.
+.. tip:: You can skip this step if you want to just get the info.
 
 
 Project Structure

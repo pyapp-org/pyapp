@@ -150,6 +150,8 @@ class EnumValue(_EnumAction):
         > my_app m_command --colour red
         Colour.Red
 
+    .. versionadded:: 4.2
+
     """
 
     def get_choices(self, choices: Union[Enum, Sequence[Enum]]):
@@ -182,6 +184,8 @@ class EnumName(_EnumAction):
 
         > my_app m_command --colour Red
         Colour.Red
+
+    .. versionadded:: 4.2
 
     """
 

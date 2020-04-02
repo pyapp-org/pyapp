@@ -78,7 +78,7 @@ class ObjectLoader(Loader):
         >>> loader = ObjectLoader(django_settings)
         >>> pyapp_settings.load(loader)
 
-    .. version-added:: 4.2
+    .. versionadded:: 4.2
 
     """
 
