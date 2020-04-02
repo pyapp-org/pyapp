@@ -54,6 +54,12 @@ Arguments
 .. automodule:: pyapp.app.arguments
 
 
+Argument Types
+--------------
+
+.. automodule:: pyapp.app.argument_types
+
+
 Argument Actions
 ----------------
 
