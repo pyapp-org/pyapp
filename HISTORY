@@ -7,6 +7,11 @@ Features
 - Added Object config loader, to aid in integration into other frameworks eg
   Django.
 
+- Add argument action for handling Enums
+
+- Add argument type for validation with regex
+
+
 Fixes
 -----
 
