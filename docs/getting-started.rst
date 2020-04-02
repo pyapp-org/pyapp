@@ -2,25 +2,19 @@
 Getting Started
 ###############
 
-In this tutorial we will run through the basics of an application that uses
-`pyApp` and how to get yourself up and running.
+In this section we will run through the processes of building an application with
+``pyApp``.
 
+App Layout
+==========
 
-Installation
-============
+We'll start with a simple application that accepts input from the command line
+and combines it with a value from configuration.
 
-`pyApp` is available on PyPI to install using your favourite package management
-tool eg::
-
-    pip install pyapp
-
-
-Initial app
-===========
-
-There are a few requirements that come with a basic app. The easiest way to
-setup a basic app is to use the `pyApp` Cookiecutter and to generate a basic
-project.
+The default ``pyApp`` configuration makes a number of assumptions as to how your
+application is laid out, with each module within your application package
+fulfilling a specific purpose. The easiest way to setup a basic app is to use
+the ``pyApp`` Cookiecutter to generate an application.
 
 Install cookie-cutter from pip and use the template to start your initial
 project::
@@ -35,62 +29,74 @@ project::
 Project Structure
 -----------------
 
-The basic structure of a pyApp project consists of the following files::
+The basic structure of a ``pyApp`` application package consists of the following::
 
     - myapp
       |- __init__.py          Standard Python package initialisation
       |- __main__.py          Standard Python main entry point
-      |- default_settings.py  Main settings definition for app
+      |- cli.py               The CLI (referenced from __main__)
+      |- default_settings.py  Definition of default runtime configuration
       |- checks.py            Application specific checks
 
 
-__init__.py
------------
+``__init__.py``
+---------------
 
-This is a standard Python file used to define a folder as a Python package as
-well as provide a location for initialisation code. In `pyApp` the root file
-also contains a number of special variables that provide information to the
-framework on how to setup the application.
+The presence of an ``__init__.py`` file in a folder makes Python use the folder
+as a package and contains initialisation code for the package. ``pyApp`` expects
+this file to contain a number of special variables that provide information to
+the framework on how to setup the application.
 
 The special variables are as follows:
 
-`__version__`
+``__version__``
     The version number of the application, it is recommended that this be a
-    semantic version. `pyApp` also provides tools for this to be fetched from
+    semantic version. ``pyApp`` also provides tools for this to be fetched from
     the installed package list.
 
-`__default_settings__`
-    Either an absolute or relative reference (from the `__init__` file) to your
+``__default_settings__``
+    Either an absolute or relative reference (from the ``__init__`` file) to the
     applications default settings. This setting is optional and the default
-    location is `.default_settings`.
+    location is ``.default_settings``.
 
-`__checks__`
-    Either an absolute or relative reference (from the `__init__` file) to your
+``__checks__``
+    Either an absolute or relative reference (from the ``__init__`` file) to the
     applications checks file. This setting is optional and the default location
-    is `.checks`.
+    is ``.checks``.
 
-__main__.py
------------
+``__main__.py``
+---------------
 
 The main entry point for a Python application when referring to a package using
-`python -m myapp`. This is where the `pyApp` `CliApplication` instance is
-defined. The `CliApplication` class handles initialisation of application
-services before handling dispatch to a command handler of the command provided
-from the CLI.
+``python -m myapp``. The default cookiecutter application triggers the main
+function in the *cli* module.
 
-default_settings.py
--------------------
+``cli``
+-------
 
-The default settings for your application. These provide the base on top of
-which end user specific settings can be applied. This is just a Python file to
-allow for complex behaviours to be defined. Any variable that consists of all
-upper-case characters (as well as `_`) is considered a setting and is imported
-into the settings container.
+This is where the ``pyApp`` ``CliApplication`` instance is defined. The
+``CliApplication`` class handles initialisation of application services before
+handing over execution to the command handler of the command specified from the
+CLI.
 
-Once an application has been initialised your settings are available from the
-settings container `pyapp.conf.settings`.
+``default_settings.py``
+-----------------------
 
-checks.py
----------
+The default runtime settings for your application. These provide the defaults on
+which environment/end user specific settings can be applied. This is a normal
+Python module allowing for complex behaviours to be defined. Any variable that
+consists of all upper-case characters (as well as `_`) is considered a setting
+and is imported into the settings container.
 
+Once an application has been initialised the final set of runtime settings is
+available from the settings container ``pyapp.conf.settings``.
 
+``checks.py``
+-------------
+
+The location for any application specific run time checks are defined and
+registered. Checks allow your application to ensure configuration is correct or
+to confirm aspects of the runtime environment are as they are expected to be.
+This can included confirming access to a database or other services. These are
+invaluable post deployment to confirm a successful deployment or to diagnose
+problems.

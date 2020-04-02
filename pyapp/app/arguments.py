@@ -1,10 +1,9 @@
 """
-Arguments
-~~~~~~~~~
-
 Any command associated with a pyApp application can be expanded with arguments.
 Arguments are a set of decorators that utilise ``argparse`` to simplify the
 process of accepting and validating input/flags for commands.
+
+.. autofunction:: argument
 
 """
 import argparse
