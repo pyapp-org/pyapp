@@ -52,6 +52,8 @@ class TestCommandGroup:
 
         assert isinstance(actual, arguments.CommandGroup)
         assert actual.parser.prog == "test foo"
+        assert "foo" in target._handlers
+        assert "f" in target._handlers
 
     def test_create_command_group__nested(self, target: arguments.CommandGroup):
         group = target.create_command_group("foo")
@@ -61,7 +63,7 @@ class TestCommandGroup:
 
     def test_default(self, target: arguments.CommandGroup):
         @target.default
-        def my_default(opts):
+        def my_default(args):
             return 13
 
         actual = target.dispatch_handler(argparse.Namespace())
@@ -70,7 +72,7 @@ class TestCommandGroup:
 
     def test_dispatch_handler__known_command(self, target: arguments.CommandGroup):
         @target.command
-        def known(opts) -> int:
+        def known(args) -> int:
             return 42
 
         actual = target.dispatch_handler(argparse.Namespace(**{":handler:": "known"}))
@@ -79,7 +81,7 @@ class TestCommandGroup:
 
     def test_dispatch_handler__unknown_command(self, target: arguments.CommandGroup):
         @target.command
-        def known(opts) -> int:
+        def known(args) -> int:
             return 42
 
         actual = target.dispatch_handler(argparse.Namespace(**{":handler:": "unknown"}))
@@ -90,7 +92,7 @@ class TestCommandGroup:
         group = target.create_command_group("foo")
 
         @group.command
-        def known(opts) -> int:
+        def known(args) -> int:
             return 24
 
         actual = target.dispatch_handler(
@@ -98,3 +100,16 @@ class TestCommandGroup:
         )
 
         assert actual == 24
+
+    def test_dispatch_handler__with_alias(self, target: arguments.CommandGroup):
+        group = target.create_command_group("foo")
+
+        @group.command(aliases=("k", "kwn"))
+        def known(args) -> int:
+            return 42
+
+        actual = target.dispatch_handler(
+            argparse.Namespace(**{":handler:foo": "kwn", ":handler:": "foo"})
+        )
+
+        assert actual == 42

@@ -8,12 +8,12 @@ app = CliApplication(prog="sample", description="Sample pyApp application.")
 
 @app.command
 @argument("--verbose", action="store_true")
-def foo_do(opts):
+def foo_do(args):
     """
     Perform a foo operation.
     """
     # Use a command line argument
-    if opts.verbose:
+    if args.verbose:
         print("Doing foo verbosely!")
     else:
         print("Doing foo.")
@@ -22,15 +22,16 @@ def foo_do(opts):
     print(settings.FOO_MESSAGE)
 
 
-bar_group = app.create_command_group("bar")
+class BarGroup:
+    group = app.create_command_group("bar", aliases="b")
 
-
-@bar_group.command(name="do")
-@argument("--repeat", type=int, default=1)
-@argument("--option", dest="options", action=KeyValueAction)
-def do_bar(opts):
-    for _ in range(opts.repeat):
-        print(f"Doing bar with {opts.options}")
+    @staticmethod
+    @group.command(name="do", aliases="d")
+    @argument("--repeat", type=int, default=1)
+    @argument("--option", dest="options", action=KeyValueAction)
+    def do_bar(args):
+        for _ in range(args.repeat):
+            print(f"Doing bar with {args.options}")
 
 
 def main():
