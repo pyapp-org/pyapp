@@ -19,6 +19,8 @@ Fixes
 
 - Use `sys.exit` instead of the `exit`.
 
+- Fix command aliases not being resolved at run-time bug.
+
 
 Backwards Compatibility
 -----------------------
