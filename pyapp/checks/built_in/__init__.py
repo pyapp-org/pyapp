@@ -1,11 +1,16 @@
-from ..registry import register, Tags
+"""
+Builtin Checks
+~~~~~~~~~~~~~~
+
+"""
 from ..messages import Warn
+from ..registry import register
+from ..registry import Tags
 
 try:
     from .settings_schema import settings_schema
 except ImportError:
     settings_schema = None
-
 
 W001 = Warn(
     "You should not have DEBUG set to True in deployment.",
@@ -20,6 +25,7 @@ def debug_enabled(settings, **_):
     """
     if settings.DEBUG:
         return W001
+    return None
 
 
 # if settings_schema:

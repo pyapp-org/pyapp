@@ -4,7 +4,9 @@ Default Settings
 
 .. auto
 """
-from typing import List, Dict, Any
+from typing import Any
+from typing import Dict
+from typing import List
 
 DEBUG: bool = False
 """

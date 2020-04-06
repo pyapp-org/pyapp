@@ -1,9 +1,19 @@
 """
-Wrappers around argparse to provide a simplified interface
+Any command associated with a pyApp application can be expanded with arguments.
+Arguments are a set of decorators that utilise ``argparse`` to simplify the
+process of accepting and validating input/flags for commands.
+
+.. autofunction:: argument
+
 """
 import argparse
-
-from typing import Callable, Optional, Union, Any, Sequence, Type, Dict
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Optional
+from typing import Sequence
+from typing import Type
+from typing import Union
 
 from pyapp.utils import cached_property
 
@@ -64,7 +74,7 @@ def argument(
     nargs: Union[int, str] = None,
     const: Any = None,
     default: Any = None,
-    type: Type[Any] = None,
+    type: Type[Any] = None,  # pylint: disable=redefined-builtin
     choices: Sequence[Any] = None,
     required: bool = None,
     help_text: str = None,
@@ -137,12 +147,23 @@ class CommandGroup(ParserBase):
 
         self._sub_parsers = parser.add_subparsers(dest=self.handler_dest)
         self._default_handler = self.default_handler
-        if _prefix:
-            self._handlers[_prefix] = self.dispatch_handler
 
     @cached_property
     def handler_dest(self) -> str:
+        """
+        Destination of handler
+        """
         return f":handler:{self._prefix or ''}"
+
+    def _add_handler(self, handler, name, aliases):
+        # Add proxy to handler list
+        handler_name = f"{self._prefix}:{name}" if self._prefix else name
+        self._handlers[handler_name] = handler
+
+        # Add proxy to handler list
+        for alias in aliases:
+            handler_alias = f"{self._prefix}:{alias}" if self._prefix else alias
+            self._handlers[handler_alias] = handler
 
     def create_command_group(
         self, name: str, *, aliases: Sequence[str] = (), help_text: str = None
@@ -155,13 +176,17 @@ class CommandGroup(ParserBase):
         :param help_text: Information provided to the user if help is invoked.
 
         """
-        prefix = f"{self._prefix}:{name}" if self._prefix else name
         kwargs = {"aliases": aliases}
         if help_text:
             kwargs["help"] = help_text
-        return CommandGroup(
-            self._sub_parsers.add_parser(name, **kwargs), prefix, self._handlers
+        group = CommandGroup(
+            self._sub_parsers.add_parser(name, aliases=aliases, help=help_text),
+            f"{self._prefix}:{name}" if self._prefix else name,
+            self._handlers,
         )
+        self._add_handler(group.dispatch_handler, name, aliases)
+
+        return group
 
     def command(
         self,
@@ -183,16 +208,17 @@ class CommandGroup(ParserBase):
         """
 
         def inner(func: Handler) -> CommandProxy:
-            name_ = name or func.__name__
-            help_text_ = help_text or func.__doc__
-            prefix = f"{self._prefix}:{name_}" if self._prefix else name_
-
             kwargs = {"aliases": aliases}
+
+            help_text_ = help_text or func.__doc__
             if help_text_:
                 kwargs["help"] = help_text_.strip()
 
+            name_ = name or func.__name__
             proxy = CommandProxy(func, self._sub_parsers.add_parser(name_, **kwargs))
-            self._handlers[prefix] = proxy
+
+            self._add_handler(proxy, name_, aliases)
+
             return proxy
 
         return inner(handler) if handler else inner

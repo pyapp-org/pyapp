@@ -1,4 +1,7 @@
 """
+Conf Loaders
+~~~~~~~~~~~~
+
 Loaders are used to load settings from an external source, eg a Python module
 (using :py:class:`ModuleLoader`).
 
@@ -6,14 +9,21 @@ A loader provides key/value pairs to the settings container to merge into the
 application settings.
 """
 import importlib
+from typing import Any
+from typing import Dict
+from typing import get_type_hints
+from typing import Iterator
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import Union
 
-from typing import Iterator, Tuple, Any, Dict, Type, Union, get_type_hints, Optional
 from yarl import URL
 
+from pyapp.conf.loaders.base import Loader
+from pyapp.conf.loaders.file_loader import FileLoader
+from pyapp.conf.loaders.http_loader import HttpLoader
 from pyapp.exceptions import InvalidConfiguration
-from .base import Loader
-from .file_loader import FileLoader
-from .http_loader import HttpLoader
 
 
 class ModuleLoader(Loader):
@@ -57,12 +67,44 @@ class ModuleLoader(Loader):
         )
 
     def __str__(self):
-        return f"{self.scheme}:{self.module}"
+        return f"{self.scheme}:{self.module}"  # pylint: disable=no-member
+
+
+class ObjectLoader(Loader):
+    """
+    Load configuration variables from any object. This can be used to mirror
+    settings from Django settings.
+
+    Loader will only read UPPERCASE attributes from the object.
+
+    Usage:
+
+        >>> from django.conf import settings as django_settings
+        >>> from pyapp.conf import settings as pyapp_settings
+        >>> loader = ObjectLoader(django_settings)
+        >>> pyapp_settings.load(loader)
+
+    .. versionadded:: 4.2
+
+    """
+
+    @classmethod
+    def from_url(cls, url: URL) -> "Loader":
+        raise NotImplementedError("This loader does not support from_url.")
+
+    def __init__(self, obj: object):
+        self.obj = obj
+
+    def __iter__(self) -> Iterator[Tuple[str, Any]]:
+        obj = self.obj
+        return ((k, getattr(obj, k)) for k in dir(obj) if k.isupper())
 
 
 LoaderType = Type[Loader]
 
 
+# TODO: Remove when pylint handles typing.Dict correctly  pylint: disable=fixme
+# pylint: disable=no-member,unsubscriptable-object,unsupported-assignment-operation
 class SettingsLoaderRegistry(Dict[str, LoaderType]):
     """
     Registry of settings loaders
@@ -109,7 +151,7 @@ class SettingsLoaderRegistry(Dict[str, LoaderType]):
 
 
 # Singleton instance
-registry = SettingsLoaderRegistry(
+registry = SettingsLoaderRegistry(  # pylint: disable=invalid-name
     {
         "python": ModuleLoader,
         "file": FileLoader,
@@ -117,5 +159,5 @@ registry = SettingsLoaderRegistry(
         "https": HttpLoader,
     }
 )
-register = registry.register
-factory = registry.factory
+register = registry.register  # pylint: disable=invalid-name
+factory = registry.factory  # pylint: disable=invalid-name

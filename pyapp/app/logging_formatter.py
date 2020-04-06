@@ -1,8 +1,15 @@
+"""
+App Logger Formatter
+~~~~~~~~~~~~~~~~~~~~
+
+Custom formatter for logging messages.
+
+"""
 import logging
 
-from colorama import Fore, Back, Style
+import colorama
 
-RESET_ALL = Style.RESET_ALL
+RESET_ALL = colorama.Style.RESET_ALL
 
 
 class ColourFormatter(logging.Formatter):
@@ -20,12 +27,12 @@ class ColourFormatter(logging.Formatter):
     """
 
     COLOURS = {
-        logging.CRITICAL: Fore.WHITE + Back.RED,
-        logging.ERROR: Fore.RED + Style.BRIGHT,
-        logging.WARNING: Fore.YELLOW + Style.BRIGHT,
-        logging.INFO: Fore.CYAN + Style.BRIGHT,
-        logging.DEBUG: Fore.MAGENTA + Style.BRIGHT,
-        logging.NOTSET: Fore.LIGHTBLACK_EX,
+        logging.CRITICAL: colorama.Fore.WHITE + colorama.Back.RED,
+        logging.ERROR: colorama.Fore.RED + colorama.Style.BRIGHT,
+        logging.WARNING: colorama.Fore.YELLOW + colorama.Style.BRIGHT,
+        logging.INFO: colorama.Fore.CYAN + colorama.Style.BRIGHT,
+        logging.DEBUG: colorama.Fore.MAGENTA + colorama.Style.BRIGHT,
+        logging.NOTSET: colorama.Fore.LIGHTBLACK_EX,
     }
 
     def formatMessage(self, record: logging.LogRecord):

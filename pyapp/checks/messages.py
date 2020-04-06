@@ -1,7 +1,12 @@
 """
 Messages
 """
-from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL, getLevelName
+from logging import CRITICAL
+from logging import DEBUG
+from logging import ERROR
+from logging import getLevelName
+from logging import INFO
+from logging import WARNING
 from typing import Any
 
 __all__ = (

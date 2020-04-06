@@ -20,15 +20,14 @@ What `my_function` is called a concrete instance that implements `FooABC` is
 passed into the function.
 
 """
-
 import abc
 import functools
 import inspect
-
 from types import FunctionType
-from typing import Callable, Dict, TypeVar, Optional
-
-from .utils.compatibility import deprecated
+from typing import Callable
+from typing import Dict
+from typing import Optional
+from typing import TypeVar
 
 __all__ = (
     "Args",
@@ -36,11 +35,11 @@ __all__ = (
     "default_registry",
     "register_factory",
     "inject",
-    "inject_into",
     "InjectionError",
     "InjectionSetupError",
 )
 
+# pylint: disable=invalid-name
 AT_co = TypeVar("AT_co", bound=abc.ABCMeta, covariant=True)
 
 
@@ -59,6 +58,8 @@ class InjectionSetupError(Exception):
     """
 
 
+# TODO: Remove when pylint handles typing.Dict correctly  pylint: disable=fixme
+# pylint: disable=unsupported-assignment-operation,no-member
 class FactoryRegistry(Dict[type, Callable]):
     """
     Registry of type factories.
@@ -173,9 +174,3 @@ def inject(func: FunctionType = None, *, from_registry: FactoryRegistry = None):
         return func(*args, **kwargs)
 
     return wrapper
-
-
-# Backwards compatibility
-@deprecated("This method will be removed in 4.2, please migrate to plain @inject")
-def inject_into(*args, **kwargs):
-    return inject(*args, **kwargs)

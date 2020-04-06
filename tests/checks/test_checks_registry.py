@@ -1,5 +1,5 @@
-from pyapp.checks import registry
 from pyapp.checks import messages
+from pyapp.checks import registry
 
 
 class TestCheckRegistry(object):

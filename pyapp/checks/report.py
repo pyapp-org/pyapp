@@ -1,14 +1,30 @@
+"""
+Checks Report
+~~~~~~~~~~~~~
+
+Generates and execute a report after executing checks.
+
+"""
 import csv
 import io
 import logging
 import sys
-
-from colorama import Style, Fore, Back
 from io import StringIO
-from typing import Sequence, Optional, Any, Union
+from typing import Any
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
-from .registry import CheckRegistry, Check, CheckMessage, registry, import_checks
-from ..utils import wrap_text
+from colorama import Back
+from colorama import Fore
+from colorama import Style
+
+from pyapp.checks.registry import Check
+from pyapp.checks.registry import CheckMessage
+from pyapp.checks.registry import CheckRegistry
+from pyapp.checks.registry import import_checks
+from pyapp.checks.registry import registry
+from pyapp.utils import wrap_text
 
 COLOURS = {
     # Type: (Title, Border),
@@ -29,6 +45,10 @@ def get_check_name(obj: Any) -> str:
 
 
 class BaseReport:
+    """
+    Common base class of reports
+    """
+
     def __init__(self, f_out=sys.stdout, check_registry: CheckRegistry = registry):
         """
         :param f_out: File to output report to; default is ``stdout``
@@ -52,7 +72,7 @@ class BaseReport:
         Render result of check.
         """
 
-    def render_result_suffix(self, check: Check, shown: bool):
+    def render_result_suffix(self, check: Check, message_shown: bool):
         """
         Called after rendering a checks messages.
 
@@ -136,36 +156,44 @@ class CheckReport(BaseReport):
 
         # Generate templates
         if self.no_color:
-            self.VERBOSE_CHECK_TEMPLATE = "+ {name}\n"
-            self.TITLE_TEMPLATE = " {level}: {title}"
-            self.HINT_TEMPLATE = ("-" * self.width) + "\n HINT: {hint}\n"
-            self.MESSAGE_TEMPLATE = (
+            self.verbose_check_template = "+ {name}\n"
+            self.title_template = " {level}: {title}"
+            self.hint_template = ("-" * self.width) + "\n HINT: {hint}\n"
+            self.message_template = (
                 f"{'=' * self.width}\n{{title}}\n{{hint}}{'=' * self.width}\n\n"
             )
 
         else:
-            self.VERBOSE_CHECK_TEMPLATE = (
+            self.verbose_check_template = (
                 f"{Fore.YELLOW}+ {Fore.CYAN}{{name}}{Style.RESET_ALL}\n"
             )
-            self.TITLE_TEMPLATE = f"{{style}} {Style.BRIGHT}{{level:7s}}{Style.NORMAL} {{title}}{Style.RESET_ALL}"
-            self.HINT_TEMPLATE = (
+            self.title_template = f"{{style}} {Style.BRIGHT}{{level:7s}}{Style.NORMAL} {{title}}{Style.RESET_ALL}"
+            self.hint_template = (
                 f"{{border_style}}{'-' * self.width}{Style.RESET_ALL}\n "
                 f"{Style.BRIGHT}HINT:{Style.DIM} {Fore.WHITE}{{hint}}{Style.RESET_ALL}\n"
             )
-            self.MESSAGE_TEMPLATE = (
+            self.message_template = (
                 f"{{border_style}}{'=' * self.width}{Style.RESET_ALL}\n"
                 f"{{title}}\n{{hint}}"
                 f"{{border_style}}{'=' * self.width}{Style.RESET_ALL}\n\n"
             )
 
     def render_header(self):
+        """
+        Render report header
+        """
         if self.header and self.verbose:
             self.f_out.write(self.header + "\n")
 
-    def render_result_prefix(self, obj):
+    def render_result_prefix(self, check: Check):
+        """
+        Render preface before a result.
+
+        This is used to display a reports name etc.
+        """
         if self.verbose:
             self.f_out.write(
-                self.VERBOSE_CHECK_TEMPLATE.format(name=get_check_name(obj))
+                self.verbose_check_template.format(name=get_check_name(check))
             )
 
     def format_title(self, message: CheckMessage) -> str:
@@ -185,7 +213,7 @@ class CheckReport(BaseReport):
             title_style = COLOURS[message.level][0]
             line_sep = Style.RESET_ALL + "\n" + title_style
 
-        return self.TITLE_TEMPLATE.format(
+        return self.title_template.format(
             style=title_style,
             level=level_name,
             title=wrap_text(msg, self.width, indent=9, line_sep=line_sep).lstrip(),
@@ -209,14 +237,14 @@ class CheckReport(BaseReport):
                 line_sep = Style.RESET_ALL + "\n" + Style.DIM + Fore.WHITE
                 border_style = COLOURS[message.level][1]
 
-            return self.HINT_TEMPLATE.format(
+            return self.hint_template.format(
                 border_style=border_style,
                 hint="\n\n".join(
                     wrap_text(p, self.width, indent=8, line_sep=line_sep) for p in hint
                 ).lstrip(),
             )
-        else:
-            return ""
+
+        return ""
 
     def render_result(self, _: Check, message: Optional[CheckMessage]):
         if message:
@@ -228,7 +256,7 @@ class CheckReport(BaseReport):
             if not self.no_color:
                 format_args.update(border_style=COLOURS[message.level][1])
 
-            self.f_out.write(self.MESSAGE_TEMPLATE.format(**format_args))
+            self.f_out.write(self.message_template.format(**format_args))
 
     def render_result_suffix(self, check: Check, message_shown: bool):
         if not (self.verbose or message_shown):
@@ -296,5 +324,5 @@ def execute_report(
     # Create report instance
     if table:
         return TabularCheckReport(output).run(message_level, tags)
-    else:
-        return CheckReport(verbose, no_color, header, output).run(message_level, tags)
+
+    return CheckReport(verbose, no_color, header, output).run(message_level, tags)

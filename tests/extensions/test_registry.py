@@ -1,8 +1,10 @@
 import mock
 import pytest
 
-from pyapp.extensions.registry import ExtensionDetail, ExtensionRegistry
-
+from pyapp.extensions.registry import ExtensionDetail
+from pyapp.extensions.registry import ExtensionEntryPoints
+from pyapp.extensions.registry import ExtensionRegistry
+from pyapp.extensions.registry import pkg_resources
 from tests.sample_ext import SampleExtension
 from tests.sample_ext_simple import SampleSimpleExtension
 
@@ -54,6 +56,63 @@ class TestExtensionDetail:
         target_simple.ready()
 
         assert target_simple.extension.ready_called is False
+
+
+def _make_entry_point(name, project_name, version):
+    mock_entry_point = mock.Mock()
+    mock_entry_point.name = name
+    mock_entry_point.dist.project_name = project_name
+    mock_entry_point.dist.version = version
+    mock_entry_point.resolve.return_value = "ExtensionInstance"
+    return mock_entry_point
+
+
+class TestExtensionEntryPoints:
+    @pytest.fixture
+    def patchentrypoints(self, monkeypatch):
+        entry_points = (
+            _make_entry_point("FooExtension", "foo-extension", "0.1.2"),
+            _make_entry_point("BarExtension", "bar-extension", "3.2.1"),
+        )
+
+        mock_iter_entry_points = mock.Mock(return_value=entry_points)
+        monkeypatch.setattr(pkg_resources, "iter_entry_points", mock_iter_entry_points)
+
+    @pytest.fixture
+    def target(self, patchentrypoints):
+        return ExtensionEntryPoints()
+
+    def test_entry_points(self, target: ExtensionEntryPoints):
+        actual = [ep.name for ep in target._entry_points()]
+
+        assert ["FooExtension", "BarExtension"] == actual
+
+    def test_entry_points__with_white_list(self, patchentrypoints):
+        target = ExtensionEntryPoints(white_list=("BarExtension",))
+
+        actual = [ep.name for ep in target._entry_points()]
+
+        assert ["BarExtension"] == actual
+
+    def test_extensions(self, target: ExtensionEntryPoints):
+        actual = list(target.extensions())
+
+        assert [
+            ExtensionDetail(
+                "ExtensionInstance", "FooExtension", "foo-extension", "0.1.2"
+            ),
+            ExtensionDetail(
+                "ExtensionInstance", "BarExtension", "bar-extension", "3.2.1"
+            ),
+        ] == actual
+
+    def test_extensions__no_load(self, target: ExtensionEntryPoints):
+        actual = list(target.extensions(False))
+
+        assert [
+            ExtensionDetail(None, "FooExtension", "foo-extension", "0.1.2"),
+            ExtensionDetail(None, "BarExtension", "bar-extension", "3.2.1"),
+        ] == actual
 
 
 class TestExtensionRegistry:

@@ -1,3 +1,34 @@
+4.2.0
+=====
+
+Features
+--------
+
+- Added Object config loader, to aid in integration into other frameworks eg
+  Django.
+
+- Add argument action for handling Enums
+
+- Add argument type for validation with regex
+
+
+Fixes
+-----
+
+- Utilisation of pylint to improve and maintain code quality.
+
+- Use `sys.exit` instead of the `exit`.
+
+- Fix command aliases not being resolved at run-time bug.
+
+
+Backwards Compatibility
+-----------------------
+
+- The ``inject_into`` decorator has been removed use the simpler ``inject``
+  decorator in it's place.
+
+
 4.1.0
 =====
 
@@ -7,13 +38,22 @@ Features
 - Coloured log output be default (for ttys)
 - Root module no longer required for CliApplication, is auto resolved (most of
   the time)
+- Added compatibility tools for marking methods to be deprecated.
 
 Fixes
 -----
 
 - Change ``exit`` to ``sys.exit`` for compatibility with `pyinstaller`_.
+- Greatly improved documentation, some sections re-written to improve clarity.
+- Correct when event bindings are stored.
 
 .. _pyinstaller: https://www.pyinstaller.org/
+
+Deprecated
+----------
+
+- Migrate from ``pyapp.injection.inject_into`` to plain ``pyapp.injection.inject``
+  will be removed in 4.2.0.
 
 
 4.0.6
