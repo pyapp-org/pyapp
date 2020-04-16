@@ -27,26 +27,23 @@ factory::
 
 """
 import threading
-
 from abc import ABCMeta
-from typing import TypeVar, Type
+from typing import Type
+from typing import TypeVar
 
 from pyapp import checks
 from pyapp.conf import settings
-from pyapp.exceptions import (
-    InvalidSubType,
-    NotProvided,
-    NotFound,
-    BadAlias,
-    CannotImport,
-)
-from pyapp.utils import cached_property, import_type
-from .bases import (
-    DefaultCache,
-    FactoryMixin,
-    SingletonFactoryMixin,
-    ThreadLocalSingletonFactoryMixin,
-)
+from pyapp.conf.helpers.bases import DefaultCache
+from pyapp.conf.helpers.bases import FactoryMixin
+from pyapp.conf.helpers.bases import SingletonFactoryMixin
+from pyapp.conf.helpers.bases import ThreadLocalSingletonFactoryMixin
+from pyapp.exceptions import BadAlias
+from pyapp.exceptions import CannotImport
+from pyapp.exceptions import InvalidSubType
+from pyapp.exceptions import NotFound
+from pyapp.exceptions import NotProvided
+from pyapp.utils import cached_property
+from pyapp.utils import import_type
 
 __all__ = (
     "NamedPluginFactory",
@@ -59,9 +56,11 @@ __all__ = (
 PT = TypeVar("PT", covariant=True)
 
 
-NoDefault = "__NoDefault__"
+NoDefault = "__NoDefault__"  # pylint: disable=invalid-name
 
 
+# TODO: Remove when pylint handles typing.Dict correctly  pylint: disable=fixme
+# pylint: disable=unsubscriptable-object
 class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
     """
     Factory object that generates a named instance from a definition in
@@ -89,7 +88,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         """
         Initialise a named factory.
 
-        :param setting: Setting attribute that holds the definition of a 
+        :param setting: Setting attribute that holds the definition of a
             instance, this value should be an upper case.
         :param abc: The absolute base class that any new instance should be
             based on.
@@ -109,11 +108,14 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         self._register_checks()
 
     @cached_property
-    def _instance_definitions(self):
+    def _instance_definitions(self):  # pylint: disable=method-hidden
         return getattr(settings, self.setting, {})
 
     @cached_property
     def has_default(self) -> bool:
+        """
+        This plugin does not have a default instance type
+        """
         return self.default_name != NoDefault
 
     @property
@@ -172,7 +174,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         :returns: New instance of the named type.
 
         """
-        if self.has_default:
+        if self.has_default:  # pylint: disable=using-constant-test
             name = name or self.default_name
         elif not name:
             raise NotProvided("A name is required if no default is specified.")
@@ -201,7 +203,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
 
         instance_definitions = getattr(settings_, self.setting)
         if instance_definitions is None:
-            return  # Nothing is defined so end now.
+            return None  # Nothing is defined so end now.
 
         if not isinstance(instance_definitions, dict):
             return checks.Critical(

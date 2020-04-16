@@ -1,10 +1,9 @@
-import pytest
-
-from mock import Mock
 from pathlib import Path
 
-import tests
+import pytest
+from mock import Mock
 
+import tests
 from pyapp.utils import inspect
 
 

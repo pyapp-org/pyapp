@@ -2,8 +2,9 @@ import pytest
 
 import tests.sample_app
 import tests.sample_app_simple.__main__
-
-from pyapp.app import argument, CliApplication, _key_help
+from pyapp.app import _key_help
+from pyapp.app import argument
+from pyapp.app import CliApplication
 from pyapp.app.logging_formatter import ColourFormatter
 
 

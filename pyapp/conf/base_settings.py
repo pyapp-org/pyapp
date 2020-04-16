@@ -4,7 +4,9 @@ Default Settings
 
 .. auto
 """
-from typing import Sequence, Dict, Any
+from typing import Any
+from typing import Dict
+from typing import Sequence
 
 DEBUG: bool = False
 """

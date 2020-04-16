@@ -1,4 +1,5 @@
 import abc
+
 import pytest
 
 from pyapp import injection
@@ -54,10 +55,10 @@ class TestFactoryRegistry:
         assert actual is expected
 
 
-def test_inject_into():
+def test_inject():
     actual = None
 
-    @injection.inject_into(from_registry=local_registry)
+    @injection.inject(from_registry=local_registry)
     def get_value(value: ThingBase):
         nonlocal actual
         actual = value
@@ -67,10 +68,10 @@ def test_inject_into():
     assert isinstance(actual, AThing)
 
 
-def test_inject_into__no_dependencies():
+def test_inject__no_dependencies():
     actual = None
 
-    @injection.inject_into(from_registry=local_registry)
+    @injection.inject(from_registry=local_registry)
     def get_value(value: str):
         nonlocal actual
         actual = value
@@ -80,10 +81,10 @@ def test_inject_into__no_dependencies():
     assert actual == "123"
 
 
-def test_inject_into__override():
+def test_inject__override():
     actual = None
 
-    @injection.inject_into(from_registry=local_registry)
+    @injection.inject(from_registry=local_registry)
     def get_value(*, value: ThingBase):
         nonlocal actual
         actual = value
@@ -93,10 +94,10 @@ def test_inject_into__override():
     assert isinstance(actual, BThing)
 
 
-def test_inject_into__with_args():
+def test_inject__with_args():
     actual = None
 
-    @injection.inject_into(from_registry=local_registry)
+    @injection.inject(from_registry=local_registry)
     def get_value(*, value: ThingBase = injection.Args("b")):
         nonlocal actual
         actual = value
@@ -106,28 +107,28 @@ def test_inject_into__with_args():
     assert isinstance(actual, BThing)
 
 
-def test_inject_into__with_factory_args_and_not_kwarg():
+def test_inject__with_factory_args_and_not_kwarg():
     with pytest.raises(injection.InjectionSetupError):
 
-        @injection.inject_into()
+        @injection.inject()
         def get_value(value: ThingBase = injection.Args("*")):
             pass
 
 
-def test_inject_into__with_factory_args_and_no_type_annotation():
+def test_inject__with_factory_args_and_no_type_annotation():
     with pytest.raises(injection.InjectionSetupError):
 
-        @injection.inject_into()
+        @injection.inject()
         def get_value(*, value=injection.Args("*")):
             pass
 
 
-def test_inject_into__factory_raises_error():
+def test_inject__factory_raises_error():
     """
     Error generated constructing a object
     """
 
-    @injection.inject_into(from_registry=local_registry)
+    @injection.inject(from_registry=local_registry)
     def get_value(*, value: ThingBase = injection.Args("c")):
         pass
 

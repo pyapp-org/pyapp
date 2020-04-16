@@ -1,8 +1,16 @@
-import sys
-import pprint
+"""
+Conf Report
+~~~~~~~~~~~
 
-from colorama import Style, Fore
+Generates settings reports
+
+"""
+import pprint
+import sys
 from typing import TextIO
+
+from colorama import Fore
+from colorama import Style
 
 from pyapp import conf
 from pyapp.utils import wrap_text
@@ -38,10 +46,10 @@ class SettingsReport:
 
         # Generate templates
         if self.no_color:
-            self.BASIC_TEMPLATE = "{key:20} : {ppsetting}\n"
+            self.basic_template = "{key:20} : {ppsetting}\n"
 
         else:
-            self.BASIC_TEMPLATE = (
+            self.basic_template = (
                 Fore.YELLOW
                 + "{key:20} : "
                 + Fore.CYAN
@@ -62,7 +70,7 @@ class SettingsReport:
             ).strip(),
         )
 
-        self.f_out.write(self.BASIC_TEMPLATE.format(**format_args))
+        self.f_out.write(self.basic_template.format(**format_args))
 
     def run(self):
         """
