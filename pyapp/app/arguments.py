@@ -7,7 +7,9 @@ process of accepting and validating input/flags for commands.
 
 """
 import argparse
+import asyncio
 from typing import Any
+from typing import Awaitable
 from typing import Callable
 from typing import Dict
 from typing import Optional
@@ -20,7 +22,10 @@ from pyapp.utils import cached_property
 __all__ = ("Handler", "argument", "CommandGroup")
 
 
-Handler = Callable[[argparse.Namespace], Optional[int]]
+Handler = Union[
+    Callable[[argparse.Namespace], Optional[int]],
+    Callable[[argparse.Namespace], Awaitable[Optional[int]]],
+]
 
 
 class ParserBase:
@@ -38,7 +43,7 @@ class ParserBase:
         self.parser.add_argument(*name_or_flags, **kwargs)
 
 
-class CommandProxy(Handler, ParserBase):
+class CommandProxy(ParserBase):
     """
     Proxy object that wraps a handler.
     """
@@ -66,6 +71,24 @@ class CommandProxy(Handler, ParserBase):
 
     def __call__(self, opts: argparse.Namespace):
         return self.handler(opts)
+
+
+class AsyncCommandProxy(CommandProxy):
+    """
+    Proxy object that wraps an async handler.
+
+    Will handle starting a event loop.
+    """
+
+    def __call__(self, opts: argparse.Namespace):
+        if hasattr(asyncio, "run"):
+            return asyncio.run(self.handler(opts))  # pylint: disable=no-member
+
+        loop = asyncio.get_event_loop()
+        try:
+            return loop.run_until_complete(self.handler(opts))
+        finally:
+            loop.close()
 
 
 def argument(
@@ -215,7 +238,14 @@ class CommandGroup(ParserBase):
                 kwargs["help"] = help_text_.strip()
 
             name_ = name or func.__name__
-            proxy = CommandProxy(func, self._sub_parsers.add_parser(name_, **kwargs))
+            if asyncio.iscoroutinefunction(func):
+                proxy = AsyncCommandProxy(
+                    func, self._sub_parsers.add_parser(name_, **kwargs)
+                )
+            else:
+                proxy = CommandProxy(
+                    func, self._sub_parsers.add_parser(name_, **kwargs)
+                )
 
             self._add_handler(proxy, name_, aliases)
 
@@ -227,7 +257,10 @@ class CommandGroup(ParserBase):
         """
         Decorator for registering a default handler.
         """
-        self._default_handler = handler
+        if asyncio.iscoroutinefunction(handler):
+            self._default_handler = AsyncCommandProxy(handler, self.parser)
+        else:
+            self._default_handler = CommandProxy(handler, self.parser)
         return handler
 
     def default_handler(self, _: argparse.Namespace) -> int:
