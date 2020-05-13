@@ -78,6 +78,7 @@ from typing import Sequence
 import argcomplete
 import colorama
 
+from . import init_logger
 from .. import conf
 from .. import extensions
 from ..app import builtin_handlers
@@ -197,6 +198,8 @@ class CliApplication(CommandGroup):
         self._init_parser()
         self.register_builtin_handlers()
 
+        self._init_logger = init_logger.InitHandler(self.default_log_handler)
+
     def __repr__(self) -> str:
         return f"{type(self).__name__}(<module {self.root_module.__name__}>)"
 
@@ -296,11 +299,11 @@ class CliApplication(CommandGroup):
         and egg situation.
 
         """
-        handler = self.default_log_handler
-        handler.formatter = self.default_log_formatter
+        self.default_log_handler.formatter = self.default_log_formatter
 
-        # Apply handler to root logger and set level.
-        logging.root.handlers = [handler]
+        # Apply handler to root logger
+        logging.root.setLevel(logging.DEBUG)
+        logging.root.handlers = [self._init_logger]
 
     @staticmethod
     def register_factories():
@@ -356,6 +359,9 @@ class CliApplication(CommandGroup):
         """
         self.default_log_handler.formatter = self.get_log_formatter(opts.log_color)
 
+        handler = logging.root.handlers.pop(0)
+        logging.root.handlers.append(self.default_log_handler)
+
         if conf.settings.LOGGING:
             logger.info("Applying logging configuration.")
 
@@ -366,6 +372,7 @@ class CliApplication(CommandGroup):
 
         # Configure root log level
         logging.root.setLevel(opts.log_level)
+        handler.replay(self.default_log_handler)
 
     def checks_on_startup(self, opts: CommandOptions):
         """
@@ -401,25 +408,32 @@ class CliApplication(CommandGroup):
         )
         return False
 
+    @staticmethod
+    def logging_shutdown():
+        """
+        Call at shutdown to ensure logging is cleaned up.
+        """
+        logging.shutdown()
+
     def dispatch(self, args: Sequence[str] = None) -> None:
         """
         Dispatch command to registered handler.
         """
         self.pre_configure_logging()
+        logger.info("Starting %s", self.application_summary)
+
         self.register_factories()
         self.load_extensions()
 
         argcomplete.autocomplete(self.parser)
         opts = self.parser.parse_args(args)
 
+        self.configure_settings(opts)
+        self.configure_logging(opts)
+
         handler_name = getattr(opts, ":handler", None)
         if handler_name != "checks":
-            self.configure_logging(opts)
-            logger.info("Starting %s", self.application_summary)
-            self.configure_settings(opts)
             self.checks_on_startup(opts)
-        else:
-            self.configure_settings(opts)
 
         _set_running_application(self)
         extensions.registry.ready()
@@ -440,6 +454,9 @@ class CliApplication(CommandGroup):
             # Provide exit code.
             if exit_code:
                 sys.exit(exit_code)
+
+        finally:
+            self.logging_shutdown()
 
 
 CURRENT_APP: Optional[CliApplication] = None
