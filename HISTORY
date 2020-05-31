@@ -1,3 +1,16 @@
+4.3.0
+=====
+
+Features
+--------
+
+- Async commands, ``app.command`` can not be applied to async functions and
+  handle the event loop.
+
+- ``app.default`` now returns a Command Proxy supporting async and additional
+  command line arguments.
+
+
 4.2.0
 =====
 
