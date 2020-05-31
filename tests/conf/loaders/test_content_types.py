@@ -1,6 +1,5 @@
-from urllib.parse import urlparse
+from unittest import mock
 
-import mock
 import pytest
 from yarl import URL
 

@@ -1,7 +1,7 @@
 from pathlib import Path
+from unittest import mock
 
 import pytest
-from mock import Mock
 
 import tests
 from pyapp.utils import inspect
@@ -41,7 +41,7 @@ def test_import_root_module__unknown(monkeypatch):
     This is a safe assumption as the top of the stack will usually be the package.
     """
     monkeypatch.setattr(
-        inspect, "find_root_folder", Mock(side_effect=ValueError("EEK!"))
+        inspect, "find_root_folder", mock.Mock(side_effect=ValueError("EEK!"))
     )
     with pytest.raises(RuntimeError, match="Unable to determine root module"):
         inspect.import_root_module(-1)
