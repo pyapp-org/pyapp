@@ -34,6 +34,17 @@ class BarGroup:
             print(f"Doing bar with {args.options}")
 
 
+@app.command(name="async")
+async def async_(args):
+    print("Async task")
+
+
+@app.default
+@argument("--bananas")
+def default_command(args):
+    print("Bananas", args.bananas)
+
+
 def main():
     app.dispatch()
 

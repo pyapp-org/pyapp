@@ -62,8 +62,8 @@ So what do we handle?
   specific default settings.
 
 - Application - Provides a extensible and simple CLI interface for running
-  commands, comes with built-in commands to execute check, setting and extension
-  reports.
+  commands (including async), comes with built-in commands to execute check, setting
+  and extension reports.
 
 - Logging - Initialise and apply sane logging defaults.
 
