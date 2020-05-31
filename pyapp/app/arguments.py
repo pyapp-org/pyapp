@@ -84,10 +84,17 @@ class AsyncCommandProxy(CommandProxy):
         if hasattr(asyncio, "run"):
             return asyncio.run(self.handler(opts))  # pylint: disable=no-member
 
-        loop = asyncio.get_event_loop()
+        if asyncio.events._get_running_loop() is not None:
+            raise RuntimeError(
+                "Async commands cannot be called from a running event loop"
+            )
+
+        loop = asyncio.events.new_event_loop()
         try:
+            asyncio.events.set_event_loop(loop)
             return loop.run_until_complete(self.handler(opts))
         finally:
+            asyncio.events.set_event_loop(None)
             loop.close()
 
 

@@ -1,9 +1,8 @@
 import argparse
+from unittest import mock
 
-import mock
 import pytest
 
-import tests.sample_app
 from pyapp.app import arguments
 
 
@@ -158,3 +157,14 @@ class TestCommandGroup:
         actual = target.dispatch_handler(argparse.Namespace(**{":handler:": "known"}))
 
         assert actual == 42
+
+    @pytest.mark.asyncio
+    async def test_dispatch_handler__async_in_run_loop(
+        self, target: arguments.CommandGroup
+    ):
+        @target.command
+        async def known(args) -> int:
+            return 42
+
+        with pytest.raises(RuntimeError):
+            target.dispatch_handler(argparse.Namespace(**{":handler:": "known"}))
