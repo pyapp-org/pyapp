@@ -235,6 +235,9 @@ class CommandGroup(ParserBase):
         :param help_text: Information provided to the user if help is invoked;
             default is taken from the handlers doc string.
 
+        .. versionchanged:: 4.3
+            Async handlers supported.
+
         """
 
         def inner(func: Handler) -> CommandProxy:
@@ -263,6 +266,10 @@ class CommandGroup(ParserBase):
     def default(self, handler: Handler):
         """
         Decorator for registering a default handler.
+
+        .. versionchanged:: 4.3
+            Async handlers supported.
+
         """
         if asyncio.iscoroutinefunction(handler):
             self._default_handler = AsyncCommandProxy(handler, self.parser)
