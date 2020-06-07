@@ -82,6 +82,10 @@ In development
 
 - SMTP - `pyapp.SMTP`_
 - Boto3 - `pyapp.boto3`_
+- Messaging - `pyapp.messaging` - Extension to provide abstract interfaces for Message Queues. 
+ - Aio-Pika - `pyapp.aiopika` - Messaging extension for pika (RabbitMQ/AMQP)
+ - AIOBotocore - `pyapp.aiobotocore` - Messaging extension for AWS (SQS/SNS)
+  
 
 Coming soon
 -----------
