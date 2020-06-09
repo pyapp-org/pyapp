@@ -8,7 +8,8 @@ process of accepting and validating input/flags for commands.
 """
 import argparse
 import asyncio
-from typing import Any
+import inspect
+from typing import Any, NamedTuple
 from typing import Awaitable
 from typing import Callable
 from typing import Dict
@@ -17,15 +18,43 @@ from typing import Sequence
 from typing import Type
 from typing import Union
 
+from pyapp.compatability import async_run
 from pyapp.utils import cached_property
 
-__all__ = ("Handler", "argument", "CommandGroup")
+__all__ = ("Handler", "argument", "CommandGroup", "Arg")
 
 
 Handler = Union[
     Callable[[argparse.Namespace], Optional[int]],
     Callable[[argparse.Namespace], Awaitable[Optional[int]]],
 ]
+
+
+class Arg:
+    """
+    Argument for a command
+    """
+    __slots__ = ("kwargs",)
+
+    def __init__(
+        self,
+        name: str = None,
+        action: str = None,
+        default: Any = None,
+        choices: Sequence[Any] = None,
+        help_text: str = None,
+        metavar: str = None,
+    ):
+        # Filter out None values
+        kwargs = {
+            "name": name,
+            "action": action,
+            "default": default,
+            "choices": choices,
+            "help": help_text,
+            "metavar": metavar,
+        }
+        self.kwargs = {key: value for key, value in kwargs.items() if value is not None}
 
 
 class ParserBase:
@@ -48,6 +77,8 @@ class CommandProxy(ParserBase):
     Proxy object that wraps a handler.
     """
 
+    __slots__ = ("__name__", "handler", "_args", "_require_namespace")
+
     def __init__(self, handler: Handler, parser: argparse.ArgumentParser):
         """
         Initialise proxy
@@ -69,8 +100,57 @@ class CommandProxy(ParserBase):
                 self.argument(*name_or_flags, **kwargs)
             del handler.arguments__
 
+        self._args = []
+        self._require_namespace = False
+
+        # Parse out any additional arguments
+        self._extract_args(handler)
+
+    def _extract_args(self, func):
+        """
+        Extract args from signature and turn into command line args
+        """
+        sig = inspect.signature(func)
+
+        for name, parameter in sig.parameters.items():
+            type_ = parameter.annotation
+
+            # Backwards compatibility
+            if parameter.kind is parameter.POSITIONAL_OR_KEYWORD and type_ in (parameter.empty, argparse.Namespace):
+                self._require_namespace = True
+                continue
+
+            default = parameter.default
+            positional = parameter.kind is not parameter.KEYWORD_ONLY
+            if isinstance(default, Arg):
+                kwargs = default.kwargs
+            else:
+                kwargs = {}
+                if not positional:
+                    kwargs = {"required": True}
+                if default is not parameter.empty:
+                    kwargs = {"default": parameter.default}
+
+            self._args.append(name)
+
+            if not positional:
+                kwargs["dest"] = name
+                name = f"--{name}"
+
+            if type_ is bool:
+                kwargs["action"] = "store_true"
+
+            elif type_ is not parameter.empty:
+                kwargs["type"] = type_
+
+            self.argument(name, **kwargs)
+
     def __call__(self, opts: argparse.Namespace):
-        return self.handler(opts)
+        kwargs = {arg: getattr(opts, arg) for arg in self._args}
+        if self._require_namespace:
+            return self.handler(opts, **kwargs)
+        else:
+            return self.handler(**kwargs)
 
 
 class AsyncCommandProxy(CommandProxy):
@@ -81,21 +161,7 @@ class AsyncCommandProxy(CommandProxy):
     """
 
     def __call__(self, opts: argparse.Namespace):
-        if hasattr(asyncio, "run"):
-            return asyncio.run(self.handler(opts))  # pylint: disable=no-member
-
-        if asyncio.events._get_running_loop() is not None:
-            raise RuntimeError(
-                "Async commands cannot be called from a running event loop"
-            )
-
-        loop = asyncio.events.new_event_loop()
-        try:
-            asyncio.events.set_event_loop(loop)
-            return loop.run_until_complete(self.handler(opts))
-        finally:
-            asyncio.events.set_event_loop(None)
-            loop.close()
+        return async_run(super().__call__(opts))
 
 
 def argument(
