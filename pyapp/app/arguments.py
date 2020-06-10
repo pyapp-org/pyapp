@@ -9,7 +9,7 @@ process of accepting and validating input/flags for commands.
 import argparse
 import asyncio
 import inspect
-from typing import Any, NamedTuple
+from typing import Any
 from typing import Awaitable
 from typing import Callable
 from typing import Dict
@@ -25,36 +25,11 @@ __all__ = ("Handler", "argument", "CommandGroup", "Arg")
 
 
 Handler = Union[
+    Callable[..., Optional[int]],
     Callable[[argparse.Namespace], Optional[int]],
+    Callable[..., Awaitable[Optional[int]]],
     Callable[[argparse.Namespace], Awaitable[Optional[int]]],
 ]
-
-
-class Arg:
-    """
-    Argument for a command
-    """
-    __slots__ = ("kwargs",)
-
-    def __init__(
-        self,
-        name: str = None,
-        action: str = None,
-        default: Any = None,
-        choices: Sequence[Any] = None,
-        help_text: str = None,
-        metavar: str = None,
-    ):
-        # Filter out None values
-        kwargs = {
-            "name": name,
-            "action": action,
-            "default": default,
-            "choices": choices,
-            "help": help_text,
-            "metavar": metavar,
-        }
-        self.kwargs = {key: value for key, value in kwargs.items() if value is not None}
 
 
 class ParserBase:
@@ -96,8 +71,8 @@ class CommandProxy(ParserBase):
 
         # Add any existing arguments
         if hasattr(handler, "arguments__"):
-            for name_or_flags, kwargs in handler.arguments__:
-                self.argument(*name_or_flags, **kwargs)
+            for arg in handler.arguments__:
+                arg.register_with_proxy(self)
             del handler.arguments__
 
         self._args = []
@@ -164,19 +139,7 @@ class AsyncCommandProxy(CommandProxy):
         return async_run(super().__call__(opts))
 
 
-def argument(
-    *name_or_flags,
-    action: str = None,
-    nargs: Union[int, str] = None,
-    const: Any = None,
-    default: Any = None,
-    type: Type[Any] = None,  # pylint: disable=redefined-builtin
-    choices: Sequence[Any] = None,
-    required: bool = None,
-    help_text: str = None,
-    metavar: str = None,
-    dest: str = None,
-):
+class Argument:
     """
     Decorator for adding arguments to a handler.
 
@@ -196,34 +159,80 @@ def argument(
     :param dest: - The name of the attribute to be added to the object returned by parse_args().
 
     """
-    # Filter out None values
-    kwargs = {
-        "action": action,
-        "nargs": nargs,
-        "const": const,
-        "default": default,
-        "type": type,
-        "choices": choices,
-        "required": required,
-        "help": help_text,
-        "metavar": metavar,
-        "dest": dest,
-    }
-    kwargs = {key: value for key, value in kwargs.items() if value is not None}
+    __slots__ = ("kwargs", "name_or_flags")
 
-    def wrapper(func: Union[Handler, CommandProxy]) -> Union[Handler, CommandProxy]:
+    @classmethod
+    def arg(
+        cls,
+        *,
+        name: str = None,
+        nargs: Union[int, str] = None,
+        default: Any = None,
+        choices: Sequence[Any] = None,
+        help: str = None,  # pylint: disable=redefined-builtin
+    ):
+        """
+        Aliased to become the inline definition for a
+        """
+        return cls(
+            name, nargs=nargs, default=default, choices=choices, help_text=help
+        )
+
+    def __init__(
+        self,
+        *name_or_flags,
+        action: str = None,
+        nargs: Union[int, str] = None,
+        const: Any = None,
+        default: Any = None,
+        type: Type[Any] = None,  # pylint: disable=redefined-builtin
+        choices: Sequence[Any] = None,
+        required: bool = None,
+        help_text: str = None,
+        metavar: str = None,
+        dest: str = None,
+    ):
+        self.name_or_flags = name_or_flags
+
+        # Filter out None values
+        kwargs = (
+            ("action", action),
+            ("nargs", nargs),
+            ("const", const),
+            ("default", default),
+            ("type", type),
+            ("choices", choices),
+            ("required", required),
+            ("help", help_text),
+            ("metavar", metavar),
+            ("dest", dest),
+        )
+        self.kwargs = dict(item for item in kwargs if item[1] is not None)
+
+    def __call__(self, func: Union[Handler, CommandProxy]) -> Union[Handler, CommandProxy]:
         if isinstance(func, CommandProxy):
-            func.argument(*name_or_flags, **kwargs)
+            self.register_with_proxy(func)
         else:
             # Add the argument to a list that will be consumed by CommandProxy.
             if hasattr(func, "arguments__"):
-                func.arguments__.insert(0, (name_or_flags, kwargs))
+                func.arguments__.insert(0, self)
             else:
-                func.arguments__ = [(name_or_flags, kwargs)]
+                func.arguments__ = [self]
 
         return func
 
-    return wrapper
+    def register_with_proxy(self, proxy: CommandProxy):
+        proxy.argument(*self.name_or_flags, **self.kwargs)
+
+    def update(self, proxy: CommandProxy, name: str, type_: Type[Any]):
+        """
+        Update argument with name and type when method signature is processed.
+        """
+        proxy.argument(*self.name_or_flags, **self.kwargs)
+
+
+Arg = Argument.arg
+argument = Argument
 
 
 class CommandGroup(ParserBase):
