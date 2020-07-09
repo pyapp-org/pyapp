@@ -87,38 +87,19 @@ class CommandProxy(ParserBase):
         """
         sig = inspect.signature(func)
 
-        for name, parameter in sig.parameters.items():
-            type_ = parameter.annotation
-
-            # Backwards compatibility
-            if parameter.kind is parameter.POSITIONAL_OR_KEYWORD and type_ in (parameter.empty, argparse.Namespace):
+        # Backwards compatibility
+        if len(sig.parameters) == 1:
+            parameter, = sig.parameters.values()
+            if (
+                parameter.kind is parameter.POSITIONAL_OR_KEYWORD
+                and parameter.annotation in (parameter.empty, argparse.Namespace)
+            ):
                 self._require_namespace = True
-                continue
+                return
 
-            default = parameter.default
-            positional = parameter.kind is not parameter.KEYWORD_ONLY
-            if isinstance(default, Arg):
-                kwargs = default.kwargs
-            else:
-                kwargs = {}
-                if not positional:
-                    kwargs = {"required": True}
-                if default is not parameter.empty:
-                    kwargs = {"default": parameter.default}
-
+        for name, parameter in sig.parameters.items():
+            Argument.from_parameter(name, parameter).register_with_proxy(self)
             self._args.append(name)
-
-            if not positional:
-                kwargs["dest"] = name
-                name = f"--{name}"
-
-            if type_ is bool:
-                kwargs["action"] = "store_true"
-
-            elif type_ is not parameter.empty:
-                kwargs["type"] = type_
-
-            self.argument(name, **kwargs)
 
     def __call__(self, opts: argparse.Namespace):
         kwargs = {arg: getattr(opts, arg) for arg in self._args}
@@ -170,13 +151,45 @@ class Argument:
         default: Any = None,
         choices: Sequence[Any] = None,
         help: str = None,  # pylint: disable=redefined-builtin
-    ):
+        metavar: str = None,
+    ) -> "Argument":
         """
-        Aliased to become the inline definition for a
+        Aliased to become the inline definition for an argument
         """
         return cls(
-            name, nargs=nargs, default=default, choices=choices, help_text=help
+            name, nargs=nargs, default=default, choices=choices, help_text=help, metavar=metavar
         )
+
+    @classmethod
+    def from_parameter(cls, name: str, parameter: inspect.Parameter) -> "Argument":
+        """
+        Generate an argument from a inspection parameter
+        """
+        type_ = parameter.annotation
+        default = parameter.default
+        positional = parameter.kind is not parameter.KEYWORD_ONLY
+
+        if isinstance(default, Argument):
+            kwargs = default.kwargs
+
+        else:
+            kwargs = {}
+            if not positional:
+                kwargs = {"required": True}
+            if default is not parameter.empty:
+                kwargs = {"default": parameter.default}
+
+        if not positional:
+            kwargs["dest"] = name
+            name = f"--{name}"
+
+        if type_ is bool:
+            kwargs["action"] = "store_true"
+
+        elif type_ is not parameter.empty:
+            kwargs["type"] = type_
+
+        return cls(name, **kwargs)
 
     def __init__(
         self,
@@ -222,11 +235,8 @@ class Argument:
         return func
 
     def register_with_proxy(self, proxy: CommandProxy):
-        proxy.argument(*self.name_or_flags, **self.kwargs)
-
-    def update(self, proxy: CommandProxy, name: str, type_: Type[Any]):
         """
-        Update argument with name and type when method signature is processed.
+        Register self with a command proxy
         """
         proxy.argument(*self.name_or_flags, **self.kwargs)
 
