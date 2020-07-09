@@ -55,7 +55,7 @@ def checks(app):
             table=opts.table,
             header=f"Check report for {app.application_summary}",
         ):
-            sys.exit(4)
+            return 4
 
 
 def extensions(app: CommandGroup):
