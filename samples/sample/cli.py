@@ -3,8 +3,9 @@ CLI Interface
 ~~~~~~~~~~~~~
 
 """
+from pyapp.app import Arg
 from pyapp.app import argument
-from pyapp.app import CliApplication, Arg
+from pyapp.app import CliApplication
 from pyapp.app.argument_actions import KeyValueAction
 from pyapp.conf import settings
 
@@ -31,7 +32,9 @@ class BarGroup:
 
     @staticmethod
     @group.command(name="do", aliases="d")
-    def do_bar(*, repeat: int = 1, options: dict = Arg(name="option", action=KeyValueAction)):
+    def do_bar(
+        *, repeat: int = 1, options: dict = Arg(name="option", action=KeyValueAction)
+    ):
         for _ in range(repeat):
             print(f"Doing bar with {options}")
 
