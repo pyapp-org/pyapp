@@ -4,7 +4,6 @@ CLI Interface
 
 """
 from pyapp.app import Arg
-from pyapp.app import argument
 from pyapp.app import CliApplication
 from pyapp.app.argument_actions import KeyValueAction
 from pyapp.conf import settings
@@ -32,9 +31,7 @@ class BarGroup:
 
     @staticmethod
     @group.command(name="do", aliases="d")
-    def do_bar(
-        *, repeat: int = 1, options: dict = Arg(name="option", action=KeyValueAction)
-    ):
+    def do_bar(*, repeat: int = 1, options: dict):
         for _ in range(repeat):
             print(f"Doing bar with {options}")
 
@@ -45,9 +42,8 @@ async def async_():
 
 
 @APP.default
-@argument("--bananas")
-def default_command(args, *, bananas=None):
-    print("Bananas", args.bananas)
+def default_command(*, bananas: str = None):
+    print("Bananas", bananas)
 
 
 main = APP.dispatch
