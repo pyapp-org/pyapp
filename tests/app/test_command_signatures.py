@@ -210,7 +210,7 @@ def test_from_parameter__file_type():
     mock_parser = mock.Mock()
     CommandProxy(func_sample_12, mock_parser)
 
-    actual = mock_parser.add_argument.mock_calls[0].kwargs["type"]
+    actual = mock_parser.add_argument.mock_calls[0][2]["type"]
     expected = FileType("w")
 
     assert isinstance(actual, FileType)
