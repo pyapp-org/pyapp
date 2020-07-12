@@ -10,20 +10,21 @@ import argparse
 import asyncio
 import inspect
 from enum import Enum
-from typing import _GenericAlias
 from typing import Any
 from typing import Awaitable
 from typing import Callable
 from typing import Dict
+from typing import Mapping
 from typing import Optional
 from typing import Sequence
+from typing import Tuple
 from typing import Type
 from typing import Union
 
-from .argument_actions import EnumName
-from .argument_actions import KeyValueAction
 from pyapp.compatability import async_run
 from pyapp.utils import cached_property
+from .argument_actions import EnumName
+from .argument_actions import KeyValueAction
 
 __all__ = ("Handler", "argument", "CommandGroup", "Arg")
 
@@ -207,8 +208,31 @@ class Argument:
         if default is not EMPTY:
             kwargs.setdefault("default", default)
 
+        # Used to detect Generic fields
+        origin = getattr(type_, "__origin__", None)
+
         # Handle type variances
-        if isinstance(type_, type):
+        if origin is not None:
+            # Handle generic types
+            if issubclass(origin, Tuple):
+                kwargs["nargs"] = len(type_.__args__)
+
+            elif issubclass(origin, Sequence):
+                kwargs["action"] = "append"
+                if positional:
+                    kwargs["nargs"] = "+"
+
+            elif issubclass(origin, Mapping):
+                kwargs["action"] = KeyValueAction
+                if positional:
+                    kwargs["nargs"] = "+"
+
+            else:
+                raise RuntimeError("Unsupported generic type")
+
+            type_ = type_.__args__[0] if type_.__args__ else None
+
+        elif isinstance(type_, type):
             if type_ is bool:
                 type_ = None
                 kwargs["action"] = "store_true"
@@ -234,28 +258,6 @@ class Argument:
         elif isinstance(type_, argparse.FileType):
             # Just pass as this is an `argparse` builtin
             pass
-
-        # Handle generic types
-        elif type(type_) is _GenericAlias:  # pylint: disable=unidiomatic-typecheck
-            generic_name = type_._name  # pylint: disable=protected-access
-
-            if generic_name in ("Sequence", "List"):
-                kwargs["action"] = "append"
-                if positional:
-                    kwargs["nargs"] = "+"
-
-            elif generic_name in ("Mapping", "Dict"):
-                kwargs["action"] = KeyValueAction
-                if positional:
-                    kwargs["nargs"] = "+"
-
-            elif generic_name == "Tuple":
-                kwargs["nargs"] = len(type_.__args__)
-
-            else:
-                raise RuntimeError("Unsupported generic type")
-
-            type_ = type_.__args__[0] if type_.__args__ else None
 
         else:
             raise RuntimeError("Unsupported type")
