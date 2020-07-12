@@ -1,6 +1,6 @@
 """
 ######################################
-PyApp - A python application framework
+pyApp - A python application framework
 ######################################
 
 *Let us handle the boring stuff!*
@@ -8,7 +8,6 @@ PyApp - A python application framework
 """
 import logging
 
-from pyapp.__version__ import __version__
 from pyapp.versioning import get_installed_version
 
 # Configure a default null handler for logging.
