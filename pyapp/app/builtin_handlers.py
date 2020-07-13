@@ -8,6 +8,7 @@ Commands that come builtin to the pyApp CLI.
 """
 import sys
 from argparse import FileType
+from typing import Optional
 
 from pyapp.app.arguments import argument
 from pyapp.app.arguments import CommandGroup
@@ -42,20 +43,23 @@ def checks(app):
         help_text="Output report in tabular format.",
     )
     @app.command(name="checks", help_text="Run a check report")
-    def _handler(opts):
+    def _handler(opts) -> Optional[int]:
         from pyapp.checks.report import execute_report
 
-        if execute_report(
-            opts.out,
-            app.application_checks,
-            opts.checks_message_level,
-            tags=opts.tags,
-            verbose=opts.verbose,
-            no_color=opts.no_color,
-            table=opts.table,
-            header=f"Check report for {app.application_summary}",
-        ):
-            return 4
+        return (
+            4
+            if execute_report(
+                opts.out,
+                app.application_checks,
+                opts.checks_message_level,
+                tags=opts.tags,
+                verbose=opts.verbose,
+                no_color=opts.no_color,
+                table=opts.table,
+                header=f"Check report for {app.application_summary}",
+            )
+            else None
+        )
 
 
 def extensions(app: CommandGroup):
@@ -74,7 +78,7 @@ def extensions(app: CommandGroup):
         help_text="File to output extension report to; default is stdout.",
     )
     @app.command(name="extensions")
-    def _handler(opts):
+    def _handler(opts) -> Optional[int]:
         """
         Report of installed PyApp extensions.
         """
@@ -95,7 +99,7 @@ def settings(app: CommandGroup):
         type=FileType(mode="w"),
         help_text="File to output settings report to; default is stdout.",
     )
-    def _handler(opts):
+    def _handler(opts) -> Optional[int]:
         """
         Report of current settings.
         """
