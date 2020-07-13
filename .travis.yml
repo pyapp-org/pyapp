@@ -33,6 +33,7 @@ before_script:
 script:
   - pylint pyapp --disable=import-error
   - bandit -ll -r pyapp
+  - poetry install
   - poetry run pytest
 
 after_script:
