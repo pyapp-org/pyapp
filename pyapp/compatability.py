@@ -13,9 +13,10 @@ except ImportError:
         """
         A simplified version of Python 3.7+ run
         """
-        if events._get_running_loop() is not None:
+        if events._get_running_loop() is not None:  # pylint: disable=protected-access
             raise RuntimeError(
-                "asyncio.run() cannot be called from a running event loop")
+                "asyncio.run() cannot be called from a running event loop"
+            )
 
         if not coroutines.iscoroutine(main):
             raise ValueError("a coroutine was expected, got {!r}".format(main))
