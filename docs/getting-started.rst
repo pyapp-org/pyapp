@@ -79,6 +79,12 @@ This is where the ``pyApp`` ``CliApplication`` instance is defined. The
 handing over execution to the command handler of the command specified from the
 CLI.
 
+Adding CLI Commands
+~~~~~~~~~~~~~~~~~~~
+
+CLI commands are defined
+
+
 ``default_settings.py``
 -----------------------
 

@@ -9,14 +9,13 @@ run-time environment.
 
 Quick demo::
 
-    >>> from pyapp.app import CliApplication, argument
+    >>> from pyapp.app import CliApplication
 
     >>> app = CliApplication()
 
-    >>> @argument('--verbose', target='verbose', action='store_true')
     >>> @app.command()
-    >>> def hello(opts):
-    ...     if opts.verbose:
+    >>> def hello(*, verbose: bool):
+    ...     if verbose:
     ...         print("Being verbose!")
     ...     print("Hello")
 
@@ -178,8 +177,8 @@ class CliApplication(CommandGroup):
         )
         self.ext_white_list = ext_white_list
 
-        # Determine application settings
-        if application_settings is None:
+        # Determine application settings (disable for standalone scripts)
+        if application_settings is None and root_module.__name__ != "__main__":
             application_settings = f"{root_module.__name__}.default_settings"
         self.application_settings = application_settings
 
@@ -325,7 +324,8 @@ class CliApplication(CommandGroup):
         Configure settings container.
         """
         application_settings = list(extensions.registry.default_settings)
-        application_settings.append(self.application_settings)
+        if self.application_settings:
+            application_settings.append(self.application_settings)
 
         conf.settings.configure(
             application_settings, opts.settings, env_settings_key=self.env_settings_key
