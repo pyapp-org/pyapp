@@ -1,5 +1,6 @@
 from argparse import FileType
 from enum import Enum
+from typing import Callable
 from typing import Dict
 from typing import Sequence
 from typing import Tuple
@@ -138,13 +139,20 @@ def func_sample_14(*, arg1: Sequence[str]):
     pass
 
 
+@expected_args(
+    mock.call("arg1", type=str, action=KeyValueAction, dest="arg1", nargs="+")
+)
+def func_sample_15(arg1: Dict[str, str]):
+    pass
+
+
 @expected_args(mock.call("--arg1", type=str, action=KeyValueAction, dest="arg1"))
-def func_sample_15(*, arg1: Dict[str, str]):
+def func_sample_16(*, arg1: Dict[str, str]):
     pass
 
 
 @expected_args(mock.call("--arg1", type=str, dest="arg1", nargs=3))
-def func_sample_16(*, arg1: Tuple[str, str, str]):
+def func_sample_17(*, arg1: Tuple[str, str, str]):
     pass
 
 
@@ -157,6 +165,14 @@ def func_sample_21(*, arg_1: int = Arg("--foo", "-f")):
 
 @expected_args(mock.call("--arg-1", type=int, dest="arg_1", default=42))
 def func_sample_22(*, arg_1: int = Arg(default=42)):
+    pass
+
+
+def func_sample_31(*, arg1: object() = None):
+    pass
+
+
+def func_sample_32(*, arg1: Callable[[int], None] = None):
     pass
 
 
@@ -195,6 +211,7 @@ def test_from_parameter__compatibility(handler, expected):
         func_sample_14,
         func_sample_15,
         func_sample_16,
+        func_sample_17,
         func_sample_21,
         func_sample_22,
     ),
@@ -215,3 +232,17 @@ def test_from_parameter__file_type():
 
     assert isinstance(actual, FileType)
     assert actual.__dict__ == expected.__dict__
+
+
+def test_from_parameter__unsupported_type():
+    mock_parser = mock.Mock()
+
+    with pytest.raises(TypeError, match="Unsupported type"):
+        CommandProxy(func_sample_31, mock_parser)
+
+
+def test_from_parameter__unsupported_generic_type():
+    mock_parser = mock.Mock()
+
+    with pytest.raises(TypeError, match="Unsupported generic type"):
+        CommandProxy(func_sample_32, mock_parser)

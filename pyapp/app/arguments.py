@@ -30,10 +30,10 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
-from pyapp.compatability import async_run
-from pyapp.utils import cached_property
 from .argument_actions import EnumName
 from .argument_actions import KeyValueAction
+from pyapp.compatability import async_run
+from pyapp.utils import cached_property
 
 __all__ = ("Handler", "argument", "CommandGroup", "Arg")
 
@@ -237,7 +237,7 @@ class Argument:
                     kwargs["nargs"] = "+"
 
             else:
-                raise RuntimeError("Unsupported generic type")
+                raise TypeError(f"Unsupported generic type: {origin!r}")
 
             type_ = type_.__args__[0] if type_.__args__ else None
 
@@ -269,7 +269,7 @@ class Argument:
             pass
 
         else:
-            raise RuntimeError("Unsupported type")
+            raise TypeError(f"Unsupported type: {type_!r}")
 
         if type_:
             kwargs["type"] = type_
