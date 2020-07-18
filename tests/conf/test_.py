@@ -10,6 +10,10 @@ class TestSettings:
         target.configure(["tests.settings"])
         return target
 
+    def test_ensure_readonly(self, target: pyapp.conf.Settings):
+        with pytest.raises(AttributeError, match="Readonly object"):
+            target.EEK = True
+
     def test_configure(self, target: pyapp.conf.Settings):
         assert "python:tests.settings" in target.SETTINGS_SOURCES
         assert hasattr(target, "UPPER_VALUE")
