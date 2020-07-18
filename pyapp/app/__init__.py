@@ -9,14 +9,13 @@ run-time environment.
 
 Quick demo::
 
-    >>> from pyapp.app import CliApplication, argument
+    >>> from pyapp.app import CliApplication
 
     >>> app = CliApplication()
 
-    >>> @argument('--verbose', target='verbose', action='store_true')
     >>> @app.command()
-    >>> def hello(opts):
-    ...     if opts.verbose:
+    >>> def hello(*, verbose: bool):
+    ...     if verbose:
     ...         print("Being verbose!")
     ...     print("Hello")
 

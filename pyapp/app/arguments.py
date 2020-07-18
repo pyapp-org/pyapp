@@ -3,6 +3,15 @@ Any command associated with a pyApp application can be expanded with arguments.
 Arguments are a set of decorators that utilise ``argparse`` to simplify the
 process of accepting and validating input/flags for commands.
 
+Generation of CLI from command Signature
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 4.4
+
+As of pyApp 4.4 command functions can supply all required arguments in the function
+signature.
+
+
 .. autofunction:: argument
 
 """
