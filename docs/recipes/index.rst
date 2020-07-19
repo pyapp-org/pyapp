@@ -4,4 +4,6 @@ Recipes
 .. toctree::
    :maxdepth: 1
 
-   integration_with_django
+   async-commands
+   single-script
+   integration-with-django

@@ -1,4 +1,5 @@
-from mock import Mock
+from unittest import mock
+
 from pkg_resources import Distribution
 
 from pyapp import versioning
@@ -8,7 +9,7 @@ def test_get_installed_version__found(monkeypatch):
     """
     Package found with the correct location
     """
-    mock_get_distribution = Mock(
+    mock_get_distribution = mock.Mock(
         return_value=Distribution(location="/path/to/my_package", version="1.2.3")
     )
     monkeypatch.setattr(versioning, "get_distribution", mock_get_distribution)
@@ -25,7 +26,7 @@ def test_get_installed_version__not_found(monkeypatch):
     """
     Package not found
     """
-    mock_get_distribution = Mock(side_effect=versioning.DistributionNotFound())
+    mock_get_distribution = mock.Mock(side_effect=versioning.DistributionNotFound())
     monkeypatch.setattr(versioning, "get_distribution", mock_get_distribution)
 
     actual = versioning.get_installed_version(
@@ -40,7 +41,7 @@ def test_get_installed_version__found_but_wrong_location(monkeypatch):
     """
     Package not found
     """
-    mock_get_distribution = Mock(
+    mock_get_distribution = mock.Mock(
         return_value=Distribution(location="/path/to/my_package", version="1.2.3")
     )
     monkeypatch.setattr(versioning, "get_distribution", mock_get_distribution)

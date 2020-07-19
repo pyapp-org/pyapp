@@ -1,6 +1,5 @@
 import pytest
 
-from pyapp.conf import report
 from tests.sample_app.__main__ import app
 
 
