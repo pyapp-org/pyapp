@@ -82,10 +82,10 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
-from .argument_actions import EnumName
-from .argument_actions import KeyValueAction
 from pyapp.compatability import async_run
 from pyapp.utils import cached_property
+from .argument_actions import EnumName
+from .argument_actions import KeyValueAction
 
 __all__ = ("Handler", "argument", "CommandGroup", "Arg")
 
