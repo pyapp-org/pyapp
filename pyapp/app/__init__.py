@@ -4,15 +4,18 @@ Application
 
 *Application with bindings for commands*
 
+The application object handles all of the initial configuration to setup the
+run-time environment.
+
 Quick demo::
 
-    >>> from pyapp.app import CliApplication, argument
+    >>> from pyapp.app import CliApplication
+
     >>> app = CliApplication()
 
-    >>> @argument('--verbose', target='verbose', action='store_true')
     >>> @app.command()
-    >>> def hello(opts):
-    ...     if opts.verbose:
+    >>> def hello(*, verbose: bool):
+    ...     if verbose:
     ...         print("Being verbose!")
     ...     print("Hello")
 
@@ -34,6 +37,7 @@ Your application should have the following structure::
     my_app/__init__.py          # Include a __version__ variable
            __main__.py          # This is where the quick demo is located
            default_settings.py  # The default settings file
+           checks.py            # Optional checks file
 
 
 CliApplication
@@ -42,30 +46,44 @@ CliApplication
 .. autoclass:: CliApplication
     :members: command, create_command_group, default, dispatch
 
+
 Arguments
 ---------
 
 .. automodule:: pyapp.app.arguments
 
+
+Argument Types
+--------------
+
+.. automodule:: pyapp.app.argument_types
+
+
+Argument Actions
+----------------
+
+.. automodule:: pyapp.app.argument_actions
+
 """
-import argcomplete
-import colorama
 import io
-import logging
 import logging.config
 import os
 import sys
+from argparse import ArgumentParser
+from argparse import Namespace as CommandOptions
+from typing import Optional
+from typing import Sequence
 
-from argparse import ArgumentParser, Namespace as CommandOptions
-from typing import Sequence, Optional
+import argcomplete
+import colorama
 
 from .. import conf
 from .. import extensions
 from ..app import builtin_handlers
 from ..injection import register_factory
 from ..utils.inspect import import_root_module
-from .arguments import *
 from .argument_actions import *
+from .arguments import *
 from .logging_formatter import ColourFormatter
 
 logger = logging.getLogger(__name__)
@@ -159,8 +177,8 @@ class CliApplication(CommandGroup):
         )
         self.ext_white_list = ext_white_list
 
-        # Determine application settings
-        if application_settings is None:
+        # Determine application settings (disable for standalone scripts)
+        if application_settings is None and root_module.__name__ != "__main__":
             application_settings = f"{root_module.__name__}.default_settings"
         self.application_settings = application_settings
 
@@ -199,8 +217,7 @@ class CliApplication(CommandGroup):
         description = self.parser.description
         if description:
             return f"{self.application_name} version {self.application_version} - {description}"
-        else:
-            return f"{self.application_name} version {self.application_version}"
+        return f"{self.application_name} version {self.application_version}"
 
     def _init_parser(self):
         # Create argument parser
@@ -289,6 +306,7 @@ class CliApplication(CommandGroup):
         """
         Register any abstract interface factories.
         """
+        # pylint: disable=import-outside-toplevel
         from asyncio import AbstractEventLoop, get_event_loop
 
         register_factory(AbstractEventLoop, get_event_loop)
@@ -306,7 +324,8 @@ class CliApplication(CommandGroup):
         Configure settings container.
         """
         application_settings = list(extensions.registry.default_settings)
-        application_settings.append(self.application_settings)
+        if self.application_settings:
+            application_settings.append(self.application_settings)
 
         conf.settings.configure(
             application_settings, opts.settings, env_settings_key=self.env_settings_key
@@ -352,6 +371,7 @@ class CliApplication(CommandGroup):
         """
         Run checks on startup.
         """
+        # pylint: disable=import-outside-toplevel
         from pyapp.checks.report import execute_report
 
         if opts.checks_on_startup:
@@ -408,7 +428,7 @@ class CliApplication(CommandGroup):
         try:
             exit_code = self.dispatch_handler(opts)
 
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=broad-except
             if not self.exception_report(ex, opts):
                 raise
 
@@ -426,7 +446,7 @@ CURRENT_APP: Optional[CliApplication] = None
 
 
 def _set_running_application(app: CliApplication):
-    global CURRENT_APP
+    global CURRENT_APP  # pylint: disable=global-statement
     CURRENT_APP = app
 
 

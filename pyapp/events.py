@@ -41,8 +41,13 @@ Example::
 
 """
 import asyncio
-
-from typing import Callable, Union, Generic, TypeVar, Set, Coroutine, Optional
+from typing import Callable
+from typing import Coroutine
+from typing import Generic
+from typing import Optional
+from typing import Set
+from typing import TypeVar
+from typing import Union
 
 __all__ = ("Event", "AsyncEvent", "listen_to", "Callback", "AsyncCallback", "bind_to")
 
@@ -70,7 +75,9 @@ class ListenerContext(Generic[_CT]):
         self.listeners.remove(self.listener)
 
 
-class ListenerSet(Set[_CT]):
+# TODO: Remove when pylint handles typing.Set correctly  pylint: disable=fixme
+# pylint: disable=not-an-iterable,no-member
+class BaseListenerSet(Set[_CT]):
     """
     Set of event listeners.
     """
@@ -81,7 +88,7 @@ class ListenerSet(Set[_CT]):
         listeners = sorted(c.__qualname__ for c in self)
         return f"ListenerSet({', '.join(listeners)})"
 
-    def __iadd__(self, other: Union[Set[_CT], _CT]) -> "ListenerSet[_CT]":
+    def __iadd__(self, other: Union[Set[_CT], _CT]) -> "BaseListenerSet[_CT]":
         """
         Allow listeners to be registered using the += operator.
         """
@@ -91,13 +98,6 @@ class ListenerSet(Set[_CT]):
         else:
             self.add(other)
         return self
-
-    def __call__(self, *args, **kwargs):
-        """
-        Trigger event and call listeners.
-        """
-        for callback in self:
-            callback(*args, **kwargs)
 
     def tap(self, listener: _CT) -> ListenerContext[_CT]:
         """
@@ -113,6 +113,21 @@ class ListenerSet(Set[_CT]):
 
         """
         return ListenerContext[_CT](listener, self)
+
+
+class ListenerSet(BaseListenerSet[_CT]):
+    """
+    Set of event listeners.
+    """
+
+    __slots__ = ()
+
+    def __call__(self, *args, **kwargs):
+        """
+        Trigger event and call listeners.
+        """
+        for callback in self:
+            callback(*args, **kwargs)
 
 
 class Event(Generic[_CT]):
@@ -133,15 +148,15 @@ class Event(Generic[_CT]):
             return listeners
 
     def __set_name__(self, owner, name):
-        self.name = name
+        self.name = name  # pylint: disable=attribute-defined-outside-init
 
 
 _ACT = TypeVar("_ACT", bound=Union[Callable[..., Coroutine], "AsyncListenerList"])
 
 
-class AsyncListenerSet(ListenerSet[_ACT]):
+class AsyncListenerSet(BaseListenerSet[_ACT]):
     """
-    List of event listeners.
+    Set of event listeners.
     """
 
     __slots__ = ()
@@ -150,9 +165,9 @@ class AsyncListenerSet(ListenerSet[_ACT]):
         """
         Trigger event and call listeners.
         """
-        aw = [c(*args, **kwargs) for c in self]
-        if aw:
-            await asyncio.wait(aw, return_when=asyncio.ALL_COMPLETED)
+        awaitables = [c(*args, **kwargs) for c in self]
+        if awaitables:
+            await asyncio.wait(awaitables, return_when=asyncio.ALL_COMPLETED)
 
 
 class AsyncEvent(Generic[_ACT]):
@@ -173,7 +188,7 @@ class AsyncEvent(Generic[_ACT]):
             return listeners
 
     def __set_name__(self, owner, name):
-        self.name = name
+        self.name = name  # pylint: disable=attribute-defined-outside-init
 
 
 def listen_to(event: ListenerSet[_CT]) -> _CT:
@@ -188,7 +203,7 @@ def listen_to(event: ListenerSet[_CT]) -> _CT:
     return decorator
 
 
-class CallbackBinding(Generic[_CT]):
+class CallbackBindingBase(Generic[_CT]):
     """
     Descriptor binding instance that provides a single method binding.
     """
@@ -198,7 +213,7 @@ class CallbackBinding(Generic[_CT]):
     def __init__(self):
         self._callback: Optional[_CT] = None
 
-    def __iadd__(self, callback: _CT) -> "CallbackBinding[_CT]":
+    def __iadd__(self, callback: _CT) -> "CallbackBindingBase[_CT]":
         self._callback = callback
         return self
 
@@ -213,6 +228,14 @@ class CallbackBinding(Generic[_CT]):
         Unbind the callback
         """
         self._callback = None
+
+
+class CallbackBinding(CallbackBindingBase[_ACT]):
+    """
+    Descriptor binding instance that provides a single method binding.
+    """
+
+    __slots__ = ()
 
     def __call__(self, *args, **kwargs):
         if self._callback:
@@ -237,10 +260,10 @@ class Callback(Generic[_CT]):
             return wrapper
 
     def __set_name__(self, owner, name):
-        self.name = name
+        self.name = name  # pylint: disable=attribute-defined-outside-init
 
 
-class AsyncCallbackBinding(CallbackBinding[_ACT]):
+class AsyncCallbackBinding(CallbackBindingBase[_ACT]):
     """
     Descriptor binding instance that provides a single method binding.
     """
@@ -270,7 +293,7 @@ class AsyncCallback(Generic[_ACT]):
             return wrapper
 
     def __set_name__(self, owner, name):
-        self.name = name
+        self.name = name  # pylint: disable=attribute-defined-outside-init
 
 
 def bind_to(callback: CallbackBinding[_CT]) -> _CT:

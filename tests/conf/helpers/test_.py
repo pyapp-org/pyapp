@@ -1,8 +1,8 @@
 import pytest
 
 from pyapp import checks
-from pyapp.conf import settings
 from pyapp.conf import helpers
+from pyapp.conf import settings
 
 
 class TestNamedConfiguration:

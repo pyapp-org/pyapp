@@ -1,8 +1,6 @@
+from unittest import mock
+
 import pytest
-import mock
-
-from urllib.parse import urlparse
-
 from yarl import URL
 
 from pyapp.conf.loaders import content_types

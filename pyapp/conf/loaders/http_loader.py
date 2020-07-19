@@ -1,15 +1,24 @@
+"""
+HTTP Loader
+~~~~~~~~~~~
+
+Loads settings from an HTTP endpoint (HTTPS is recommended)
+
+"""
 import contextlib
 import ssl
 import tempfile
-
-from typing import TextIO, Tuple
+from typing import TextIO
+from typing import Tuple
 from urllib.error import ContentTooShortError
 from urllib.request import urlopen
+
 from yarl import URL
 
+from pyapp.conf.loaders.base import Loader
+from pyapp.conf.loaders.content_types import content_type_from_url
+from pyapp.conf.loaders.content_types import registry
 from pyapp.exceptions import InvalidConfiguration
-from .base import Loader
-from .content_types import registry, content_type_from_url
 
 
 def retrieve_file(url: URL) -> Tuple[TextIO, str]:
@@ -27,7 +36,7 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
     with contextlib.closing(
         urlopen(url, context=context)  # nosec - There is a check above for SSL
     ) as response:
-        bs = 1024 * 8
+        block_size = 1024 * 8
         size = -1
         read = 0
 
@@ -42,7 +51,7 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
 
         tfp = tempfile.TemporaryFile()
         while True:
-            block = response.read(bs)
+            block = response.read(block_size)
             if not block:
                 break
             read += len(block)

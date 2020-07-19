@@ -1,3 +1,12 @@
+"""
+Exceptions
+~~~~~~~~~~
+
+Collection of standard exceptions.
+
+"""
+
+
 class InvalidConfiguration(Exception):
     """
     Invalid configuration was detected.

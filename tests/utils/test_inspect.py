@@ -1,10 +1,9 @@
+from pathlib import Path
+from unittest import mock
+
 import pytest
 
-from mock import Mock
-from pathlib import Path
-
 import tests
-
 from pyapp.utils import inspect
 
 
@@ -35,14 +34,28 @@ def test_import_root_module__current_module():
     assert actual is tests
 
 
-def test_import_root_module__unknown(monkeypatch):
-    """
-    This test assumes the top of the stack won't resolve to a member of a package.
-
-    This is a safe assumption as the top of the stack will usually be the package.
-    """
+def test_import_root_module__single_file(monkeypatch):
+    stack_mock = mock.Mock()
+    stack_mock.frame.f_globals = {"__name__": "__main__", "__file__": "/foo/bar.py"}
     monkeypatch.setattr(
-        inspect, "find_root_folder", Mock(side_effect=ValueError("EEK!"))
+        inspect.inspect, "stack", mock.Mock(return_value=[None, None, stack_mock])
     )
+    monkeypatch.setattr(
+        inspect, "find_root_folder", mock.Mock(side_effect=ValueError("EEK!"))
+    )
+
+    actual = inspect.import_root_module()
+
+    assert actual == __import__("__main__")
+
+
+def test_import_root_module__unknown(monkeypatch):
+    stack_mock = mock.Mock()
+    stack_mock.frame.f_globals = {"__name__": "foo", "__file__": "/foo/bar.py"}
+    monkeypatch.setattr(inspect.inspect, "stack", mock.Mock(return_value=[stack_mock]))
+    monkeypatch.setattr(
+        inspect, "find_root_folder", mock.Mock(side_effect=ValueError("EEK!"))
+    )
+
     with pytest.raises(RuntimeError, match="Unable to determine root module"):
         inspect.import_root_module(-1)

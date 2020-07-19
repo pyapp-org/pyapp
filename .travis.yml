@@ -5,16 +5,16 @@ python:
   - "3.6"
   - "3.7"
   - "3.8"
-  - "3.7-dev"
   - "3.8-dev"
+  - "3.9-dev"
   - "nightly"
   - "pypy3"
 
 matrix:
   fast_finish: true
   allow_failures:
-    - python: "3.7-dev"
     - python: "3.8-dev"
+    - python: "3.9-dev"
     - python: "nightly"
     - python: "pypy3"
 
@@ -23,7 +23,7 @@ env:
     - CC_TEST_REPORTER_ID=767be575271677c6435197b16f142b6ded3332f4f5112ed30fcc760d02a7d762
 
 install:
-  - travis_retry pip install bandit coverage
+  - travis_retry pip install bandit coverage pylint poetry
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
@@ -31,8 +31,10 @@ before_script:
   - ./cc-test-reporter before-build
 
 script:
+  - pylint pyapp --disable=import-error
   - bandit -ll -r pyapp
-  - python setup.py test
+  - poetry install
+  - poetry run pytest
 
 after_script:
   - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT -t coverage.py
@@ -49,4 +51,3 @@ deploy:
   skip_existing: true
   on:
     branch: master
-

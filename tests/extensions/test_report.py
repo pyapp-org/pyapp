@@ -2,7 +2,7 @@ import pytest
 
 from pyapp.extensions import report
 from pyapp.extensions.registry import ExtensionDetail
-
+from tests.sample_app.__main__ import app
 from tests.sample_ext import SampleExtension
 from tests.sample_ext_simple import SampleSimpleExtension
 
@@ -48,3 +48,16 @@ class TestExtensionReport:
         target.run()
 
         assert len(f_out.lines) == 2
+
+
+@pytest.mark.parametrize(
+    "args",
+    (
+        ("extensions",),
+        ("extensions", "--verbose"),
+        ("--nocolor", "extensions"),
+        ("--nocolor", "extensions", "--verbose"),
+    ),
+)
+def test_run_report_from_app(args, exit_code=4):
+    app.dispatch(args=args)

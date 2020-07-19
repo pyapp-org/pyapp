@@ -123,6 +123,16 @@ class TestProviderFactoryBase:
 
             assert actual == expected
 
+    def test_checks__multiple_instance_messages(self):
+        target = ProviderFactoryTest(multi_messages=True)
+
+        with settings.modify() as ctx:
+            ctx.TEST_PROVIDERS = ("tests.conf.helpers.test_providers.ProviderBaseTest",)
+
+            actual = target.checks(settings=settings)
+
+            assert actual == [checks.Info("foo"), checks.Warn("bar")]
+
     def test_checks__missing_settings(self):
         target = ProviderFactoryTest()
 
