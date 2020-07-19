@@ -13,6 +13,7 @@ build
 _build
 .tox
 .eggs
+.nox
 
 # IDE cruft
 .idea

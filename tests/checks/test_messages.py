@@ -3,6 +3,10 @@ import pytest
 from pyapp.checks import messages
 
 
+def exception_check():
+    raise RuntimeError("Didn't see that one!")
+
+
 class TestCheckMessage(object):
     @pytest.mark.parametrize(
         ("message_type", "expected", "is_serious"),
@@ -56,28 +60,28 @@ class TestCheckMessage(object):
                 "Message",
                 None,
                 None,
-                "Debug(level=10, msg='Message', hint=None, obj=None)",
+                "Debug(msg='Message', hint=None, obj=None)",
             ),
             (
                 messages.Info,
                 "Message",
                 "Hint",
                 None,
-                "Info(level=20, msg='Message', hint='Hint', obj=None)",
+                "Info(msg='Message', hint='Hint', obj=None)",
             ),
             (
                 messages.Warn,
                 "Message",
                 None,
                 "Obj",
-                "Warn(level=30, msg='Message', hint=None, obj='Obj')",
+                "Warn(msg='Message', hint=None, obj='Obj')",
             ),
             (
                 messages.Error,
                 "Message",
                 "Hint",
                 "Obj",
-                "Error(level=40, msg='Message', hint='Hint', obj='Obj')",
+                "Error(msg='Message', hint='Hint', obj='Obj')",
             ),
         ),
     )
@@ -85,3 +89,13 @@ class TestCheckMessage(object):
         actual = repr(cls(msg, hint, obj))
 
         assert actual == expected
+
+    def test_exc_info(self):
+        try:
+            exception_check()
+        except Exception:
+            target = messages.UnhandledException()
+
+        assert (target.level_name, target.msg) == ("ERROR", "Unhandled Exception")
+        assert target.hint.startswith("Traceback (most recent call last):")
+        assert target.hint.endswith("RuntimeError: Didn't see that one!\n")

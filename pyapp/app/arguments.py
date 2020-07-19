@@ -3,29 +3,101 @@ Any command associated with a pyApp application can be expanded with arguments.
 Arguments are a set of decorators that utilise ``argparse`` to simplify the
 process of accepting and validating input/flags for commands.
 
+Generation of CLI from command Signature
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 4.4
+
+As of pyApp 4.4 command functions can supply all required arguments in the function
+signature.
+
+As an example consider the command function::
+
+.. code-block:: python
+
+    @app.command
+    def my_command(
+        arg1: str,
+        *,
+        arg2: bool= Arg(help="Enable the argilizer"),
+        arg3: int = 42,
+        arg4: str = Arg("-a", choices=("foo", "bar"), default="foo")
+    ):
+        ...
+
+This translates into the following on the CLI::
+
+.. code-block:: shell
+
+    > python -m my_app my_command --help
+    usage: my_app my_command [-h] ARG1 [--arg2] [--arg3 ARG3]
+                             [--arg4 {foo,bar}]
+
+    positional arguments:
+      ARG1
+
+    optional arguments:
+      -h, --help  show this help message and exit
+      --arg2    Enable the argilizer
+      --arg3
+      --arg4 {foo,bar}
+
+
+The following types are supported as arguments:
+
+    - Basic types eg int, str, float, this covers any type that can be provided
+      to argparse in the type field.
+
+    - bool, this is made into an argparse `store_true` action.
+
+    - Enum types using the pyApp EnumAction.
+
+    - Generic types
+        - Mapping/Dict as well as a basic dict for Key/Value pairs
+
+        - Sequence/List for typed sequences, ``nargs="+"`` for positional arguments
+          of ``action="append"`` for optional.
+
+        - Tuple for typed sequences of a fixed size eg ``nargs=len(tuple)``. Only
+          the first type is used, the others are ignored.
+
+    - FileType from ``argparse``.
+
+
 .. autofunction:: argument
 
 """
 import argparse
 import asyncio
+import inspect
+from enum import Enum
 from typing import Any
 from typing import Awaitable
 from typing import Callable
 from typing import Dict
+from typing import Mapping
 from typing import Optional
 from typing import Sequence
+from typing import Tuple
 from typing import Type
 from typing import Union
 
+from pyapp.compatability import async_run
 from pyapp.utils import cached_property
+from .argument_actions import EnumName
+from .argument_actions import KeyValueAction
 
-__all__ = ("Handler", "argument", "CommandGroup")
+__all__ = ("Handler", "argument", "CommandGroup", "Arg")
 
 
 Handler = Union[
+    Callable[..., Optional[int]],
     Callable[[argparse.Namespace], Optional[int]],
+    Callable[..., Awaitable[Optional[int]]],
     Callable[[argparse.Namespace], Awaitable[Optional[int]]],
 ]
+
+EMPTY = inspect.Parameter.empty
 
 
 class ParserBase:
@@ -46,7 +118,13 @@ class ParserBase:
 class CommandProxy(ParserBase):
     """
     Proxy object that wraps a handler.
+
+    .. versionupdated:: 4.4
+        Determine arguments from handler signature.
+
     """
+
+    __slots__ = ("__name__", "handler", "_args", "_require_namespace")
 
     def __init__(self, handler: Handler, parser: argparse.ArgumentParser):
         """
@@ -65,12 +143,44 @@ class CommandProxy(ParserBase):
 
         # Add any existing arguments
         if hasattr(handler, "arguments__"):
-            for name_or_flags, kwargs in handler.arguments__:
-                self.argument(*name_or_flags, **kwargs)
+            for arg in handler.arguments__:
+                arg.register_with_proxy(self)
             del handler.arguments__
 
+        self._args = []
+        self._require_namespace = False
+
+        # Parse out any additional arguments
+        self._extract_args(handler)
+
+    def _extract_args(self, func):
+        """
+        Extract args from signature and turn into command line args
+        """
+        sig = inspect.signature(func)
+
+        # Backwards compatibility
+        if len(sig.parameters) == 1:
+            ((name, parameter),) = sig.parameters.items()
+            if (
+                parameter.kind is parameter.POSITIONAL_OR_KEYWORD
+                and parameter.annotation in (parameter.empty, argparse.Namespace)
+            ):
+                self._require_namespace = name
+                return
+
+        for name, parameter in sig.parameters.items():
+            if parameter.annotation is argparse.Namespace:
+                self._require_namespace = name
+            else:
+                Argument.from_parameter(name, parameter).register_with_proxy(self)
+                self._args.append(name)
+
     def __call__(self, opts: argparse.Namespace):
-        return self.handler(opts)
+        kwargs = {arg: getattr(opts, arg) for arg in self._args}
+        if self._require_namespace:
+            kwargs[self._require_namespace] = opts
+        return self.handler(**kwargs)
 
 
 class AsyncCommandProxy(CommandProxy):
@@ -81,83 +191,198 @@ class AsyncCommandProxy(CommandProxy):
     """
 
     def __call__(self, opts: argparse.Namespace):
-        if hasattr(asyncio, "run"):
-            return asyncio.run(self.handler(opts))  # pylint: disable=no-member
-
-        if asyncio.events._get_running_loop() is not None:
-            raise RuntimeError(
-                "Async commands cannot be called from a running event loop"
-            )
-
-        loop = asyncio.events.new_event_loop()
-        try:
-            asyncio.events.set_event_loop(loop)
-            return loop.run_until_complete(self.handler(opts))
-        finally:
-            asyncio.events.set_event_loop(None)
-            loop.close()
+        return async_run(super().__call__(opts))
 
 
-def argument(
-    *name_or_flags,
-    action: str = None,
-    nargs: Union[int, str] = None,
-    const: Any = None,
-    default: Any = None,
-    type: Type[Any] = None,  # pylint: disable=redefined-builtin
-    choices: Sequence[Any] = None,
-    required: bool = None,
-    help_text: str = None,
-    metavar: str = None,
-    dest: str = None,
-):
+class Argument:
     """
     Decorator for adding arguments to a handler.
 
     This decorator can be used before or after the handler registration
     decorator :meth:`CliApplication.command` has been used.
 
-    :param name_or_flags: - Either a name or a list of option strings, e.g. foo or -f, --foo.
-    :param action: - The basic type of action to be taken when this argument is encountered at the command line.
-    :param nargs: - The number of command-line arguments that should be consumed.
-    :param const: - A constant value required by some action and nargs selections.
-    :param default: - The value produced if the argument is absent from the command line.
-    :param type: - The type to which the command-line argument should be converted.
-    :param choices: - A container of the allowable values for the argument.
-    :param required: - Whether or not the command-line option may be omitted (optionals only).
-    :param help_text: - A brief description of what the argument does.
-    :param metavar: - A name for the argument in usage messages.
-    :param dest: - The name of the attribute to be added to the object returned by parse_args().
+    :param name_or_flags: Either a name or a list of option strings, e.g. foo or -f, --foo.
+    :param action: The basic type of action to be taken when this argument is encountered at the command line.
+    :param nargs: The number of command-line arguments that should be consumed.
+    :param const: A constant value required by some action and nargs selections.
+    :param default: The value produced if the argument is absent from the command line.
+    :param type: The type to which the command-line argument should be converted.
+    :param choices: A container of the allowable values for the argument.
+    :param required: Whether or not the command-line option may be omitted (optionals only).
+    :param help_text: A brief description of what the argument does.
+    :param metavar: A name for the argument in usage messages.
+    :param dest: The name of the attribute to be added to the object returned by parse_args().
 
     """
-    # Filter out None values
-    kwargs = {
-        "action": action,
-        "nargs": nargs,
-        "const": const,
-        "default": default,
-        "type": type,
-        "choices": choices,
-        "required": required,
-        "help": help_text,
-        "metavar": metavar,
-        "dest": dest,
-    }
-    kwargs = {key: value for key, value in kwargs.items() if value is not None}
 
-    def wrapper(func: Union[Handler, CommandProxy]) -> Union[Handler, CommandProxy]:
+    __slots__ = ("kwargs", "name_or_flags")
+
+    @classmethod
+    def arg(
+        cls,
+        *flags: str,
+        default: Any = EMPTY,
+        choices: Sequence[Any] = None,
+        help: str = None,  # pylint: disable=redefined-builtin
+        metavar: str = None,
+    ) -> "Argument":
+        """
+        Aliased to become the inline definition for an argument
+
+        :param flags: Additional flags to represent the entry (the name always comes from the field name)
+        :param default: The value produced if the argument is absent from the command line.
+        :param choices: A container of the allowable values for the argument.
+        :param help: A brief description of what the argument does.
+        :param metavar: - A name for the argument in usage messages.
+
+        """
+        return cls(
+            *flags, default=default, choices=choices, help_text=help, metavar=metavar
+        )
+
+    @classmethod
+    def from_parameter(cls, name: str, parameter: inspect.Parameter) -> "Argument":
+        # pylint: disable=too-many-branches,too-many-statements
+        """
+        Generate an argument from a inspection parameter
+
+        .. versionadded:: 4.4
+            Determine arguments from handler signature.
+
+        """
+        positional = parameter.kind is not parameter.KEYWORD_ONLY
+        type_ = parameter.annotation
+        default = parameter.default
+        flag = f"{'' if positional else '--'}{name.replace('_', '-')}"
+
+        # If field is assigned an Argument use that as the starting point
+        if isinstance(default, Argument):
+            instance = default
+            default = EMPTY
+            instance.name_or_flags = (flag,) + instance.name_or_flags
+        else:
+            instance = cls(flag)
+
+        # Start updating kwargs
+        kwargs = instance.kwargs
+        kwargs["dest"] = name
+        if default is not EMPTY:
+            kwargs.setdefault("default", default)
+
+        # Used to detect Generic fields
+        origin = getattr(type_, "__origin__", None)
+
+        # Handle type variances
+        if origin is not None:
+            # Handle generic types
+            if issubclass(origin, Tuple):
+                kwargs["nargs"] = len(type_.__args__)
+
+            elif issubclass(origin, Sequence):
+                kwargs["action"] = "append"
+                if positional:
+                    kwargs["nargs"] = "+"
+
+            elif issubclass(origin, Mapping):
+                kwargs["action"] = KeyValueAction
+                if positional:
+                    kwargs["nargs"] = "+"
+
+            else:
+                raise TypeError(f"Unsupported generic type: {origin!r}")
+
+            type_ = type_.__args__[0] if type_.__args__ else None
+
+        elif isinstance(type_, type):
+            if type_ is bool:
+                type_ = None
+                kwargs["action"] = "store_true"
+
+            elif type_ is dict:
+                type_ = None
+                kwargs["action"] = KeyValueAction
+                if positional:
+                    kwargs["nargs"] = "+"
+
+            elif type_ in (list, tuple):
+                type_ = None
+                kwargs["action"] = "append"
+                if positional:
+                    kwargs["nargs"] = "+"
+
+            elif issubclass(type_, Enum):
+                kwargs["action"] = EnumName
+
+            elif not positional and "default" not in kwargs:
+                kwargs["required"] = True
+
+        elif isinstance(type_, argparse.FileType):
+            # Just pass as this is an `argparse` builtin
+            pass
+
+        else:
+            raise TypeError(f"Unsupported type: {type_!r}")
+
+        if type_:
+            kwargs["type"] = type_
+
+        return instance
+
+    def __init__(
+        self,
+        *name_or_flags,
+        action: str = None,
+        nargs: Union[int, str] = None,
+        const: Any = None,
+        default: Any = EMPTY,
+        type: Type[Any] = None,  # pylint: disable=redefined-builtin
+        choices: Sequence[Any] = None,
+        required: bool = None,
+        help_text: str = None,
+        metavar: str = None,
+        dest: str = None,
+    ):
+        self.name_or_flags = name_or_flags
+
+        # Filter out None values
+        kwargs = (
+            ("action", action),
+            ("nargs", nargs),
+            ("const", const),
+            ("type", type),
+            ("choices", choices),
+            ("required", required),
+            ("help", help_text),
+            ("metavar", metavar),
+            ("dest", dest),
+        )
+        self.kwargs = {key: val for key, val in kwargs if val is not None}
+        if default is not EMPTY:
+            self.kwargs["default"] = default
+
+    def __call__(
+        self, func: Union[Handler, CommandProxy]
+    ) -> Union[Handler, CommandProxy]:
         if isinstance(func, CommandProxy):
-            func.argument(*name_or_flags, **kwargs)
+            self.register_with_proxy(func)
         else:
             # Add the argument to a list that will be consumed by CommandProxy.
             if hasattr(func, "arguments__"):
-                func.arguments__.insert(0, (name_or_flags, kwargs))
+                func.arguments__.insert(0, self)
             else:
-                func.arguments__ = [(name_or_flags, kwargs)]
+                func.arguments__ = [self]
 
         return func
 
-    return wrapper
+    def register_with_proxy(self, proxy: CommandProxy):
+        """
+        Register self with a command proxy
+        """
+        proxy.argument(*self.name_or_flags, **self.kwargs)
+
+
+Arg = Argument.arg  # pylint: disable=invalid-name
+argument = Argument  # pylint: disable=invalid-name
 
 
 class CommandGroup(ParserBase):
