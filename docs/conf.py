@@ -9,9 +9,6 @@ HERE = Path(__file__).parent
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, HERE.parent.as_posix())
 
-about = {}
-exec((HERE.parent / "pyapp" / "__version__.py").read_text(), about)
-
 
 # -- General configuration ------------------------------------------------
 
@@ -47,7 +44,7 @@ author = u"Tim Savage"
 # built documents.
 #
 # The short X.Y version.
-version = about["__version__"]
+version = "4.4.0-beta.1"
 # The full version, including alpha/beta/rc tags.
 release = version
 

@@ -55,7 +55,7 @@ Generation of CLI from command Signature
 As of pyApp 4.4 command functions can supply all required arguments in the function
 signature.
 
-As an example consider the command function::
+As an example consider the command function:
 
 .. code-block:: python
 
@@ -69,7 +69,7 @@ As an example consider the command function::
     ):
         ...
 
-This translates into the following on the CLI::
+This translates into the following on the CLI:
 
 .. code-block:: shell
 
