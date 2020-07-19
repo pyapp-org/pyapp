@@ -32,12 +32,83 @@ There are however a few more things that are required to get this going. The
 :py:class:`CliApplication` class expects a certain structure of your
 application to allow for it's (customisable) defaults to be applied.
 
-Your application should have the following structure::
+Your application can have one of two structures
+
+An application::
 
     my_app/__init__.py          # Include a __version__ variable
            __main__.py          # This is where the quick demo is located
            default_settings.py  # The default settings file
            checks.py            # Optional checks file
+
+
+A single script::
+
+    my_app.py                   # A script that contains the `CliApplication`
+
+
+Generation of CLI from command Signature
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 4.4
+
+As of pyApp 4.4 command functions can supply all required arguments in the function
+signature.
+
+As an example consider the command function::
+
+.. code-block:: python
+
+    @app.command
+    def my_command(
+        arg1: str,
+        *,
+        arg2: bool= Arg(help="Enable the argilizer"),
+        arg3: int = 42,
+        arg4: str = Arg("-a", choices=("foo", "bar"), default="foo")
+    ):
+        ...
+
+This translates into the following on the CLI::
+
+.. code-block:: shell
+
+    > python -m my_app my_command --help
+    usage: my_app my_command [-h] ARG1 [--arg2] [--arg3 ARG3]
+                             [--arg4 {foo,bar}]
+
+    positional arguments:
+      ARG1
+
+    optional arguments:
+      -h, --help  show this help message and exit
+      --arg2    Enable the argilizer
+      --arg3
+      --arg4 {foo,bar}
+
+
+The following types are supported as arguments:
+
+    - Basic types eg int, str, float, this covers any type that can be provided
+      to argparse in the type field.
+
+    - bool, this is made into an argparse `store_true` action.
+
+    - Enum types using the pyApp EnumAction.
+
+    - Generic types
+        - Mapping/Dict as well as a basic dict for Key/Value pairs
+
+        - Sequence/List for typed sequences, ``nargs="+"`` for positional arguments
+          of ``action="append"`` for optional.
+
+        - Tuple for typed sequences of a fixed size eg ``nargs=len(tuple)``. Only
+          the first type is used, the others are ignored.
+
+    - FileType from ``argparse``.
+
+.. tip:: Too get access to the parse results from `argparse` provide a vairable
+    with the type ``pyapp.app.CommandOptions``.
 
 
 CliApplication
