@@ -204,7 +204,8 @@ class Argument:
 
         # Start updating kwargs
         kwargs = instance.kwargs
-        kwargs["dest"] = name
+        if not positional:
+            kwargs["dest"] = name
         if default is not EMPTY:
             kwargs.setdefault("default", default)
 

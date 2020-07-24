@@ -57,13 +57,13 @@ def func_sample_01():
     pass
 
 
-@expected_args(mock.call("arg1", type=int, dest="arg1"))
+@expected_args(mock.call("arg1", type=int))
 def func_sample_02(arg1: int):
     pass
 
 
 @expected_args(
-    mock.call("arg1", type=str, dest="arg1"),
+    mock.call("arg1", type=str),
     mock.call("--arg2", type=str, dest="arg2", default="foo"),
 )
 def func_sample_03(arg1: str, *, arg2: str = "foo"):
@@ -71,20 +71,19 @@ def func_sample_03(arg1: str, *, arg2: str = "foo"):
 
 
 @expected_args(
-    mock.call("arg1", type=str, dest="arg1"),
-    mock.call("--arg2", action="store_true", dest="arg2"),
+    mock.call("arg1", type=str), mock.call("--arg2", action="store_true", dest="arg2"),
 )
 def func_sample_04(arg1: str, *, arg2: bool):
     pass
 
 
-@expected_args(mock.call("arg1", action=KeyValueAction, dest="arg1", nargs="+"),)
+@expected_args(mock.call("arg1", action=KeyValueAction, nargs="+"),)
 def func_sample_05(arg1: dict):
     pass
 
 
 @expected_args(
-    mock.call("arg1", type=str, dest="arg1"),
+    mock.call("arg1", type=str),
     mock.call("--arg2", action=KeyValueAction, dest="arg2"),
 )
 def func_sample_06(arg1: str, *, arg2: dict):
@@ -92,79 +91,85 @@ def func_sample_06(arg1: str, *, arg2: dict):
 
 
 @expected_args(
-    mock.call("arg1", type=str, dest="arg1"),
-    mock.call("--arg2", dest="arg2", action="append"),
+    mock.call("arg1", type=str), mock.call("--arg2", dest="arg2", action="append"),
 )
 def func_sample_07(arg1: str, *, arg2: list):
     pass
 
 
 @expected_args(
-    mock.call("arg1", type=str, dest="arg1"),
-    mock.call("arg2", dest="arg2", action="append", nargs="+"),
+    mock.call("arg1", type=str), mock.call("arg2", action="append", nargs="+"),
 )
 def func_sample_08(arg1: str, arg2: list):
     pass
 
 
 @expected_args(
-    mock.call("arg1", type=str, dest="arg1"),
+    mock.call("arg1", type=str),
     mock.call("--arg2", type=int, dest="arg2", required=True),
 )
 def func_sample_09(arg1: str, *, arg2: int):
     pass
 
 
+@expected_args(mock.call("arg1", type=Colour, action=EnumName),)
+def func_sample_11(arg1: Colour):
+    pass
+
+
 @expected_args(
-    mock.call("arg1", type=str, dest="arg1"),
+    mock.call("arg1", type=str),
     mock.call("--arg2", type=Colour, action=EnumName, dest="arg2", default=Colour.Red),
 )
-def func_sample_11(arg1: str, *, arg2: Colour = Colour.Red):
+def func_sample_12(arg1: str, *, arg2: Colour = Colour.Red):
     pass
 
 
 # FileType instances cannot be directly compared.
-@expected_args(mock.call("arg1", type=mock.ANY, dest="arg1"),)
-def func_sample_12(arg1: FileType("w")):
+@expected_args(mock.call("arg1", type=mock.ANY),)
+def func_sample_13(arg1: FileType("w")):
     pass
 
 
-@expected_args(mock.call("arg1", type=str, dest="arg1", action="append", nargs="+"))
-def func_sample_13(arg1: Sequence[str]):
+@expected_args(mock.call("arg1", type=str, action="append", nargs="+"))
+def func_sample_14(arg1: Sequence[str]):
     pass
 
 
 @expected_args(mock.call("--arg1", type=str, dest="arg1", action="append"))
-def func_sample_14(*, arg1: Sequence[str]):
+def func_sample_15(*, arg1: Sequence[str]):
     pass
 
 
-@expected_args(
-    mock.call("arg1", type=str, action=KeyValueAction, dest="arg1", nargs="+")
-)
-def func_sample_15(arg1: Dict[str, str]):
+@expected_args(mock.call("arg1", type=str, action=KeyValueAction, nargs="+"))
+def func_sample_16(arg1: Dict[str, str]):
     pass
 
 
 @expected_args(mock.call("--arg1", type=str, action=KeyValueAction, dest="arg1"))
-def func_sample_16(*, arg1: Dict[str, str]):
+def func_sample_17(*, arg1: Dict[str, str]):
     pass
 
 
 @expected_args(mock.call("--arg1", type=str, dest="arg1", nargs=3))
-def func_sample_17(*, arg1: Tuple[str, str, str]):
+def func_sample_18(*, arg1: Tuple[str, str, str]):
+    pass
+
+
+@expected_args(mock.call("arg-1", type=int, help="foo"))
+def func_sample_21(arg_1: int = Arg(help="foo")):
     pass
 
 
 @expected_args(
     mock.call("--arg-1", "--foo", "-f", type=int, dest="arg_1", required=True)
 )
-def func_sample_21(*, arg_1: int = Arg("--foo", "-f")):
+def func_sample_22(*, arg_1: int = Arg("--foo", "-f")):
     pass
 
 
 @expected_args(mock.call("--arg-1", type=int, dest="arg_1", default=42))
-def func_sample_22(*, arg_1: int = Arg(default=42)):
+def func_sample_23(*, arg_1: int = Arg(default=42)):
     pass
 
 
@@ -212,8 +217,10 @@ def test_from_parameter__compatibility(handler, expected):
         func_sample_15,
         func_sample_16,
         func_sample_17,
+        func_sample_18,
         func_sample_21,
         func_sample_22,
+        func_sample_23,
     ),
 )
 def test_from_parameter__typed(handler):
@@ -225,7 +232,7 @@ def test_from_parameter__typed(handler):
 
 def test_from_parameter__file_type():
     mock_parser = mock.Mock()
-    CommandProxy(func_sample_12, mock_parser)
+    CommandProxy(func_sample_13, mock_parser)
 
     actual = mock_parser.add_argument.mock_calls[0][2]["type"]
     expected = FileType("w")
