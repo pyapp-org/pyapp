@@ -32,12 +32,83 @@ There are however a few more things that are required to get this going. The
 :py:class:`CliApplication` class expects a certain structure of your
 application to allow for it's (customisable) defaults to be applied.
 
-Your application should have the following structure::
+Your application can have one of two structures
+
+An application::
 
     my_app/__init__.py          # Include a __version__ variable
            __main__.py          # This is where the quick demo is located
            default_settings.py  # The default settings file
            checks.py            # Optional checks file
+
+
+A single script::
+
+    my_app.py                   # A script that contains the `CliApplication`
+
+
+Generation of CLI from command Signature
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 4.4
+
+As of pyApp 4.4 command functions can supply all required arguments in the function
+signature.
+
+As an example consider the command function:
+
+.. code-block:: python
+
+    @app.command
+    def my_command(
+        arg1: str,
+        *,
+        arg2: bool= Arg(help="Enable the argilizer"),
+        arg3: int = 42,
+        arg4: str = Arg("-a", choices=("foo", "bar"), default="foo")
+    ):
+        ...
+
+This translates into the following on the CLI:
+
+.. code-block:: shell
+
+    > python -m my_app my_command --help
+    usage: my_app my_command [-h] ARG1 [--arg2] [--arg3 ARG3]
+                             [--arg4 {foo,bar}]
+
+    positional arguments:
+      ARG1
+
+    optional arguments:
+      -h, --help  show this help message and exit
+      --arg2    Enable the argilizer
+      --arg3
+      --arg4 {foo,bar}
+
+
+The following types are supported as arguments:
+
+    - Basic types eg int, str, float, this covers any type that can be provided
+      to argparse in the type field.
+
+    - bool, this is made into an argparse `store_true` action.
+
+    - Enum types using the pyApp EnumAction.
+
+    - Generic types
+        - Mapping/Dict as well as a basic dict for Key/Value pairs
+
+        - Sequence/List for typed sequences, ``nargs="+"`` for positional arguments
+          of ``action="append"`` for optional.
+
+        - Tuple for typed sequences of a fixed size eg ``nargs=len(tuple)``. Only
+          the first type is used, the others are ignored.
+
+    - FileType from ``argparse``.
+
+.. tip:: Too get access to the parse results from `argparse` provide a vairable
+    with the type ``pyapp.app.CommandOptions``.
 
 
 CliApplication
@@ -77,12 +148,12 @@ from typing import Sequence
 import argcomplete
 import colorama
 
-from . import init_logger
 from .. import conf
 from .. import extensions
 from ..app import builtin_handlers
 from ..injection import register_factory
 from ..utils.inspect import import_root_module
+from . import init_logger
 from .argument_actions import *
 from .arguments import *
 from .logging_formatter import ColourFormatter
@@ -230,27 +301,30 @@ class CliApplication(CommandGroup):
             f"Defaults to the env variable: {_key_help(self.env_settings_key)}",
         )
         self.argument(
+            "--version",
+            action="version",
+            version=f"%(prog)s version: {self.application_version}",
+        )
+        self.argument(
             "--nocolor",
             "--nocolour",
             dest="no_color",
             action="store_true",
             help="Disable colour output.",
         )
-        self.argument(
-            "--version",
-            action="version",
-            version=f"%(prog)s version: {self.application_version}",
-        )
 
         # Log configuration
-        self.argument(
+        arg_group = self.argument_group(
+            title="logging arguments", description="Customise log output"
+        )
+        arg_group.add_argument(
             "--log-level",
             default=os.environ.get(self.env_loglevel_key, "INFO"),
             choices=("DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"),
             help="Specify the log level to be used. "
             f"Defaults to env variable: {_key_help(self.env_loglevel_key)}",
         )
-        self.argument(
+        arg_group.add_argument(
             "--log-color",
             "--log-colour",
             dest="log_color",
@@ -258,7 +332,7 @@ class CliApplication(CommandGroup):
             action="store_true",
             help="Force coloured output from logger (on console).",
         )
-        self.argument(
+        arg_group.add_argument(
             "--log-nocolor",
             "--log-nocolour",
             dest="log_color",
@@ -267,14 +341,17 @@ class CliApplication(CommandGroup):
         )
 
         # Global check values
-        self.argument(
+        arg_group = self.argument_group(
+            title="check arguments", description="Enable and configure run-time checks"
+        )
+        arg_group.add_argument(
             "--checks",
             dest="checks_on_startup",
             action="store_true",
             help="Run checks on startup, any serious error will result "
             "in the application terminating.",
         )
-        self.argument(
+        arg_group.add_argument(
             "--checks-level",
             dest="checks_message_level",
             default="INFO",
@@ -294,7 +371,7 @@ class CliApplication(CommandGroup):
         """
         Set some default logging so settings are logged.
 
-        The main logging configuration from settings leaving us with a chicken
+        The main logging configuration is in settings leaving us with a chicken
         and egg situation.
 
         """
@@ -419,23 +496,30 @@ class CliApplication(CommandGroup):
         """
         Dispatch command to registered handler.
         """
+        # Initialisation phase
+        _set_running_application(self)
         self.pre_configure_logging()
-        logger.info("Starting %s", self.application_summary)
-
         self.register_factories()
         self.load_extensions()
 
+        # Parse arguments phase
         argcomplete.autocomplete(self.parser)
         opts = self.parser.parse_args(args)
 
+        # Set log level from opts
+        logging.root.setLevel(opts.log_level)
+        logger.info("Starting %s", self.application_summary)
+
+        # Load settings and configure logger
         self.configure_settings(opts)
         self.configure_logging(opts)
 
         handler_name = getattr(opts, ":handler", None)
         if handler_name != "checks":
             self.checks_on_startup(opts)
+        else:
+            self.configure_settings(opts)
 
-        _set_running_application(self)
         extensions.registry.ready()
 
         # Dispatch to handler.

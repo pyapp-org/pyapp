@@ -1,10 +1,10 @@
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry>=1.0", "rtd-poetry-tmp"]
+build-backend = "rtd_poetry"
 
 [tool.poetry]
 name = "pyapp"
-version = "4.4.0-beta.1"
+version = "4.4.0-beta.3"
 description = "A Python application framework - Let us handle the boring stuff!"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
@@ -36,13 +36,14 @@ python = "^3.6"
 argcomplete = "*"
 colorama = "*"
 yarl = "*"
-nox = "*"
-docutils = "^0.15"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.4.3"
+pytest = "^6.0.1"
 pytest-cov = "^2.10.0"
-pytest-asyncio = "^0.12.0"
+pytest-asyncio = "^0.14.0"
+nox = "*"
+docutils = "^0.16"
+sphinx = "^3.1.2"
 
 [tool.poetry.extras]
 yaml = ["pyyaml"]

@@ -51,11 +51,12 @@ A Basic Project
 An extensions consists of a standard Python project structure eg::
 
     ├┬ my_extension
-    │├ __init__.py
-    │└ __version__.py
+    │└ __init__.py
     ├ README.rst
+    ├ pyproject.toml
     ├ setup.cfg
     └ setup.py
+
 
 
 The contents of which are:
@@ -65,10 +66,6 @@ The contents of which are:
     package must container an Extension class every attribute on the class is optional.
 
     .. code-block:: python
-
-        # Pull in the version
-        from .__version__ import __version__
-
 
         class Extension:
             """
@@ -91,14 +88,10 @@ The contents of which are:
                 """
 
 
-``my_extension/__version__.py``
-    The package version; defining the version in a separate file simplifies the
-    process of obtaining the version during the package build process.
-
-    .. code-block:: python
-
-        __version__ = "1.0"
-
+.. tip::
+    A gotcha when building extensions is attempting to access settings to early
+    this is the reason for the ``ready`` event on the Extension class. Once ready
+    has been called settings are setup and ready for use.
 
 ``README.rst``
     While not strictly necessary a README document is *highly recommended* and is
@@ -113,6 +106,9 @@ The contents of which are:
         Information about my extension
 
 
+Using Setuptools
+~~~~~~~~~~~~~~~~
+
 ``setup.cfg``
     Defines the metadata and configuration used to build a package, this is also
     where the entry point used identify you extension is defined.
@@ -121,6 +117,7 @@ The contents of which are:
 
         [metadata]
         name = my-extension
+        version = "0.1"
         author = Author
         author-email = author@example.com
         description = Blurb about my extension
@@ -144,24 +141,48 @@ The contents of which are:
 
 
 ``setup.py``
-    Script that trigger ``setuptools`` to build a package. This example takes
-    advantage of the version in a separate file to extract the version number.
+    Script that trigger ``setuptools`` to build a package.
 
     .. code-block:: python
 
-        from pathlib import Path
-        from setuptools import setup
+        import setuptools
 
-        HERE = Path(__file__).parent
-
-        about = {}
-        with (HERE / "my_extension/__version__.py").open() as f:
-            exec(f.read(), about)
-
-        setup(version=about["__version__"])
+        setuptools.setup()
 
 
-.. tip::
-    A gotcha when building extensions is attempting to access settings to early
-    this is the reason for the ``ready`` event on the Extension class. Once ready
-    has been called settings are setup and ready for use.
+Using poetry
+~~~~~~~~~~~~
+
+``pyproject.toml``
+
+    Defines the metadata and configuration used to build a package, this is also
+    where the entry point used identify you extension is defined.
+
+    .. code-block:: toml
+
+        [build-system]
+        requires = ["poetry>=0.12"]
+        build-backend = "poetry.masonry.api"
+
+        [tool.poetry]
+        name = "my-extension"
+        version = "0.1"
+        description = "Blurb about my extension"
+        authors = ["Author <author@example.com>"]
+        license = "BSD-3-Clause"
+        packages = [
+            { include = "my_extension" },
+        ]
+        readme = "README.rst"
+        repository = "https://github.com/author/my-extension"
+
+        [tool.poetry.dependencies]
+        python = "^3.6"
+        pyapp = "^4.3.0"
+
+        [tool.poetry.dev-dependencies]
+        pytest = "^5.4.3"
+        pytest-cov = "^2.10.0"
+
+        [tool.poetry.plugins."pyapp.extensions"]
+        "my-extension" = "my_extension:Extension"
