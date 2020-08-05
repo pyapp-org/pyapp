@@ -362,7 +362,7 @@ class CliApplication(CommandGroup):
         """
         Set some default logging so settings are logged.
 
-        The main logging configuration from settings leaving us with a chicken
+        The main logging configuration is in settings leaving us with a chicken
         and egg situation.
 
         """
@@ -371,6 +371,7 @@ class CliApplication(CommandGroup):
 
         # Apply handler to root logger and set level.
         logging.root.handlers = [handler]
+        logging.root.setLevel(logging.ERROR)
 
     @staticmethod
     def register_factories():
@@ -435,8 +436,8 @@ class CliApplication(CommandGroup):
             dict_config.setdefault("version", 1)
             logging.config.dictConfig(dict_config)
 
-        # Configure root log level
-        logging.root.setLevel(opts.log_level)
+            # Configure root log level
+            logging.root.setLevel(opts.log_level)
 
     def checks_on_startup(self, opts: CommandOptions):
         """
@@ -476,23 +477,28 @@ class CliApplication(CommandGroup):
         """
         Dispatch command to registered handler.
         """
+        # Initialisation phase
+        _set_running_application(self)
         self.pre_configure_logging()
         self.register_factories()
         self.load_extensions()
 
+        # Parse arguments phase
         argcomplete.autocomplete(self.parser)
         opts = self.parser.parse_args(args)
 
+        # Set log level from opts
+        logging.root.setLevel(opts.log_level)
+        logger.info("Starting %s", self.application_summary)
+
+        # Load settings and configure logger
+        self.configure_settings(opts)
+        self.configure_logging(opts)
+
         handler_name = getattr(opts, ":handler", None)
         if handler_name != "checks":
-            self.configure_logging(opts)
-            logger.info("Starting %s", self.application_summary)
-            self.configure_settings(opts)
             self.checks_on_startup(opts)
-        else:
-            self.configure_settings(opts)
 
-        _set_running_application(self)
         extensions.registry.ready()
 
         # Dispatch to handler.
