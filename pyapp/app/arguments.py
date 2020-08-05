@@ -53,6 +53,15 @@ class ParserBase:
         """
         self.parser.add_argument(*name_or_flags, **kwargs)
 
+    def argument_group(self, *, title: str = None, description: str = None):
+        """
+        Add an argument group to proxy
+
+        See: https://docs.python.org/3.6/library/argparse.html#argument-groups
+
+        """
+        return self.parser.add_argument_group(title, description)
+
 
 class CommandProxy(ParserBase):
     """

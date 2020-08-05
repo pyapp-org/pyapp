@@ -298,27 +298,30 @@ class CliApplication(CommandGroup):
             f"Defaults to the env variable: {_key_help(self.env_settings_key)}",
         )
         self.argument(
+            "--version",
+            action="version",
+            version=f"%(prog)s version: {self.application_version}",
+        )
+        self.argument(
             "--nocolor",
             "--nocolour",
             dest="no_color",
             action="store_true",
             help="Disable colour output.",
         )
-        self.argument(
-            "--version",
-            action="version",
-            version=f"%(prog)s version: {self.application_version}",
-        )
 
         # Log configuration
-        self.argument(
+        arg_group = self.argument_group(
+            title="logging arguments", description="Customise log output"
+        )
+        arg_group.add_argument(
             "--log-level",
             default=os.environ.get(self.env_loglevel_key, "INFO"),
             choices=("DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"),
             help="Specify the log level to be used. "
             f"Defaults to env variable: {_key_help(self.env_loglevel_key)}",
         )
-        self.argument(
+        arg_group.add_argument(
             "--log-color",
             "--log-colour",
             dest="log_color",
@@ -326,7 +329,7 @@ class CliApplication(CommandGroup):
             action="store_true",
             help="Force coloured output from logger (on console).",
         )
-        self.argument(
+        arg_group.add_argument(
             "--log-nocolor",
             "--log-nocolour",
             dest="log_color",
@@ -335,14 +338,17 @@ class CliApplication(CommandGroup):
         )
 
         # Global check values
-        self.argument(
+        arg_group = self.argument_group(
+            title="check arguments", description="Enable and configure run-time checks"
+        )
+        arg_group.add_argument(
             "--checks",
             dest="checks_on_startup",
             action="store_true",
             help="Run checks on startup, any serious error will result "
             "in the application terminating.",
         )
-        self.argument(
+        arg_group.add_argument(
             "--checks-level",
             dest="checks_message_level",
             default="INFO",
