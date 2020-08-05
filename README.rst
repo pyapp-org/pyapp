@@ -12,6 +12,9 @@ pyApp - A python application framework
 | Build   | .. image:: https://img.shields.io/travis/pyapp-org/pyapp.svg?style=flat               |
 |         |    :target: https://travis-ci.org/pyapp-org/pyapp                                     |
 |         |    :alt: Travis CI Status                                                             |
+|         | .. image:: https://api.dependabot.com/badges/status?host=github&repo=pyapp-org/pyapp  |
+|         |    :target: https://dependabot.com                                                    |
+|         |    :alt: Dependabot Status                                                            |
 +---------+---------------------------------------------------------------------------------------+
 | Quality | .. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/maintainability |
 |         |    :target: https://codeclimate.com/github/pyapp-org/pyapp/maintainability            |
