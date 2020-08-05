@@ -51,7 +51,7 @@ class ParserBase:
         """
         Add argument to proxy
         """
-        self.parser.add_argument(*name_or_flags, **kwargs)
+        return self.parser.add_argument(*name_or_flags, **kwargs)
 
     def argument_group(self, *, title: str = None, description: str = None):
         """
@@ -121,11 +121,12 @@ class CommandProxy(ParserBase):
             if parameter.annotation is argparse.Namespace:
                 self._require_namespace = name
             else:
-                Argument.from_parameter(name, parameter).register_with_proxy(self)
-                self._args.append(name)
+                arg = Argument.from_parameter(name, parameter)
+                action = arg.register_with_proxy(self)
+                self._args.append((name, action.dest))
 
     def __call__(self, opts: argparse.Namespace):
-        kwargs = {arg: getattr(opts, arg) for arg in self._args}
+        kwargs = {kwarg: getattr(opts, opt_attr) for kwarg, opt_attr in self._args}
         if self._require_namespace:
             kwargs[self._require_namespace] = opts
         return self.handler(**kwargs)
@@ -201,13 +202,17 @@ class Argument:
         positional = parameter.kind is not parameter.KEYWORD_ONLY
         type_ = parameter.annotation
         default = parameter.default
-        flag = f"{'' if positional else '--'}{name.replace('_', '-')}"
+        if positional:
+            flag = name.upper()
+        else:
+            flag = f"--{name.replace('_', '-')}"
 
         # If field is assigned an Argument use that as the starting point
         if isinstance(default, Argument):
             instance = default
             default = EMPTY
-            instance.name_or_flags = (flag,) + instance.name_or_flags
+            if flag not in instance.name_or_flags:
+                instance.name_or_flags = (flag,) + instance.name_or_flags
         else:
             instance = cls(flag)
 
@@ -228,9 +233,11 @@ class Argument:
                 kwargs["nargs"] = len(type_.__args__)
 
             elif issubclass(origin, Sequence):
-                kwargs["action"] = "append"
+                # kwargs["action"] = "append"
                 if positional:
                     kwargs["nargs"] = "+"
+                else:
+                    kwargs["action"] = "append"
 
             elif issubclass(origin, Mapping):
                 kwargs["action"] = KeyValueAction
@@ -255,9 +262,10 @@ class Argument:
 
             elif type_ in (list, tuple):
                 type_ = None
-                kwargs["action"] = "append"
                 if positional:
                     kwargs["nargs"] = "+"
+                else:
+                    kwargs["action"] = "append"
 
             elif issubclass(type_, Enum):
                 kwargs["action"] = EnumName
@@ -327,7 +335,7 @@ class Argument:
         """
         Register self with a command proxy
         """
-        proxy.argument(*self.name_or_flags, **self.kwargs)
+        return proxy.argument(*self.name_or_flags, **self.kwargs)
 
 
 Arg = Argument.arg  # pylint: disable=invalid-name

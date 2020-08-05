@@ -1,3 +1,4 @@
+import argparse
 from argparse import FileType
 from enum import Enum
 from typing import Callable
@@ -17,11 +18,23 @@ from pyapp.app.arguments import CommandProxy
 
 def expected_args(*args):
     """
-    Helper for applying expected add_argment calls to test functions
+    Decorator to apply args expected to be extracted
     """
 
     def _wrapper(func):
-        func.expected = list(args)
+        func.expected_args = list(args)
+        return func
+
+    return _wrapper
+
+
+def call_args(*args: str, expected):
+    """
+    Decorator to provide a incoming arguments and the expected response
+    """
+
+    def _wrapper(func):
+        func.call_args = (args, expected)
         return func
 
     return _wrapper
@@ -34,22 +47,22 @@ class Colour(Enum):
 
 @expected_args()
 def func_compatible_1(opts):
-    pass
+    return opts
 
 
 @expected_args()
 def func_compatible_2(args: CommandOptions):
-    pass
+    return args
 
 
 @expected_args(mock.call("--arg-1", type=int, dest="arg_1", default=42))
 def func_compatible_3(opts: CommandOptions, *, arg_1: int = Arg(default=42)):
-    pass
+    return opts, arg_1
 
 
 @expected_args(mock.call("--arg-1", type=int, dest="arg_1", default=42))
 def func_compatible_4(*, arg_1: int = Arg(default=42), args: CommandOptions):
-    pass
+    return arg_1, args
 
 
 @expected_args()
@@ -57,128 +70,140 @@ def func_sample_01():
     pass
 
 
-@expected_args(mock.call("arg1", type=int))
+@expected_args(mock.call("ARG1", type=int))
+@call_args("42", expected=42)
 def func_sample_02(arg1: int):
-    pass
+    return arg1
 
 
 @expected_args(
-    mock.call("arg1", type=str),
+    mock.call("ARG1", type=str),
     mock.call("--arg2", type=str, dest="arg2", default="foo"),
 )
+@call_args("42", expected=("42", "foo"))
 def func_sample_03(arg1: str, *, arg2: str = "foo"):
-    pass
+    return arg1, arg2
 
 
 @expected_args(
-    mock.call("arg1", type=str), mock.call("--arg2", action="store_true", dest="arg2"),
+    mock.call("ARG1", type=str), mock.call("--arg2", action="store_true", dest="arg2"),
 )
+@call_args("42", "--arg2", expected=("42", True))
 def func_sample_04(arg1: str, *, arg2: bool):
-    pass
+    return arg1, arg2
 
 
-@expected_args(mock.call("arg1", action=KeyValueAction, nargs="+"),)
+@expected_args(mock.call("ARG1", action=KeyValueAction, nargs="+"),)
+@call_args("foo=a", "bar=b", expected={"foo": "a", "bar": "b"})
 def func_sample_05(arg1: dict):
-    pass
+    return arg1
 
 
 @expected_args(
-    mock.call("arg1", type=str),
+    mock.call("ARG1", type=str),
     mock.call("--arg2", action=KeyValueAction, dest="arg2"),
 )
 def func_sample_06(arg1: str, *, arg2: dict):
-    pass
+    return arg1, arg2
 
 
 @expected_args(
-    mock.call("arg1", type=str), mock.call("--arg2", dest="arg2", action="append"),
+    mock.call("ARG1", type=str), mock.call("--arg2", dest="arg2", action="append"),
 )
+@call_args("foo", "--arg2", "a", "--arg2", "b", expected=("foo", ["a", "b"]))
 def func_sample_07(arg1: str, *, arg2: list):
-    pass
+    return arg1, arg2
 
 
 @expected_args(
-    mock.call("arg1", type=str), mock.call("arg2", action="append", nargs="+"),
+    mock.call("ARG1", type=str), mock.call("ARG2", nargs="+"),
 )
+@call_args("foo", "a", "b", "c", expected=("foo", ["a", "b", "c"]))
 def func_sample_08(arg1: str, arg2: list):
-    pass
+    return arg1, arg2
 
 
 @expected_args(
-    mock.call("arg1", type=str),
+    mock.call("ARG1", type=str),
     mock.call("--arg2", type=int, dest="arg2", required=True),
 )
+@call_args("foo", "--arg2", "42", expected=("foo", 42))
 def func_sample_09(arg1: str, *, arg2: int):
-    pass
+    return arg1, arg2
 
 
-@expected_args(mock.call("arg1", type=Colour, action=EnumName),)
+@expected_args(mock.call("ARG1", type=Colour, action=EnumName),)
+@call_args("Red", expected=Colour.Red)
 def func_sample_11(arg1: Colour):
-    pass
+    return arg1
 
 
 @expected_args(
-    mock.call("arg1", type=str),
+    mock.call("ARG1", type=str),
     mock.call("--arg2", type=Colour, action=EnumName, dest="arg2", default=Colour.Red),
 )
 def func_sample_12(arg1: str, *, arg2: Colour = Colour.Red):
-    pass
+    return arg1, arg2
 
 
 # FileType instances cannot be directly compared.
-@expected_args(mock.call("arg1", type=mock.ANY),)
+@expected_args(mock.call("ARG1", type=mock.ANY),)
 def func_sample_13(arg1: FileType("w")):
-    pass
+    return arg1
 
 
-@expected_args(mock.call("arg1", type=str, action="append", nargs="+"))
-def func_sample_14(arg1: Sequence[str]):
-    pass
+@expected_args(mock.call("ARG1", type=int, nargs="+"))
+@call_args("1", "2", "3", expected=[1, 2, 3])
+def func_sample_14(arg1: Sequence[int]):
+    return arg1
 
 
 @expected_args(mock.call("--arg1", type=str, dest="arg1", action="append"))
 def func_sample_15(*, arg1: Sequence[str]):
-    pass
+    return arg1
 
 
-@expected_args(mock.call("arg1", type=str, action=KeyValueAction, nargs="+"))
+@expected_args(mock.call("ARG1", type=str, action=KeyValueAction, nargs="+"))
 def func_sample_16(arg1: Dict[str, str]):
-    pass
+    return arg1
 
 
 @expected_args(mock.call("--arg1", type=str, action=KeyValueAction, dest="arg1"))
 def func_sample_17(*, arg1: Dict[str, str]):
-    pass
+    return arg1
 
 
 @expected_args(mock.call("--arg1", type=str, dest="arg1", nargs=3))
+@call_args("--arg1", "a", "b", "c", expected=["a", "b", "c"])
 def func_sample_18(*, arg1: Tuple[str, str, str]):
-    pass
+    return arg1
 
 
-@expected_args(mock.call("arg-1", type=int, help="foo"))
+@expected_args(mock.call("ARG_1", type=int, help="foo"))
+@call_args("42", expected=42)
 def func_sample_21(arg_1: int = Arg(help="foo")):
-    pass
+    return arg_1
 
 
 @expected_args(
     mock.call("--arg-1", "--foo", "-f", type=int, dest="arg_1", required=True)
 )
+@call_args("-f", "42", expected=42)
 def func_sample_22(*, arg_1: int = Arg("--foo", "-f")):
-    pass
+    return arg_1
 
 
 @expected_args(mock.call("--arg-1", type=int, dest="arg_1", default=42))
 def func_sample_23(*, arg_1: int = Arg(default=42)):
-    pass
+    return arg_1
 
 
 def func_sample_31(*, arg1: object() = None):
-    pass
+    return arg1
 
 
 def func_sample_32(*, arg1: Callable[[int], None] = None):
-    pass
+    return arg1
 
 
 @pytest.mark.parametrize(
@@ -195,7 +220,7 @@ def test_from_parameter__compatibility(handler, expected):
     proxy = CommandProxy(handler, mock_parser)
 
     assert proxy._require_namespace == expected
-    assert mock_parser.add_argument.mock_calls == handler.expected
+    assert mock_parser.add_argument.mock_calls == handler.expected_args
 
 
 @pytest.mark.parametrize(
@@ -224,13 +249,19 @@ def test_from_parameter__compatibility(handler, expected):
     ),
 )
 def test_from_parameter__typed(handler):
+    """
+    Given a handler ensure expected parameters are extracted
+    """
     mock_parser = mock.Mock()
     CommandProxy(handler, mock_parser)
 
-    assert mock_parser.add_argument.mock_calls == handler.expected
+    assert mock_parser.add_argument.mock_calls == handler.expected_args
 
 
 def test_from_parameter__file_type():
+    """
+    Given a FileType instance ensure it is handled correctly
+    """
     mock_parser = mock.Mock()
     CommandProxy(func_sample_13, mock_parser)
 
@@ -242,6 +273,9 @@ def test_from_parameter__file_type():
 
 
 def test_from_parameter__unsupported_type():
+    """
+    Given an unsupported type ensure correct exception is raised
+    """
     mock_parser = mock.Mock()
 
     with pytest.raises(TypeError, match="Unsupported type"):
@@ -249,7 +283,41 @@ def test_from_parameter__unsupported_type():
 
 
 def test_from_parameter__unsupported_generic_type():
+    """
+    Given an unsupported generic type ensure the correct exception is raised
+    """
     mock_parser = mock.Mock()
 
     with pytest.raises(TypeError, match="Unsupported generic type"):
         CommandProxy(func_sample_32, mock_parser)
+
+
+@pytest.mark.parametrize(
+    "handler",
+    (
+        func_sample_02,
+        func_sample_03,
+        func_sample_04,
+        func_sample_05,
+        func_sample_07,
+        func_sample_08,
+        func_sample_09,
+        func_sample_11,
+        func_sample_14,
+        func_sample_18,
+        func_sample_21,
+        func_sample_22,
+    ),
+)
+def test_called(handler):
+    """
+    Given a parsed input ensure correct values are passed into the function
+    """
+    args, expected = handler.call_args
+    parser = argparse.ArgumentParser()
+    target = CommandProxy(handler, parser)
+    opts = parser.parse_args(args)
+
+    actual = target(opts)
+
+    assert actual == expected
