@@ -189,6 +189,76 @@ class Argument:
             *flags, default=default, choices=choices, help_text=help, metavar=metavar
         )
 
+    @staticmethod
+    def _handle_generics(
+        origin, type_, positional: bool, kwargs: Dict[str, Any]
+    ) -> type:
+        """
+        Handle generic types
+        """
+        name = str(origin)
+        if name == "typing.Union":
+            if len(type_.__args__) == 2 and type(None) in type_.__args__:
+                if positional:
+                    kwargs["nargs"] = "?"
+                else:
+                    kwargs["default"] = None
+            else:
+                raise TypeError(
+                    f"Only Optional[TYPE] or Union[TYPE, None] are supported"
+                )
+
+        elif issubclass(origin, Tuple):
+            kwargs["nargs"] = len(type_.__args__)
+
+        elif issubclass(origin, Sequence):
+            if positional:
+                kwargs["nargs"] = "+"
+            else:
+                kwargs["action"] = "append"
+
+        elif issubclass(origin, Mapping):
+            kwargs["action"] = KeyValueAction
+            if positional:
+                kwargs["nargs"] = "+"
+
+        else:
+            raise TypeError(f"Unsupported generic type: {origin!r}")
+
+        return type_.__args__[0] if type_.__args__ else None
+
+    @staticmethod
+    def _handle_types(
+        type_, positional: bool, kwargs: Dict[str, Any]
+    ) -> Optional[type]:
+        """
+        Handle types
+        """
+        if type_ is bool:
+            kwargs["action"] = "store_true"
+            return None
+
+        elif type_ is dict:
+            kwargs["action"] = KeyValueAction
+            if positional:
+                kwargs["nargs"] = "+"
+            return None
+
+        elif type_ in (list, tuple):
+            if positional:
+                kwargs["nargs"] = "+"
+            else:
+                kwargs["action"] = "append"
+            return None
+
+        elif issubclass(type_, Enum):
+            kwargs["action"] = EnumName
+
+        elif not positional and "default" not in kwargs:
+            kwargs["required"] = True
+
+        return type_
+
     @classmethod
     def from_parameter(cls, name: str, parameter: inspect.Parameter) -> "Argument":
         # pylint: disable=too-many-branches,too-many-statements
@@ -202,10 +272,7 @@ class Argument:
         positional = parameter.kind is not parameter.KEYWORD_ONLY
         type_ = parameter.annotation
         default = parameter.default
-        if positional:
-            flag = name.upper()
-        else:
-            flag = f"--{name.replace('_', '-')}"
+        flag = name.upper() if positional else f"--{name.replace('_', '-')}"
 
         # If field is assigned an Argument use that as the starting point
         if isinstance(default, Argument):
@@ -218,60 +285,16 @@ class Argument:
 
         # Start updating kwargs
         kwargs = instance.kwargs
-        if not positional:
-            kwargs["dest"] = name
         if default is not EMPTY:
             kwargs.setdefault("default", default)
 
-        # Used to detect Generic fields
-        origin = getattr(type_, "__origin__", None)
-
         # Handle type variances
+        origin = getattr(type_, "__origin__", None)
         if origin is not None:
-            # Handle generic types
-            if issubclass(origin, Tuple):
-                kwargs["nargs"] = len(type_.__args__)
-
-            elif issubclass(origin, Sequence):
-                # kwargs["action"] = "append"
-                if positional:
-                    kwargs["nargs"] = "+"
-                else:
-                    kwargs["action"] = "append"
-
-            elif issubclass(origin, Mapping):
-                kwargs["action"] = KeyValueAction
-                if positional:
-                    kwargs["nargs"] = "+"
-
-            else:
-                raise TypeError(f"Unsupported generic type: {origin!r}")
-
-            type_ = type_.__args__[0] if type_.__args__ else None
+            type_ = cls._handle_generics(origin, type_, positional, kwargs)
 
         elif isinstance(type_, type):
-            if type_ is bool:
-                type_ = None
-                kwargs["action"] = "store_true"
-
-            elif type_ is dict:
-                type_ = None
-                kwargs["action"] = KeyValueAction
-                if positional:
-                    kwargs["nargs"] = "+"
-
-            elif type_ in (list, tuple):
-                type_ = None
-                if positional:
-                    kwargs["nargs"] = "+"
-                else:
-                    kwargs["action"] = "append"
-
-            elif issubclass(type_, Enum):
-                kwargs["action"] = EnumName
-
-            elif not positional and "default" not in kwargs:
-                kwargs["required"] = True
+            type_ = cls._handle_types(type_, positional, kwargs)
 
         elif isinstance(type_, argparse.FileType):
             # Just pass as this is an `argparse` builtin

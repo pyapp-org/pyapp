@@ -3,6 +3,7 @@ from argparse import FileType
 from enum import Enum
 from typing import Callable
 from typing import Dict
+from typing import Optional
 from typing import Sequence
 from typing import Tuple
 from unittest import mock
@@ -55,12 +56,12 @@ def func_compatible_2(args: CommandOptions):
     return args
 
 
-@expected_args(mock.call("--arg-1", type=int, dest="arg_1", default=42))
+@expected_args(mock.call("--arg-1", type=int, default=42))
 def func_compatible_3(opts: CommandOptions, *, arg_1: int = Arg(default=42)):
     return opts, arg_1
 
 
-@expected_args(mock.call("--arg-1", type=int, dest="arg_1", default=42))
+@expected_args(mock.call("--arg-1", type=int, default=42))
 def func_compatible_4(*, arg_1: int = Arg(default=42), args: CommandOptions):
     return arg_1, args
 
@@ -77,8 +78,7 @@ def func_sample_02(arg1: int):
 
 
 @expected_args(
-    mock.call("ARG1", type=str),
-    mock.call("--arg2", type=str, dest="arg2", default="foo"),
+    mock.call("ARG1", type=str), mock.call("--arg2", type=str, default="foo"),
 )
 @call_args("42", expected=("42", "foo"))
 def func_sample_03(arg1: str, *, arg2: str = "foo"):
@@ -86,7 +86,7 @@ def func_sample_03(arg1: str, *, arg2: str = "foo"):
 
 
 @expected_args(
-    mock.call("ARG1", type=str), mock.call("--arg2", action="store_true", dest="arg2"),
+    mock.call("ARG1", type=str), mock.call("--arg2", action="store_true"),
 )
 @call_args("42", "--arg2", expected=("42", True))
 def func_sample_04(arg1: str, *, arg2: bool):
@@ -100,15 +100,14 @@ def func_sample_05(arg1: dict):
 
 
 @expected_args(
-    mock.call("ARG1", type=str),
-    mock.call("--arg2", action=KeyValueAction, dest="arg2"),
+    mock.call("ARG1", type=str), mock.call("--arg2", action=KeyValueAction),
 )
 def func_sample_06(arg1: str, *, arg2: dict):
     return arg1, arg2
 
 
 @expected_args(
-    mock.call("ARG1", type=str), mock.call("--arg2", dest="arg2", action="append"),
+    mock.call("ARG1", type=str), mock.call("--arg2", action="append"),
 )
 @call_args("foo", "--arg2", "a", "--arg2", "b", expected=("foo", ["a", "b"]))
 def func_sample_07(arg1: str, *, arg2: list):
@@ -124,8 +123,7 @@ def func_sample_08(arg1: str, arg2: list):
 
 
 @expected_args(
-    mock.call("ARG1", type=str),
-    mock.call("--arg2", type=int, dest="arg2", required=True),
+    mock.call("ARG1", type=str), mock.call("--arg2", type=int, required=True),
 )
 @call_args("foo", "--arg2", "42", expected=("foo", 42))
 def func_sample_09(arg1: str, *, arg2: int):
@@ -140,7 +138,7 @@ def func_sample_11(arg1: Colour):
 
 @expected_args(
     mock.call("ARG1", type=str),
-    mock.call("--arg2", type=Colour, action=EnumName, dest="arg2", default=Colour.Red),
+    mock.call("--arg2", type=Colour, action=EnumName, default=Colour.Red),
 )
 def func_sample_12(arg1: str, *, arg2: Colour = Colour.Red):
     return arg1, arg2
@@ -158,7 +156,7 @@ def func_sample_14(arg1: Sequence[int]):
     return arg1
 
 
-@expected_args(mock.call("--arg1", type=str, dest="arg1", action="append"))
+@expected_args(mock.call("--arg1", type=str, action="append"))
 def func_sample_15(*, arg1: Sequence[str]):
     return arg1
 
@@ -168,14 +166,26 @@ def func_sample_16(arg1: Dict[str, str]):
     return arg1
 
 
-@expected_args(mock.call("--arg1", type=str, action=KeyValueAction, dest="arg1"))
+@expected_args(mock.call("--arg1", type=str, action=KeyValueAction))
 def func_sample_17(*, arg1: Dict[str, str]):
     return arg1
 
 
-@expected_args(mock.call("--arg1", type=str, dest="arg1", nargs=3))
+@expected_args(mock.call("--arg1", type=str, nargs=3))
 @call_args("--arg1", "a", "b", "c", expected=["a", "b", "c"])
 def func_sample_18(*, arg1: Tuple[str, str, str]):
+    return arg1
+
+
+@expected_args(mock.call("ARG1", type=str, nargs="?"))
+@call_args(expected=None)
+def func_sample_19(arg1: Optional[str]):
+    return arg1
+
+
+@expected_args(mock.call("--arg1", type=str, default=None))
+@call_args(expected=None)
+def func_sample_20(*, arg1: Optional[str]):
     return arg1
 
 
@@ -185,15 +195,13 @@ def func_sample_21(arg_1: int = Arg(help="foo")):
     return arg_1
 
 
-@expected_args(
-    mock.call("--arg-1", "--foo", "-f", type=int, dest="arg_1", required=True)
-)
+@expected_args(mock.call("--arg-1", "--foo", "-f", type=int, required=True))
 @call_args("-f", "42", expected=42)
 def func_sample_22(*, arg_1: int = Arg("--foo", "-f")):
     return arg_1
 
 
-@expected_args(mock.call("--arg-1", type=int, dest="arg_1", default=42))
+@expected_args(mock.call("--arg-1", type=int, default=42))
 def func_sample_23(*, arg_1: int = Arg(default=42)):
     return arg_1
 
@@ -243,6 +251,8 @@ def test_from_parameter__compatibility(handler, expected):
         func_sample_16,
         func_sample_17,
         func_sample_18,
+        func_sample_19,
+        func_sample_20,
         func_sample_21,
         func_sample_22,
         func_sample_23,
@@ -305,6 +315,8 @@ def test_from_parameter__unsupported_generic_type():
         func_sample_11,
         func_sample_14,
         func_sample_18,
+        func_sample_19,
+        func_sample_20,
         func_sample_21,
         func_sample_22,
     ),
