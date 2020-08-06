@@ -170,6 +170,7 @@ def _key_help(key: str) -> str:
     return key
 
 
+# pylint: disable=too-many-instance-attributes
 class CliApplication(CommandGroup):
     """
     Application interface that provides a CLI interface.
@@ -236,6 +237,7 @@ class CliApplication(CommandGroup):
         epilog: str = None,
         version: str = None,
         ext_white_list: Sequence[str] = None,
+        ext_allow_list: Sequence[str] = None,
         application_settings: str = None,
         application_checks: str = None,
         env_settings_key: str = None,
@@ -247,7 +249,7 @@ class CliApplication(CommandGroup):
         self.application_version = version or getattr(
             root_module, "__version__", "Unknown"
         )
-        self.ext_allow_list = ext_white_list
+        self.ext_allow_list = ext_allow_list or ext_white_list
 
         # Determine application settings (disable for standalone scripts)
         if application_settings is None and root_module.__name__ != "__main__":
