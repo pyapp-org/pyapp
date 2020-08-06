@@ -148,12 +148,12 @@ from typing import Sequence
 import argcomplete
 import colorama
 
+from . import init_logger
 from .. import conf
 from .. import extensions
 from ..app import builtin_handlers
 from ..injection import register_factory
 from ..utils.inspect import import_root_module
-from . import init_logger
 from .argument_actions import *
 from .arguments import *
 from .logging_formatter import ColourFormatter
@@ -247,7 +247,7 @@ class CliApplication(CommandGroup):
         self.application_version = version or getattr(
             root_module, "__version__", "Unknown"
         )
-        self.ext_white_list = ext_white_list
+        self.ext_allow_list = ext_white_list
 
         # Determine application settings (disable for standalone scripts)
         if application_settings is None and root_module.__name__ != "__main__":
@@ -265,10 +265,12 @@ class CliApplication(CommandGroup):
         if env_loglevel_key is not None:
             self.env_loglevel_key = env_loglevel_key
 
+        # Configure Logging as early as possible
+        self._init_logger = init_logger.InitHandler(self.default_log_handler)
+        self.pre_configure_logging()
+
         self._init_parser()
         self.register_builtin_handlers()
-
-        self._init_logger = init_logger.InitHandler(self.default_log_handler)
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(<module {self.root_module.__name__}>)"
@@ -395,7 +397,7 @@ class CliApplication(CommandGroup):
         """
         Load/Configure extensions.
         """
-        entry_points = extensions.ExtensionEntryPoints(self.ext_white_list)
+        entry_points = extensions.ExtensionEntryPoints(self.ext_allow_list)
         extensions.registry.load_from(entry_points.extensions())
         extensions.registry.register_commands(self)
 
@@ -434,22 +436,28 @@ class CliApplication(CommandGroup):
         """
         Configure the logging framework.
         """
-        self.default_log_handler.formatter = self.get_log_formatter(opts.log_color)
+        # Prevent duplicate runs
+        if hasattr(self, "_init_logger"):
+            self.default_log_handler.formatter = self.get_log_formatter(opts.log_color)
 
-        handler = logging.root.handlers.pop(0)
-        logging.root.handlers.append(self.default_log_handler)
+            # Replace root handler with the default handler
+            logging.root.handlers.pop(0)
+            logging.root.handlers.append(self.default_log_handler)
 
-        if conf.settings.LOGGING:
-            logger.info("Applying logging configuration.")
+            if conf.settings.LOGGING:
+                logger.info("Applying logging configuration.")
 
-            # Set a default version if not supplied by settings
-            dict_config = conf.settings.LOGGING.copy()
-            dict_config.setdefault("version", 1)
-            logging.config.dictConfig(dict_config)
+                # Set a default version if not supplied by settings
+                dict_config = conf.settings.LOGGING.copy()
+                dict_config.setdefault("version", 1)
+                logging.config.dictConfig(dict_config)
 
-        # Configure root log level
-        logging.root.setLevel(opts.log_level)
-        handler.replay(self.default_log_handler)
+            # Configure root log level
+            logging.root.setLevel(opts.log_level)
+
+            # Replay initial entries and remove
+            self._init_logger.replay(self.default_log_handler)
+            del self._init_logger
 
     def checks_on_startup(self, opts: CommandOptions):
         """
@@ -498,7 +506,6 @@ class CliApplication(CommandGroup):
         """
         # Initialisation phase
         _set_running_application(self)
-        self.pre_configure_logging()
         self.register_factories()
         self.load_extensions()
 
