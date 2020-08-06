@@ -6,6 +6,7 @@ from typing import Dict
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
+from typing import Union
 from unittest import mock
 
 import pytest
@@ -214,6 +215,10 @@ def func_sample_32(*, arg1: Callable[[int], None] = None):
     return arg1
 
 
+def func_sample_33(*, arg1: Union[int, str, None] = None):
+    return arg1
+
+
 @pytest.mark.parametrize(
     "handler, expected",
     (
@@ -300,6 +305,18 @@ def test_from_parameter__unsupported_generic_type():
 
     with pytest.raises(TypeError, match="Unsupported generic type"):
         CommandProxy(func_sample_32, mock_parser)
+
+
+def test_from_parameter__only_optional_unions():
+    """
+    Given a Union with more than 2 members ensure the correct exception is raised
+    """
+    mock_parser = mock.Mock()
+
+    with pytest.raises(
+        TypeError, match=r"Only Optional\[TYPE\] or Union\[TYPE, None\] are supported"
+    ):
+        CommandProxy(func_sample_33, mock_parser)
 
 
 @pytest.mark.parametrize(

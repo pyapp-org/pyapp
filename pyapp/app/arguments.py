@@ -292,14 +292,10 @@ class Argument:
         origin = getattr(type_, "__origin__", None)
         if origin is not None:
             type_ = cls._handle_generics(origin, type_, positional, kwargs)
-
         elif isinstance(type_, type):
             type_ = cls._handle_types(type_, positional, kwargs)
-
         elif isinstance(type_, argparse.FileType):
-            # Just pass as this is an `argparse` builtin
-            pass
-
+            pass  # Just pass as this is an `argparse` builtin
         else:
             raise TypeError(f"Unsupported type: {type_!r}")
 
