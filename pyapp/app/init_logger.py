@@ -33,3 +33,11 @@ class InitHandler(logging.Handler):
         for record in self._store:
             handler.handle(record)
         self._store.clear()
+
+    def emit(self, record: logging.LogRecord) -> None:
+        """
+        Emit the record
+        """
+
+        # Pass to initial handler
+        self.handler.emit(record)

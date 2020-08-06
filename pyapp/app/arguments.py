@@ -205,7 +205,7 @@ class Argument:
                     kwargs["default"] = None
             else:
                 raise TypeError(
-                    f"Only Optional[TYPE] or Union[TYPE, None] are supported"
+                    "Only Optional[TYPE] or Union[TYPE, None] are supported"
                 )
 
         elif issubclass(origin, Tuple):
@@ -238,20 +238,20 @@ class Argument:
             kwargs["action"] = "store_true"
             return None
 
-        elif type_ is dict:
+        if type_ is dict:
             kwargs["action"] = KeyValueAction
             if positional:
                 kwargs["nargs"] = "+"
             return None
 
-        elif type_ in (list, tuple):
+        if type_ in (list, tuple):
             if positional:
                 kwargs["nargs"] = "+"
             else:
                 kwargs["action"] = "append"
             return None
 
-        elif issubclass(type_, Enum):
+        if issubclass(type_, Enum):
             kwargs["action"] = EnumName
 
         elif not positional and "default" not in kwargs:
