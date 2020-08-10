@@ -43,7 +43,7 @@ pytest-cov = "^2.10.0"
 pytest-asyncio = "^0.14.0"
 nox = "*"
 docutils = "^0.16"
-sphinx = "^3.1.2"
+sphinx = "^3.2.0"
 
 [tool.poetry.extras]
 yaml = ["pyyaml"]
