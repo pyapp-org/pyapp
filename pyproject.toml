@@ -37,6 +37,8 @@ argcomplete = "*"
 colorama = "*"
 yarl = "*"
 
+pyyaml = {version = "*", optional = true }
+
 [tool.poetry.dev-dependencies]
 pytest = "^6.0.1"
 pytest-cov = "^2.10.0"
