@@ -18,10 +18,9 @@ from typing import Union
 from yarl import URL
 
 # Supported content types
-
 try:
     from yaml import safe_load as yaml_load
-except ImportError:
+except ImportError:  # pragma: no cover
     yaml_load = None
 
 from pyapp.exceptions import UnsupportedContentType

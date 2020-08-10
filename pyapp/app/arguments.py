@@ -51,7 +51,16 @@ class ParserBase:
         """
         Add argument to proxy
         """
-        self.parser.add_argument(*name_or_flags, **kwargs)
+        return self.parser.add_argument(*name_or_flags, **kwargs)
+
+    def argument_group(self, *, title: str = None, description: str = None):
+        """
+        Add an argument group to proxy
+
+        See: https://docs.python.org/3.6/library/argparse.html#argument-groups
+
+        """
+        return self.parser.add_argument_group(title, description)
 
 
 class CommandProxy(ParserBase):
@@ -112,11 +121,12 @@ class CommandProxy(ParserBase):
             if parameter.annotation is argparse.Namespace:
                 self._require_namespace = name
             else:
-                Argument.from_parameter(name, parameter).register_with_proxy(self)
-                self._args.append(name)
+                arg = Argument.from_parameter(name, parameter)
+                action = arg.register_with_proxy(self)
+                self._args.append((name, action.dest))
 
     def __call__(self, opts: argparse.Namespace):
-        kwargs = {arg: getattr(opts, arg) for arg in self._args}
+        kwargs = {kwarg: getattr(opts, opt_attr) for kwarg, opt_attr in self._args}
         if self._require_namespace:
             kwargs[self._require_namespace] = opts
         return self.handler(**kwargs)
@@ -179,6 +189,76 @@ class Argument:
             *flags, default=default, choices=choices, help_text=help, metavar=metavar
         )
 
+    @staticmethod
+    def _handle_generics(
+        origin, type_, positional: bool, kwargs: Dict[str, Any]
+    ) -> type:
+        """
+        Handle generic types
+        """
+        name = str(origin)
+        if name == "typing.Union":
+            if len(type_.__args__) == 2 and type(None) in type_.__args__:
+                if positional:
+                    kwargs["nargs"] = "?"
+                else:
+                    kwargs["default"] = None
+            else:
+                raise TypeError(
+                    "Only Optional[TYPE] or Union[TYPE, None] are supported"
+                )
+
+        elif issubclass(origin, Tuple):
+            kwargs["nargs"] = len(type_.__args__)
+
+        elif issubclass(origin, Sequence):
+            if positional:
+                kwargs["nargs"] = "+"
+            else:
+                kwargs["action"] = "append"
+
+        elif issubclass(origin, Mapping):
+            kwargs["action"] = KeyValueAction
+            if positional:
+                kwargs["nargs"] = "+"
+
+        else:
+            raise TypeError(f"Unsupported generic type: {origin!r}")
+
+        return type_.__args__[0] if type_.__args__ else None
+
+    @staticmethod
+    def _handle_types(
+        type_, positional: bool, kwargs: Dict[str, Any]
+    ) -> Optional[type]:
+        """
+        Handle types
+        """
+        if type_ is bool:
+            kwargs["action"] = "store_true"
+            return None
+
+        if type_ is dict:
+            kwargs["action"] = KeyValueAction
+            if positional:
+                kwargs["nargs"] = "+"
+            return None
+
+        if type_ in (list, tuple):
+            if positional:
+                kwargs["nargs"] = "+"
+            else:
+                kwargs["action"] = "append"
+            return None
+
+        if issubclass(type_, Enum):
+            kwargs["action"] = EnumName
+
+        elif not positional and "default" not in kwargs:
+            kwargs["required"] = True
+
+        return type_
+
     @classmethod
     def from_parameter(cls, name: str, parameter: inspect.Parameter) -> "Argument":
         # pylint: disable=too-many-branches,too-many-statements
@@ -192,73 +272,30 @@ class Argument:
         positional = parameter.kind is not parameter.KEYWORD_ONLY
         type_ = parameter.annotation
         default = parameter.default
-        flag = f"{'' if positional else '--'}{name.replace('_', '-')}"
+        flag = name.upper() if positional else f"--{name.replace('_', '-')}"
 
         # If field is assigned an Argument use that as the starting point
         if isinstance(default, Argument):
             instance = default
             default = EMPTY
-            instance.name_or_flags = (flag,) + instance.name_or_flags
+            if flag not in instance.name_or_flags:
+                instance.name_or_flags = (flag,) + instance.name_or_flags
         else:
             instance = cls(flag)
 
         # Start updating kwargs
         kwargs = instance.kwargs
-        kwargs["dest"] = name
         if default is not EMPTY:
             kwargs.setdefault("default", default)
 
-        # Used to detect Generic fields
-        origin = getattr(type_, "__origin__", None)
-
         # Handle type variances
+        origin = getattr(type_, "__origin__", None)
         if origin is not None:
-            # Handle generic types
-            if issubclass(origin, Tuple):
-                kwargs["nargs"] = len(type_.__args__)
-
-            elif issubclass(origin, Sequence):
-                kwargs["action"] = "append"
-                if positional:
-                    kwargs["nargs"] = "+"
-
-            elif issubclass(origin, Mapping):
-                kwargs["action"] = KeyValueAction
-                if positional:
-                    kwargs["nargs"] = "+"
-
-            else:
-                raise TypeError(f"Unsupported generic type: {origin!r}")
-
-            type_ = type_.__args__[0] if type_.__args__ else None
-
+            type_ = cls._handle_generics(origin, type_, positional, kwargs)
         elif isinstance(type_, type):
-            if type_ is bool:
-                type_ = None
-                kwargs["action"] = "store_true"
-
-            elif type_ is dict:
-                type_ = None
-                kwargs["action"] = KeyValueAction
-                if positional:
-                    kwargs["nargs"] = "+"
-
-            elif type_ in (list, tuple):
-                type_ = None
-                kwargs["action"] = "append"
-                if positional:
-                    kwargs["nargs"] = "+"
-
-            elif issubclass(type_, Enum):
-                kwargs["action"] = EnumName
-
-            elif not positional and "default" not in kwargs:
-                kwargs["required"] = True
-
+            type_ = cls._handle_types(type_, positional, kwargs)
         elif isinstance(type_, argparse.FileType):
-            # Just pass as this is an `argparse` builtin
-            pass
-
+            pass  # Just pass as this is an `argparse` builtin
         else:
             raise TypeError(f"Unsupported type: {type_!r}")
 
@@ -317,7 +354,7 @@ class Argument:
         """
         Register self with a command proxy
         """
-        proxy.argument(*self.name_or_flags, **self.kwargs)
+        return proxy.argument(*self.name_or_flags, **self.kwargs)
 
 
 Arg = Argument.arg  # pylint: disable=invalid-name
