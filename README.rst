@@ -28,14 +28,15 @@ As of pyApp 4.0, Python < 3.6 is no longer supported.
 |         |    :target: https://github.com/ambv/black                                             |
 |         |    :alt: Once you go Black...                                                         |
 +---------+---------------------------------------------------------------------------------------+
-| Package | .. image:: https://img.shields.io/pypi/v/pyapp.svg                                    |
+| Package | .. image:: https://img.shields.io/pypi/v/pyapp                                        |
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
 |         |    :alt: Latest Version                                                               |
-|         | .. image:: https://img.shields.io/pypi/pyversions/pyapp.svg                           |
+|         | .. image:: https://img.shields.io/pypi/pyversions/pyapp                               |
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
-|         | .. image:: https://img.shields.io/pypi/l/pyapp.svg                                    |
+|         | .. image:: https://img.shields.io/pypi/l/pyapp                                        |
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
-|         | .. image:: https://img.shields.io/pypi/wheel/pyapp.svg                                |
+|         | .. image:: https://img.shields.io/pypi/wheel/pyapp                                    |
+|         |    :alt: PyPI - Wheel                                                                 |
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
 +---------+---------------------------------------------------------------------------------------+
 
