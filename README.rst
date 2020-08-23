@@ -83,18 +83,26 @@ In Beta
 -------
 
 - 🐛 Rollbar - `pyapp.rollbar`_
+
 - 📧 AIO SMTPlib - `pyapp.aiosmtplib`_ Extension for aiosmtplib
+
 - ☁ Boto3 - `pyapp.boto3`_
+
 - ☁ AIOBotocore - `pyapp.aiobotocore`_
+
 - 📨 Messaging - `pyapp.messaging`_ - Extension to provide abstract interfaces for Message Queues.
- - 📨 AWS Messaging - `pyapp.messaging-aws`_ - Messaging extension for AWS (SQS/SNS)
+
+  - 📨 AWS Messaging - `pyapp.messaging-aws`_ - Messaging extension for AWS (SQS/SNS)
 
 In development
 --------------
 
 - 📧 SMTP - `pyapp.SMTP`_
+
 - 📨 Aio-Pika - `pyapp.aiopika`_ - Messaging extension for pika (RabbitMQ/AMQP)
+
 - 🔌 PySpark - `pyapp.pyspark`_ - Extension for PySpark
+
 - 🔎 Elastic Search - `pyapp.elasticsearch`_ - Extension for Elasticsearch
 
 Coming soon
