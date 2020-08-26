@@ -92,10 +92,11 @@ Table of Contents
    :maxdepth: 2
 
    getting-started
+   sys-admin-playbook
    recipes/index
+   reference/index
    extensions
    developers
-   reference/index
    change-history
 
 Indices and tables
