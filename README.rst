@@ -76,30 +76,53 @@ So what do we handle?
 Extensions
 ==========
 
-- SQLAlchemy - `pyapp.sqlalchemy`_
-- Redis - `pyapp.redis`_
-- AIOBotocore - `pyapp.aiobotocore`_
+- 🔌 SQLAlchemy - `pyapp.sqlalchemy`_
+- 🔌 Redis - `pyapp.redis`_
+
+In Beta
+-------
+
+- 🐛 Rollbar - `pyapp.rollbar`_
+
+- 📧 AIO SMTPlib - `pyapp.aiosmtplib`_ Extension for aiosmtplib
+
+- ☁ Boto3 - `pyapp.boto3`_
+
+- ☁ AIOBotocore - `pyapp.aiobotocore`_
+
+- 📨 Messaging - `pyapp.messaging`_ - Extension to provide abstract interfaces for Message Queues.
+
+  - 📨 AWS Messaging - `pyapp.messaging-aws`_ - Messaging extension for AWS (SQS/SNS)
 
 In development
 --------------
 
-- SMTP - `pyapp.SMTP`_
-- Boto3 - `pyapp.boto3`_
-- Messaging - `pyapp.messaging` - Extension to provide abstract interfaces for Message Queues. 
- - Aio-Pika - `pyapp.aiopika` - Messaging extension for pika (RabbitMQ/AMQP)
- - AIOBotocore - `pyapp.aiobotocore` - Messaging extension for AWS (SQS/SNS)
-  
+- 📧 SMTP - `pyapp.SMTP`_
+
+- 📨 Aio-Pika - `pyapp.aiopika`_ - Messaging extension for pika (RabbitMQ/AMQP)
+
+- 🔌 PySpark - `pyapp.pyspark`_ - Extension for PySpark
+
+- 🔎 Elastic Search - `pyapp.elasticsearch`_ - Extension for Elasticsearch
 
 Coming soon
 -----------
 
-Extensions for LDAP, Paramiko.
+- 📨 AMQP Messaging - Messaging extension for AMQP (RabbitMQ)
+
 
 .. _pyapp.sqlalchemy: https://www.github.com/pyapp-org/pyapp.sqlalchemy
 .. _pyapp.redis: https://www.github.com/pyapp-org/pyapp.redis
 .. _pyapp.aiobotocore: https://www.github.com/pyapp-org/pyapp.aiobotocore
 .. _pyapp.SMTP: https://www.github.com/pyapp-org/pyapp.SMTP
 .. _pyapp.boto3: https://www.github.com/pyapp-org/pyapp.boto3
+.. _pyapp.rollbar: https://www.github.com/pyapp-org/pyapp.rollbar
+.. _pyapp.aiosmtplib: https://www.github.com/pyapp-org/pyapp.aiosmtplib
+.. _pyapp.messaging: https://www.github.com/pyapp-org/pyapp-messaging
+.. _pyapp.messaging-aws: https://www.github.com/pyapp-org/pyapp-messaging-aws
+.. _pyapp.aiopika: https://www.github.com/pyapp-org/pyapp.aiopika
+.. _pyapp.pyspark: https://www.github.com/pyapp-org/pyapp.pyspark
+.. _pyapp.elasticsearch: https://www.github.com/pyapp-org/pyapp.elasticsearch
 
 
 Contributions

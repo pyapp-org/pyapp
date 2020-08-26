@@ -1,3 +1,45 @@
+4.4.beta-4
+==========
+
+Features
+--------
+
+- Delayed logging on startup, initial log messages are stored (critical messages
+  are still displayed) to allow for logging to be configured before the stored
+  messages are replayed for the now active logger. This also opens up the option
+  of file only based logging.
+
+- Command signature can now accept the Optional values for both positional are
+  optional arguments, this allows for optional positional arguments.
+
+
+4.4.beta-3
+==========
+
+Features
+--------
+
+- Argument grouping support enable, with builtin CLI commands grouped.
+
+
+Bug fixes
+---------
+
+- Custom logging configuration was not being applied for logging defined in settings
+
+- Using an _ in a positional argument signature caused an exception in argparse
+
+
+4.4.beta-2
+==========
+
+Bug fixes
+---------
+
+- Positional arguments caused an exception in argparse, a entire new suit of tests
+  was added to address this issue.
+
+
 4.4.beta-1
 ==========
 
