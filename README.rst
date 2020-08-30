@@ -4,6 +4,8 @@ pyApp - A python application framework
 
 *Let us handle the boring stuff!*
 
+As of pyApp 4.0, Python < 3.6 is no longer supported.
+
 +---------+---------------------------------------------------------------------------------------+
 | Docs    | .. image:: https://readthedocs.org/projects/pyapp/badge/?version=latest               |
 |         |    :target: https://docs.pyapp.info/                                                  |
@@ -26,22 +28,20 @@ pyApp - A python application framework
 |         |    :target: https://github.com/ambv/black                                             |
 |         |    :alt: Once you go Black...                                                         |
 +---------+---------------------------------------------------------------------------------------+
-| Package | .. image:: https://img.shields.io/pypi/v/pyapp.svg                                    |
+| Package | .. image:: https://img.shields.io/pypi/v/pyapp                                        |
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
 |         |    :alt: Latest Version                                                               |
-|         | .. image:: https://img.shields.io/pypi/pyversions/pyapp.svg                           |
+|         | .. image:: https://img.shields.io/pypi/pyversions/pyapp                               |
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
-|         | .. image:: https://img.shields.io/pypi/l/pyapp.svg                                    |
+|         | .. image:: https://img.shields.io/pypi/l/pyapp                                        |
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
-|         | .. image:: https://img.shields.io/pypi/wheel/pyapp.svg                                |
+|         | .. image:: https://img.shields.io/pypi/wheel/pyapp                                    |
+|         |    :alt: PyPI - Wheel                                                                 |
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
 +---------+---------------------------------------------------------------------------------------+
 
-Many features inspired by Django, but modified to be more general for use
-outside of web applications.
-
-With pyApp 4.0, versions of Python < 3.6 are no longer supported.
-
+pyApp takes care of the boring boilerplate code for building a CLI, manageing 
+settings and much more so you can focus on your buisness logic.
 
 So what do we handle?
 =====================

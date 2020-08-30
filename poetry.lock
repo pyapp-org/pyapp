@@ -599,7 +599,7 @@ testing = ["jaraco.itertools", "func-timeout"]
 yaml = ["pyyaml"]
 
 [metadata]
-content-hash = "a7d90e2cd6cc5767be2dda5f672d632b60413092206d7f01d44c9b4993eaba8c"
+content-hash = "1e10703dc91784c261d79d52ad4bbfe119f1ca2c01e7c9fad3210f96c6d068ee"
 python-versions = "^3.6"
 
 [metadata.files]
