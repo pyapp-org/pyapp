@@ -40,8 +40,8 @@ As of pyApp 4.0, Python < 3.6 is no longer supported.
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
 +---------+---------------------------------------------------------------------------------------+
 
-pyApp takes care of the boring boilerplate code for building a CLI, manageing 
-settings and much more so you can focus on your buisness logic.
+pyApp takes care of the boring boilerplate code for building a CLI, managing
+settings and much more so you can focus on your business logic.
 
 So what do we handle?
 =====================

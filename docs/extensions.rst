@@ -9,34 +9,59 @@ Available Extensions
 pyApp Developed
 ---------------
 
-Extensions available for use:
+🔌 SQLAlchemy - `pyapp.sqlalchemy`_
 
-- `pyapp.aiobotocore <https://github.com/pyapp-org/pyapp.aiobotocore>`_ -
-  Factory for `Async AWS client library <https://github.com/aio-libs/aiobotocore>`_
-- `pyapp.aio_pika <https://github.com/pyapp-org/pyapp.aio_pika>`_ -
-  Factory for `Async client for AMQP <https://github.com/mosquito/aio-pika/>`_
-- `pyapp.redis <https://github.com/pyapp-org/pyapp.redis>`_ -
-  Factory for `redis-py <https://github.com/andymccurdy/redis-py>`_
-- `pyapp.sqlalchemy <https://github.com/pyapp-org/pyapp.sqlalchemy>`_ -
-  Factory for `SQLALchemy <https://www.sqlalchemy.org>`_
+🔌 Redis - `pyapp.redis`_
 
+In Beta
+~~~~~~~
 
-Extensions in beta:
+🐛 Rollbar - `pyapp.rollbar`_
 
-- `pyapp-messaging <https://github.com/pyapp-org/pyapp-messaging>`_ -
-  Abstract messaging framework for interacting with Pub/Sub and Message Queues.
+📧 AIO SMTPlib - `pyapp.aiosmtplib`_ Extension for aiosmtplib
 
-Extensions in development:
+☁ Boto3 - `pyapp.boto3`_
 
-- `pyapp.boto3 <https://github.com/pyapp-org/pyapp.boto3>`_ -
-  Factory for `AWS client library <https://boto3.amazonaws.com/v1/documentation/api/latest/index.html>`_
-- `pyapp.smtp <https://github.com/pyapp-org/pyapp.SMTP>`_ -
-  Interface to `smtplib <https://docs.python.org/3/library/smtplib.html>`_
+☁ AIOBotocore - `pyapp.aiobotocore`_
+
+📨 Messaging - `pyapp.messaging`_ - Extension to provide abstract interfaces for Message Queues.
+
+- 📨 AWS Messaging - `pyapp.messaging-aws`_ - Messaging extension for AWS (SQS/SNS)
+
+In development
+~~~~~~~~~~~~~~
+
+📧 SMTP - `pyapp.SMTP`_
+
+📨 Aio-Pika - `pyapp.aiopika`_ - Messaging extension for pika (RabbitMQ/AMQP)
+
+🔌 PySpark - `pyapp.pyspark`_ - Extension for PySpark
+
+🔎 Elastic Search - `pyapp.elasticsearch`_ - Extension for Elasticsearch
+
+Coming soon
+-----------
+
+📨 AMQP Messaging - Messaging extension for AMQP (RabbitMQ)
+
+.. _pyapp.sqlalchemy: https://www.github.com/pyapp-org/pyapp.sqlalchemy
+.. _pyapp.redis: https://www.github.com/pyapp-org/pyapp.redis
+.. _pyapp.aiobotocore: https://www.github.com/pyapp-org/pyapp.aiobotocore
+.. _pyapp.SMTP: https://www.github.com/pyapp-org/pyapp.SMTP
+.. _pyapp.boto3: https://www.github.com/pyapp-org/pyapp.boto3
+.. _pyapp.rollbar: https://www.github.com/pyapp-org/pyapp.rollbar
+.. _pyapp.aiosmtplib: https://www.github.com/pyapp-org/pyapp.aiosmtplib
+.. _pyapp.messaging: https://www.github.com/pyapp-org/pyapp-messaging
+.. _pyapp.messaging-aws: https://www.github.com/pyapp-org/pyapp-messaging-aws
+.. _pyapp.aiopika: https://www.github.com/pyapp-org/pyapp.aiopika
+.. _pyapp.pyspark: https://www.github.com/pyapp-org/pyapp.pyspark
+.. _pyapp.elasticsearch: https://www.github.com/pyapp-org/pyapp.elasticsearch
 
 .. note::
     The development status of these projects may have changed from when this
     documentation was generated, see the repository (or PyPi) of the extension
     package for up to date status.
+
 
 Developing an Extension
 =======================

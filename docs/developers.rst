@@ -12,7 +12,7 @@ met:
 - Ensure your code has unit test coverage (using pyTest). Unittests should be
   designed to be as fast as possible.
 
-- Ensure your code passes the pyLint checks (this is part of the travis build).
+- Ensure your code passes the pyLint checks (this is part of the automated build).
 
 - Update the docs with the details if required.
 
