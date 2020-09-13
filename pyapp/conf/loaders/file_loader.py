@@ -56,10 +56,10 @@ class FileLoader(Loader):
                 data = registry.parse_file(fp, self.content_type)
 
         except IOError as ex:
-            raise InvalidConfiguration(f"Unable to load settings: {self}\n{ex}")
+            raise InvalidConfiguration(f"Unable to load settings: {self}\n{ex}") from ex
 
         except ValueError as ex:
-            raise InvalidConfiguration(f"Unable to parse file: {self}\n{ex}")
+            raise InvalidConfiguration(f"Unable to parse file: {self}\n{ex}") from ex
 
         # Check we have a valid container object
         if not isinstance(data, dict):

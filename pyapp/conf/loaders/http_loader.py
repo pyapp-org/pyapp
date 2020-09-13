@@ -102,13 +102,15 @@ class HttpLoader(Loader):
         try:
             self._fp, self.content_type = retrieve_file(self.url)
         except IOError as ex:
-            raise InvalidConfiguration(f"Unable to load settings: {self}\n{ex}")
+            raise InvalidConfiguration(f"Unable to load settings: {self}\n{ex}") from ex
 
         try:
             data = registry.parse_file(self._fp, self.content_type)
 
         except ValueError as ex:
-            raise InvalidConfiguration(f"Unable to parse JSON file: {self}\n{ex}")
+            raise InvalidConfiguration(
+                f"Unable to parse JSON file: {self}\n{ex}"
+            ) from ex
 
         # Check we have a valid container object
         if not isinstance(data, dict):
