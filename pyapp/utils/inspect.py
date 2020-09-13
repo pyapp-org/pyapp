@@ -31,17 +31,22 @@ def import_root_module(stack_offset: int = 2):
     Identify and import the root module.
     """
     stack = inspect.stack()
-    app_frame = stack[stack_offset]
-    package_name = app_frame.frame.f_globals.get("__package__")
+    frame_globals = stack[stack_offset].frame.f_globals
+    package_name = frame_globals.get("__package__")
 
-    if not package_name:
+    if package_name:
+        root_package = package_name.split(".")[0]
+
+    else:
         # Likely the __main__ module, this module is different and does not contain
         # the package name some assumptions need to be made.
         try:
-            root_package = find_root_folder(Path(app_frame.filename)).name
+            root_package = find_root_folder(Path(frame_globals.get("__file__"))).name
         except ValueError as ex:
-            raise RuntimeError(f"Unable to determine root module: {ex}")
-    else:
-        root_package = package_name.split(".")[0]
+            # If the module name is __main__ this is a standalone script.
+            if frame_globals.get("__name__") == "__main__":
+                root_package = "__main__"
+            else:
+                raise RuntimeError(f"Unable to determine root module: {ex}") from ex
 
     return importlib.import_module(root_package)

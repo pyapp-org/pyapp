@@ -13,7 +13,6 @@ from io import StringIO
 from typing import Any
 from typing import Optional
 from typing import Sequence
-from typing import Union
 
 from colorama import Back
 from colorama import Fore
@@ -288,7 +287,7 @@ class TabularCheckReport(BaseReport):
 def execute_report(
     output: io.StringIO,
     application_checks: str,
-    message_level: Union[str, int] = logging.INFO,
+    message_level: str = "INFO",
     tags: Sequence[str] = None,
     verbose: bool = False,
     no_color: bool = False,
@@ -318,8 +317,7 @@ def execute_report(
     import_checks()
 
     # Note the getLevelName method returns the level code if a string level is supplied!
-    if isinstance(message_level, str):
-        message_level = logging.getLevelName(message_level)
+    message_level = logging.getLevelName(message_level)
 
     # Create report instance
     if table:

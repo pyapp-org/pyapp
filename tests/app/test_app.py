@@ -1,7 +1,7 @@
 import pytest
 
 import tests.sample_app
-import tests.sample_app_simple.__main__
+import tests.sample_app_simple
 from pyapp.app import _key_help
 from pyapp.app import argument
 from pyapp.app import CliApplication
@@ -26,7 +26,7 @@ class TestCliApplication:
         assert len(target._handlers) == 3
 
     def test_initialisation__no_root(self):
-        target = tests.sample_app_simple.__main__.app
+        target = tests.sample_app_simple.app
 
         assert target.root_module is tests
         assert target.application_settings == "tests.default_settings"

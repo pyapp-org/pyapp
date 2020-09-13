@@ -9,14 +9,13 @@ run-time environment.
 
 Quick demo::
 
-    >>> from pyapp.app import CliApplication, argument
+    >>> from pyapp.app import CliApplication
 
     >>> app = CliApplication()
 
-    >>> @argument('--verbose', target='verbose', action='store_true')
     >>> @app.command()
-    >>> def hello(opts):
-    ...     if opts.verbose:
+    >>> def hello(*, verbose: bool):
+    ...     if verbose:
     ...         print("Being verbose!")
     ...     print("Hello")
 
@@ -33,12 +32,83 @@ There are however a few more things that are required to get this going. The
 :py:class:`CliApplication` class expects a certain structure of your
 application to allow for it's (customisable) defaults to be applied.
 
-Your application should have the following structure::
+Your application can have one of two structures
+
+An application::
 
     my_app/__init__.py          # Include a __version__ variable
            __main__.py          # This is where the quick demo is located
            default_settings.py  # The default settings file
            checks.py            # Optional checks file
+
+
+A single script::
+
+    my_app.py                   # A script that contains the `CliApplication`
+
+
+Generation of CLI from command Signature
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 4.4
+
+As of pyApp 4.4 command functions can supply all required arguments in the function
+signature.
+
+As an example consider the command function:
+
+.. code-block:: python
+
+    @app.command
+    def my_command(
+        arg1: str,
+        *,
+        arg2: bool= Arg(help="Enable the argilizer"),
+        arg3: int = 42,
+        arg4: str = Arg("-a", choices=("foo", "bar"), default="foo")
+    ):
+        ...
+
+This translates into the following on the CLI:
+
+.. code-block:: shell
+
+    > python -m my_app my_command --help
+    usage: my_app my_command [-h] ARG1 [--arg2] [--arg3 ARG3]
+                             [--arg4 {foo,bar}]
+
+    positional arguments:
+      ARG1
+
+    optional arguments:
+      -h, --help  show this help message and exit
+      --arg2    Enable the argilizer
+      --arg3
+      --arg4 {foo,bar}
+
+
+The following types are supported as arguments:
+
+    - Basic types eg int, str, float, this covers any type that can be provided
+      to argparse in the type field.
+
+    - bool, this is made into an argparse `store_true` action.
+
+    - Enum types using the pyApp EnumAction.
+
+    - Generic types
+        - Mapping/Dict as well as a basic dict for Key/Value pairs
+
+        - Sequence/List for typed sequences, ``nargs="+"`` for positional arguments
+          of ``action="append"`` for optional.
+
+        - Tuple for typed sequences of a fixed size eg ``nargs=len(tuple)``. Only
+          the first type is used, the others are ignored.
+
+    - FileType from ``argparse``.
+
+.. tip:: Too get access to the parse results from `argparse` provide a vairable
+    with the type ``pyapp.app.CommandOptions``.
 
 
 CliApplication
@@ -78,6 +148,7 @@ from typing import Sequence
 import argcomplete
 import colorama
 
+from . import init_logger
 from .. import conf
 from .. import extensions
 from ..app import builtin_handlers
@@ -99,6 +170,7 @@ def _key_help(key: str) -> str:
     return key
 
 
+# pylint: disable=too-many-instance-attributes
 class CliApplication(CommandGroup):
     """
     Application interface that provides a CLI interface.
@@ -165,6 +237,7 @@ class CliApplication(CommandGroup):
         epilog: str = None,
         version: str = None,
         ext_white_list: Sequence[str] = None,
+        ext_allow_list: Sequence[str] = None,
         application_settings: str = None,
         application_checks: str = None,
         env_settings_key: str = None,
@@ -176,10 +249,10 @@ class CliApplication(CommandGroup):
         self.application_version = version or getattr(
             root_module, "__version__", "Unknown"
         )
-        self.ext_white_list = ext_white_list
+        self.ext_allow_list = ext_allow_list or ext_white_list
 
-        # Determine application settings
-        if application_settings is None:
+        # Determine application settings (disable for standalone scripts)
+        if application_settings is None and root_module.__name__ != "__main__":
             application_settings = f"{root_module.__name__}.default_settings"
         self.application_settings = application_settings
 
@@ -193,6 +266,10 @@ class CliApplication(CommandGroup):
             self.env_settings_key = env_settings_key
         if env_loglevel_key is not None:
             self.env_loglevel_key = env_loglevel_key
+
+        # Configure Logging as early as possible
+        self._init_logger = init_logger.InitHandler(self.default_log_handler)
+        self.pre_configure_logging()
 
         self._init_parser()
         self.register_builtin_handlers()
@@ -228,27 +305,30 @@ class CliApplication(CommandGroup):
             f"Defaults to the env variable: {_key_help(self.env_settings_key)}",
         )
         self.argument(
+            "--version",
+            action="version",
+            version=f"%(prog)s version: {self.application_version}",
+        )
+        self.argument(
             "--nocolor",
             "--nocolour",
             dest="no_color",
             action="store_true",
             help="Disable colour output.",
         )
-        self.argument(
-            "--version",
-            action="version",
-            version=f"%(prog)s version: {self.application_version}",
-        )
 
         # Log configuration
-        self.argument(
+        arg_group = self.argument_group(
+            title="logging arguments", description="Customise log output"
+        )
+        arg_group.add_argument(
             "--log-level",
             default=os.environ.get(self.env_loglevel_key, "INFO"),
             choices=("DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"),
             help="Specify the log level to be used. "
             f"Defaults to env variable: {_key_help(self.env_loglevel_key)}",
         )
-        self.argument(
+        arg_group.add_argument(
             "--log-color",
             "--log-colour",
             dest="log_color",
@@ -256,7 +336,7 @@ class CliApplication(CommandGroup):
             action="store_true",
             help="Force coloured output from logger (on console).",
         )
-        self.argument(
+        arg_group.add_argument(
             "--log-nocolor",
             "--log-nocolour",
             dest="log_color",
@@ -265,14 +345,17 @@ class CliApplication(CommandGroup):
         )
 
         # Global check values
-        self.argument(
+        arg_group = self.argument_group(
+            title="check arguments", description="Enable and configure run-time checks"
+        )
+        arg_group.add_argument(
             "--checks",
             dest="checks_on_startup",
             action="store_true",
             help="Run checks on startup, any serious error will result "
             "in the application terminating.",
         )
-        self.argument(
+        arg_group.add_argument(
             "--checks-level",
             dest="checks_message_level",
             default="INFO",
@@ -292,15 +375,15 @@ class CliApplication(CommandGroup):
         """
         Set some default logging so settings are logged.
 
-        The main logging configuration from settings leaving us with a chicken
+        The main logging configuration is in settings leaving us with a chicken
         and egg situation.
 
         """
-        handler = self.default_log_handler
-        handler.formatter = self.default_log_formatter
+        self.default_log_handler.formatter = self.default_log_formatter
 
-        # Apply handler to root logger and set level.
-        logging.root.handlers = [handler]
+        # Apply handler to root logger
+        logging.root.setLevel(logging.DEBUG)
+        logging.root.handlers = [self._init_logger]
 
     @staticmethod
     def register_factories():
@@ -316,7 +399,7 @@ class CliApplication(CommandGroup):
         """
         Load/Configure extensions.
         """
-        entry_points = extensions.ExtensionEntryPoints(self.ext_white_list)
+        entry_points = extensions.ExtensionEntryPoints(self.ext_allow_list)
         extensions.registry.load_from(entry_points.extensions())
         extensions.registry.register_commands(self)
 
@@ -325,7 +408,8 @@ class CliApplication(CommandGroup):
         Configure settings container.
         """
         application_settings = list(extensions.registry.default_settings)
-        application_settings.append(self.application_settings)
+        if self.application_settings:
+            application_settings.append(self.application_settings)
 
         conf.settings.configure(
             application_settings, opts.settings, env_settings_key=self.env_settings_key
@@ -354,18 +438,28 @@ class CliApplication(CommandGroup):
         """
         Configure the logging framework.
         """
-        self.default_log_handler.formatter = self.get_log_formatter(opts.log_color)
+        # Prevent duplicate runs
+        if hasattr(self, "_init_logger"):
+            self.default_log_handler.formatter = self.get_log_formatter(opts.log_color)
 
-        if conf.settings.LOGGING:
-            logger.info("Applying logging configuration.")
+            # Replace root handler with the default handler
+            logging.root.handlers.pop(0)
+            logging.root.handlers.append(self.default_log_handler)
 
-            # Set a default version if not supplied by settings
-            dict_config = conf.settings.LOGGING.copy()
-            dict_config.setdefault("version", 1)
-            logging.config.dictConfig(dict_config)
+            if conf.settings.LOGGING:
+                logger.info("Applying logging configuration.")
 
-        # Configure root log level
-        logging.root.setLevel(opts.log_level)
+                # Set a default version if not supplied by settings
+                dict_config = conf.settings.LOGGING.copy()
+                dict_config.setdefault("version", 1)
+                logging.config.dictConfig(dict_config)
+
+            # Configure root log level
+            logging.root.setLevel(opts.log_level)
+
+            # Replay initial entries and remove
+            self._init_logger.replay(self.default_log_handler)
+            del self._init_logger
 
     def checks_on_startup(self, opts: CommandOptions):
         """
@@ -401,27 +495,40 @@ class CliApplication(CommandGroup):
         )
         return False
 
+    @staticmethod
+    def logging_shutdown():
+        """
+        Call at shutdown to ensure logging is cleaned up.
+        """
+        logging.shutdown()
+
     def dispatch(self, args: Sequence[str] = None) -> None:
         """
         Dispatch command to registered handler.
         """
-        self.pre_configure_logging()
+        # Initialisation phase
+        _set_running_application(self)
         self.register_factories()
         self.load_extensions()
 
+        # Parse arguments phase
         argcomplete.autocomplete(self.parser)
         opts = self.parser.parse_args(args)
 
+        # Set log level from opts
+        logging.root.setLevel(opts.log_level)
+        logger.info("Starting %s", self.application_summary)
+
+        # Load settings and configure logger
+        self.configure_settings(opts)
+        self.configure_logging(opts)
+
         handler_name = getattr(opts, ":handler", None)
         if handler_name != "checks":
-            self.configure_logging(opts)
-            logger.info("Starting %s", self.application_summary)
-            self.configure_settings(opts)
             self.checks_on_startup(opts)
         else:
             self.configure_settings(opts)
 
-        _set_running_application(self)
         extensions.registry.ready()
 
         # Dispatch to handler.
@@ -440,6 +547,9 @@ class CliApplication(CommandGroup):
             # Provide exit code.
             if exit_code:
                 sys.exit(exit_code)
+
+        finally:
+            self.logging_shutdown()
 
 
 CURRENT_APP: Optional[CliApplication] = None

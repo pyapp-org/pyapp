@@ -23,7 +23,7 @@ env:
     - CC_TEST_REPORTER_ID=767be575271677c6435197b16f142b6ded3332f4f5112ed30fcc760d02a7d762
 
 install:
-  - travis_retry pip install bandit coverage pylint
+  - travis_retry pip install bandit coverage pylint poetry
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
@@ -33,7 +33,8 @@ before_script:
 script:
   - pylint pyapp --disable=import-error
   - bandit -ll -r pyapp
-  - python setup.py test
+  - poetry install
+  - poetry run pytest
 
 after_script:
   - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT -t coverage.py

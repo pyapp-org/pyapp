@@ -70,6 +70,8 @@ So what do we handle?
   commands (including Async), comes with built-in commands to execute check, setting
   and extension reports.
 
+  - Automatic building of CLI arguments from a command signature *new in 4.4!*
+
 - Logging - Initialise and apply sane logging defaults.
 
 - Highly tested and ready for production use.
@@ -90,10 +92,11 @@ Table of Contents
    :maxdepth: 2
 
    getting-started
+   sys-admin-playbook
    recipes/index
+   reference/index
    extensions
    developers
-   reference/index
    change-history
 
 Indices and tables

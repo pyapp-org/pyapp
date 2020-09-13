@@ -170,7 +170,7 @@ class NamedConfiguration:
                 name
             ]
         except KeyError:
-            raise KeyError(f"Setting definition `{name}` not found")
+            raise KeyError(f"Setting definition `{name}` not found") from None
 
         config = self.defaults.copy()
         if self._args:

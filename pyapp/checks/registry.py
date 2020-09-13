@@ -15,6 +15,7 @@ from typing import Union
 
 from pyapp import extensions
 from pyapp.checks.messages import CheckMessage
+from pyapp.checks.messages import UnhandledException
 from pyapp.conf import Settings
 from pyapp.conf import settings
 
@@ -99,10 +100,11 @@ class CheckRegistry(List[Check]):
                 pre_callback(check)
 
             # Detect attached checks (or a class with checks)
-            if hasattr(check, "checks"):
-                messages = check.checks(**check_kwargs)
-            else:
-                messages = check(**check_kwargs)
+            check_func = check.checks if hasattr(check, "checks") else check
+            try:
+                messages = check_func(**check_kwargs)
+            except Exception:  # pylint: disable=broad-except
+                messages = UnhandledException("Unhandled Exception")
 
             if isinstance(messages, CheckMessage):
                 yield CheckResult(check, (messages,))

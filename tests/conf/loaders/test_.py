@@ -1,4 +1,5 @@
 import pytest
+from yarl import URL
 
 from pyapp.conf import loaders
 from pyapp.conf.loaders import Loader
@@ -24,6 +25,10 @@ class TestModuleLoader:
 
 
 class TestObjectLoader:
+    def test_from_url(self):
+        with pytest.raises(NotImplementedError):
+            loaders.ObjectLoader.from_url(URL(""))
+
     def test_extracts_attributes(self):
         class MyObject:
             FOO = "abc"
@@ -62,7 +67,7 @@ class TestSettingsLoaderRegistry:
         target = loaders.SettingsLoaderRegistry()
 
         class SimpleSettings(Loader):
-            scheme = "eek"
+            scheme = ("eek", "ook")
 
             @classmethod
             def from_url(cls, settings_url):
@@ -77,7 +82,9 @@ class TestSettingsLoaderRegistry:
         target.register(SimpleSettings)
 
         assert "eek" in target
+        assert "ook" in target
         assert isinstance(target.factory("eek:sample"), SimpleSettings)
+        assert isinstance(target.factory("ook:sample"), SimpleSettings)
 
     @pytest.mark.parametrize(
         ("settings_uri", "expected", "str_value"),

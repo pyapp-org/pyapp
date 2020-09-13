@@ -4,6 +4,8 @@ pyApp - A python application framework
 
 *Let us handle the boring stuff!*
 
+As of pyApp 4.0, Python < 3.6 is no longer supported.
+
 +---------+---------------------------------------------------------------------------------------+
 | Docs    | .. image:: https://readthedocs.org/projects/pyapp/badge/?version=latest               |
 |         |    :target: https://docs.pyapp.info/                                                  |
@@ -12,6 +14,9 @@ pyApp - A python application framework
 | Build   | .. image:: https://img.shields.io/travis/pyapp-org/pyapp.svg?style=flat               |
 |         |    :target: https://travis-ci.org/pyapp-org/pyapp                                     |
 |         |    :alt: Travis CI Status                                                             |
+|         | .. image:: https://api.dependabot.com/badges/status?host=github&repo=pyapp-org/pyapp  |
+|         |    :target: https://dependabot.com                                                    |
+|         |    :alt: Dependabot Status                                                            |
 +---------+---------------------------------------------------------------------------------------+
 | Quality | .. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/maintainability |
 |         |    :target: https://codeclimate.com/github/pyapp-org/pyapp/maintainability            |
@@ -23,22 +28,20 @@ pyApp - A python application framework
 |         |    :target: https://github.com/ambv/black                                             |
 |         |    :alt: Once you go Black...                                                         |
 +---------+---------------------------------------------------------------------------------------+
-| Package | .. image:: https://img.shields.io/pypi/v/pyapp.svg                                    |
+| Package | .. image:: https://img.shields.io/pypi/v/pyapp                                        |
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
 |         |    :alt: Latest Version                                                               |
-|         | .. image:: https://img.shields.io/pypi/pyversions/pyapp.svg                           |
+|         | .. image:: https://img.shields.io/pypi/pyversions/pyapp                               |
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
-|         | .. image:: https://img.shields.io/pypi/l/pyapp.svg                                    |
+|         | .. image:: https://img.shields.io/pypi/l/pyapp                                        |
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
-|         | .. image:: https://img.shields.io/pypi/wheel/pyapp.svg                                |
+|         | .. image:: https://img.shields.io/pypi/wheel/pyapp                                    |
+|         |    :alt: PyPI - Wheel                                                                 |
 |         |    :target: https://pypi.io/pypi/pyapp/                                               |
 +---------+---------------------------------------------------------------------------------------+
 
-Many features inspired by Django, but modified to be more general for use
-outside of web applications.
-
-With pyApp 4.0, versions of Python < 3.6 are no longer supported.
-
+pyApp takes care of the boring boilerplate code for building a CLI, manageing 
+settings and much more so you can focus on your buisness logic.
 
 So what do we handle?
 =====================
@@ -73,26 +76,53 @@ So what do we handle?
 Extensions
 ==========
 
-- SQLAlchemy - `pyapp.sqlalchemy`_
-- Redis - `pyapp.redis`_
-- AIOBotocore - `pyapp.aiobotocore`_
+- 🔌 SQLAlchemy - `pyapp.sqlalchemy`_
+- 🔌 Redis - `pyapp.redis`_
+
+In Beta
+-------
+
+- 🐛 Rollbar - `pyapp.rollbar`_
+
+- 📧 AIO SMTPlib - `pyapp.aiosmtplib`_ Extension for aiosmtplib
+
+- ☁ Boto3 - `pyapp.boto3`_
+
+- ☁ AIOBotocore - `pyapp.aiobotocore`_
+
+- 📨 Messaging - `pyapp.messaging`_ - Extension to provide abstract interfaces for Message Queues.
+
+  - 📨 AWS Messaging - `pyapp.messaging-aws`_ - Messaging extension for AWS (SQS/SNS)
 
 In development
 --------------
 
-- SMTP - `pyapp.SMTP`_
-- Boto3 - `pyapp.boto3`_
+- 📧 SMTP - `pyapp.SMTP`_
+
+- 📨 Aio-Pika - `pyapp.aiopika`_ - Messaging extension for pika (RabbitMQ/AMQP)
+
+- 🔌 PySpark - `pyapp.pyspark`_ - Extension for PySpark
+
+- 🔎 Elastic Search - `pyapp.elasticsearch`_ - Extension for Elasticsearch
 
 Coming soon
 -----------
 
-Extensions for LDAP, Paramiko.
+- 📨 AMQP Messaging - Messaging extension for AMQP (RabbitMQ)
+
 
 .. _pyapp.sqlalchemy: https://www.github.com/pyapp-org/pyapp.sqlalchemy
 .. _pyapp.redis: https://www.github.com/pyapp-org/pyapp.redis
 .. _pyapp.aiobotocore: https://www.github.com/pyapp-org/pyapp.aiobotocore
 .. _pyapp.SMTP: https://www.github.com/pyapp-org/pyapp.SMTP
 .. _pyapp.boto3: https://www.github.com/pyapp-org/pyapp.boto3
+.. _pyapp.rollbar: https://www.github.com/pyapp-org/pyapp.rollbar
+.. _pyapp.aiosmtplib: https://www.github.com/pyapp-org/pyapp.aiosmtplib
+.. _pyapp.messaging: https://www.github.com/pyapp-org/pyapp-messaging
+.. _pyapp.messaging-aws: https://www.github.com/pyapp-org/pyapp-messaging-aws
+.. _pyapp.aiopika: https://www.github.com/pyapp-org/pyapp.aiopika
+.. _pyapp.pyspark: https://www.github.com/pyapp-org/pyapp.pyspark
+.. _pyapp.elasticsearch: https://www.github.com/pyapp-org/pyapp.elasticsearch
 
 
 Contributions
