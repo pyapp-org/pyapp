@@ -1,5 +1,5 @@
-4.4.beta-4
-==========
+4.4.0
+=====
 
 Features
 --------
@@ -12,39 +12,7 @@ Features
 - Command signature can now accept the Optional values for both positional are
   optional arguments, this allows for optional positional arguments.
 
-
-4.4.beta-3
-==========
-
-Features
---------
-
 - Argument grouping support enable, with builtin CLI commands grouped.
-
-
-Bug fixes
----------
-
-- Custom logging configuration was not being applied for logging defined in settings
-
-- Using an _ in a positional argument signature caused an exception in argparse
-
-
-4.4.beta-2
-==========
-
-Bug fixes
----------
-
-- Positional arguments caused an exception in argparse, a entire new suit of tests
-  was added to address this issue.
-
-
-4.4.beta-1
-==========
-
-Features
---------
 
 - Single file scripts. A single script can now be used with pyApp, allowing even
   quick scripts to take advantage of pyApp features and extensions.
@@ -56,6 +24,17 @@ Features
   outright failing errors are caught and reported along with a stack trace.
 
 - Switch to using poetry
+
+
+Bug fixes
+---------
+
+- Custom logging configuration was not being applied for logging defined in settings
+
+- Using an _ in a positional argument signature caused an exception in argparse
+
+- Positional arguments caused an exception in argparse, a entire new suit of tests
+  was added to address this issue.
 
 
 4.3.0

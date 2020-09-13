@@ -4,6 +4,7 @@ from typing import Callable
 import pytest
 
 from pyapp import events
+from pyapp.exceptions import UnsupportedObject
 
 
 class TestListenerSet:
@@ -102,6 +103,14 @@ class TestEvent:
 
         assert len(instance.target) == 1
 
+    def test__when_object_has_slots(self):
+        with pytest.raises(RuntimeError):
+
+            class MyObject:
+                __slots__ = ("foo",)
+
+                target = events.Event[Callable[[], None]]()
+
 
 class TestAsyncListenerSet:
     def test_call(self, event_loop):
@@ -196,6 +205,14 @@ class TestCallback:
 
         target = instance.target
         assert target._callback is on_target
+
+    def test__when_object_has_slots(self):
+        with pytest.raises(RuntimeError):
+
+            class MyObject:
+                __slots__ = ("foo",)
+
+                target = events.Callback[Callable[[], None]]()
 
 
 class TestAsyncCallbackBinding:

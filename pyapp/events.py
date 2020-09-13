@@ -2,13 +2,19 @@
 Events
 ~~~~~~
 
-A simple framework publish events or callbacks from a class to subscribed listener(s).
+A simple framework to publish events or callbacks to subscribed listener(s).
 
 Async events/callbacks are also supported via the `AsyncEvent` and `AsyncCallback`
 descriptors.
 
-Event can have multiple listening functions where callbacks can only have a single
-function bound (assigning a second will remove the previous).
+An event can have multiple listening functions where as callbacks can only have
+a single function bound (assigning a second will remove the previous binding).
+
+.. note::
+
+    Event and Callback descriptors do not work when ``__slots__`` are defined.
+    If slots are defined a ``InstanceHasNoDictError`` will be raised on access
+
 
 Example::
 
@@ -49,8 +55,9 @@ from typing import Set
 from typing import TypeVar
 from typing import Union
 
-__all__ = ("Event", "AsyncEvent", "listen_to", "Callback", "AsyncCallback", "bind_to")
+from pyapp.exceptions import UnsupportedObject
 
+__all__ = ("Event", "AsyncEvent", "listen_to", "Callback", "AsyncCallback", "bind_to")
 
 _CT = TypeVar("_CT")
 
@@ -148,6 +155,10 @@ class Event(Generic[_CT]):
             return listeners
 
     def __set_name__(self, owner, name):
+        if hasattr(owner, "__slots__"):
+            raise UnsupportedObject(
+                "An Event cannot be used on an object with __slots__ defined."
+            )
         self.name = name  # pylint: disable=attribute-defined-outside-init
 
 
@@ -260,6 +271,10 @@ class Callback(Generic[_CT]):
             return wrapper
 
     def __set_name__(self, owner, name):
+        if hasattr(owner, "__slots__"):
+            raise UnsupportedObject(
+                "A Callback cannot be used on an object with __slots__ defined."
+            )
         self.name = name  # pylint: disable=attribute-defined-outside-init
 
 

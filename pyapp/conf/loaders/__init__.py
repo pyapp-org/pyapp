@@ -56,7 +56,7 @@ class ModuleLoader(Loader):
         try:
             mod = importlib.import_module(self.module)
         except ImportError as ex:
-            raise InvalidConfiguration(f"Unable to load module: {self}\n{ex}")
+            raise InvalidConfiguration(f"Unable to load module: {self}\n{ex}") from ex
 
         return ((k, getattr(mod, k)) for k in dir(mod) if k.isupper())
 
@@ -141,7 +141,7 @@ class SettingsLoaderRegistry(Dict[str, LoaderType]):
         except KeyError:
             raise InvalidConfiguration(
                 f"Unknown scheme `{url.scheme}` in settings URI: {url}"
-            )
+            ) from None
 
 
 # Singleton instance

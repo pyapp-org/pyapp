@@ -47,6 +47,6 @@ def import_root_module(stack_offset: int = 2):
             if frame_globals.get("__name__") == "__main__":
                 root_package = "__main__"
             else:
-                raise RuntimeError(f"Unable to determine root module: {ex}")
+                raise RuntimeError(f"Unable to determine root module: {ex}") from ex
 
     return importlib.import_module(root_package)

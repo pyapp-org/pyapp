@@ -143,7 +143,7 @@ class ProviderFactoryBase(Generic[PT], metaclass=ABCMeta):
         except KeyError:
             raise ProviderNotFound(
                 f"Provider `{provider_code}` was not found in the provider list."
-            )
+            ) from None
 
     @abstractmethod
     def load_config(self, *args, **kwargs) -> Tuple[str, Dict[str, Any]]:
