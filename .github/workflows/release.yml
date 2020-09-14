@@ -65,4 +65,6 @@ jobs:
           asset_name: ${{ steps.build_package.outputs.source }}
           asset_content_type: application/x-tar+gzip
 
-#      - name: Upload to PyPI
+      - name: Upload to PyPI
+        id: upload_to_pypi
+        run: poetry publish
