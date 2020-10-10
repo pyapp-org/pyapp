@@ -71,3 +71,15 @@ class UnsupportedContentType(Exception):
     """
     Content type of the file is not supported
     """
+
+
+class EventException(Exception):
+    """
+    Exception caused by event/callback definition
+    """
+
+
+class UnsupportedObject(EventException, TypeError):
+    """
+    Instance does not have a dict that descriptor can use to store callbacks
+    """

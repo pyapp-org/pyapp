@@ -148,3 +148,15 @@ class TestCheckRegistry(object):
 
         actual = target.run_checks()
         assert (messages.Info("Message1"), messages.Info("Message2")) == actual
+
+    def test_run_checks__unhandled_exception(self):
+        target = registry.CheckRegistry()
+
+        @target.register
+        def check(settings, **kwargs):
+            raise RuntimeError("Un-expected error")
+
+        actual = target.run_checks()
+
+        assert len(actual) == 1
+        assert isinstance(actual[0], messages.UnhandledException)

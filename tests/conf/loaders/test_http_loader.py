@@ -1,7 +1,7 @@
 from io import StringIO
+from unittest import mock
 from urllib.error import ContentTooShortError
 
-import mock
 import pytest
 from yarl import URL
 

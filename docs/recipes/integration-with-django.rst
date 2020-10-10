@@ -11,7 +11,9 @@ Django. There are two options here:
 1. Create a new Django App
 2. Use an appropriate existing app.
 
-Add to the ``ready`` method of your *App* class::
+Add to the ``ready`` method of your *App* class:
+
+.. code-block:: python
 
     class MyApp:
         def ready(self):

@@ -1,0 +1,54 @@
+[build-system]
+requires = ["poetry>=1.0", "rtd-poetry-tmp"]
+build-backend = "rtd_poetry"
+
+[tool.poetry]
+name = "pyapp"
+version = "4.4.0"
+description = "A Python application framework - Let us handle the boring stuff!"
+authors = ["Tim Savage <tim@savage.company>"]
+license = "BSD-3-Clause"
+readme = "README.rst"
+repository = "https://github.com/pyapp-org/pyapp"
+documentation = "https://docs.pyapp.info"
+keywords = ["framework", "application"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+packages = [
+    { include = "pyapp" },
+    { include = "tests", format = "sdist" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+argcomplete = "*"
+colorama = "*"
+yarl = "*"
+
+pyyaml = {version = "*", optional = true }
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.0.1"
+pytest-cov = "^2.10.1"
+pytest-asyncio = "^0.14.0"
+nox = "*"
+docutils = "^0.16"
+sphinx = "^3.2.1"
+
+[tool.poetry.extras]
+yaml = ["pyyaml"]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/pyapp-org/pyapp/issues"

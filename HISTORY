@@ -1,3 +1,55 @@
+4.4.0
+=====
+
+Features
+--------
+
+- Delayed logging on startup, initial log messages are stored (critical messages
+  are still displayed) to allow for logging to be configured before the stored
+  messages are replayed for the now active logger. This also opens up the option
+  of file only based logging.
+
+- Command signature can now accept the Optional values for both positional are
+  optional arguments, this allows for optional positional arguments.
+
+- Argument grouping support enable, with builtin CLI commands grouped.
+
+- Single file scripts. A single script can now be used with pyApp, allowing even
+  quick scripts to take advantage of pyApp features and extensions.
+
+- Command signature generation. CLI arguments are generated from the arguments
+  signature of the command function.
+
+- Improvements to checks to handle unexpected exceptions. Rather than checks
+  outright failing errors are caught and reported along with a stack trace.
+
+- Switch to using poetry
+
+
+Bug fixes
+---------
+
+- Custom logging configuration was not being applied for logging defined in settings
+
+- Using an _ in a positional argument signature caused an exception in argparse
+
+- Positional arguments caused an exception in argparse, a entire new suit of tests
+  was added to address this issue.
+
+
+4.3.0
+=====
+
+Features
+--------
+
+- Async commands, ``app.command`` can not be applied to async functions and
+  handle the event loop.
+
+- ``app.default`` now returns a Command Proxy supporting async and additional
+  command line arguments.
+
+
 4.2.0
 =====
 
