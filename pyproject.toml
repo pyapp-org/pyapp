@@ -41,7 +41,7 @@ pyyaml = {version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
-pytest-cov = "^2.10.1"
+pytest-cov = "^2.11.0"
 pytest-asyncio = "^0.14.0"
 nox = "*"
 docutils = "^0.16"
