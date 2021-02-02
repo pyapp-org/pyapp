@@ -41,7 +41,7 @@ yarl = "*"
 pyyaml = {version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.1.2"
+pytest = "^6.2.2"
 pytest-cov = "^2.10.1"
 pytest-asyncio = "^0.14.0"
 nox = "*"
