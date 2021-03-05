@@ -39,6 +39,7 @@ colorama = "*"
 yarl = "*"
 
 pyyaml = {version = "*", optional = true }
+toml = {version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.2"
@@ -46,10 +47,11 @@ pytest-cov = "^2.11.1"
 pytest-asyncio = "^0.14.0"
 nox = "*"
 docutils = "^0.16"
-sphinx = "^3.3.0"
+sphinx = "^3.5.1"
 
 [tool.poetry.extras]
 yaml = ["pyyaml"]
+toml = ["toml"]
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/pyapp-org/pyapp/issues"
