@@ -13,7 +13,6 @@ from typing import Optional
 from typing import Sequence
 
 import pkg_resources
-
 from pyapp.app.arguments import CommandGroup
 
 __all__ = ("registry", "ExtensionEntryPoints", "ExtensionDetail")
