@@ -9,7 +9,6 @@ import sys
 
 from colorama import Fore
 from colorama import Style
-
 from pyapp.extensions.registry import ExtensionDetail
 from pyapp.extensions.registry import registry
 
