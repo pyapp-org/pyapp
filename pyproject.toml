@@ -23,6 +23,7 @@ classifiers = [
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
@@ -38,6 +39,7 @@ colorama = "*"
 yarl = "*"
 
 pyyaml = {version = "*", optional = true }
+toml = {version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.2"
@@ -49,6 +51,7 @@ sphinx = "^3.3.0"
 
 [tool.poetry.extras]
 yaml = ["pyyaml"]
+toml = ["toml"]
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/pyapp-org/pyapp/issues"
