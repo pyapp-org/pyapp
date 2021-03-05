@@ -6,39 +6,39 @@ pyApp - A python application framework
 
 As of pyApp 4.0, Python < 3.6 is no longer supported.
 
-+---------+---------------------------------------------------------------------------------------+
-| Docs    | .. image:: https://readthedocs.org/projects/pyapp/badge/?version=latest               |
-|         |    :target: https://docs.pyapp.info/                                                  |
-|         |    :alt: ReadTheDocs                                                                  |
-+---------+---------------------------------------------------------------------------------------+
-| Build   | .. image:: https://img.shields.io/travis/pyapp-org/pyapp.svg?style=flat               |
-|         |    :target: https://travis-ci.org/pyapp-org/pyapp                                     |
-|         |    :alt: Travis CI Status                                                             |
-|         | .. image:: https://api.dependabot.com/badges/status?host=github&repo=pyapp-org/pyapp  |
-|         |    :target: https://dependabot.com                                                    |
-|         |    :alt: Dependabot Status                                                            |
-+---------+---------------------------------------------------------------------------------------+
-| Quality | .. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/maintainability |
-|         |    :target: https://codeclimate.com/github/pyapp-org/pyapp/maintainability            |
-|         |    :alt: Maintainability                                                              |
-|         | .. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/test_coverage   |
-|         |    :target: https://codeclimate.com/github/pyapp-org/pyapp/test_coverage              |
-|         |    :alt: Test Coverage                                                                |
-|         | .. image:: https://img.shields.io/badge/code%20style-black-000000.svg                 |
-|         |    :target: https://github.com/ambv/black                                             |
-|         |    :alt: Once you go Black...                                                         |
-+---------+---------------------------------------------------------------------------------------+
-| Package | .. image:: https://img.shields.io/pypi/v/pyapp                                        |
-|         |    :target: https://pypi.io/pypi/pyapp/                                               |
-|         |    :alt: Latest Version                                                               |
-|         | .. image:: https://img.shields.io/pypi/pyversions/pyapp                               |
-|         |    :target: https://pypi.io/pypi/pyapp/                                               |
-|         | .. image:: https://img.shields.io/pypi/l/pyapp                                        |
-|         |    :target: https://pypi.io/pypi/pyapp/                                               |
-|         | .. image:: https://img.shields.io/pypi/wheel/pyapp                                    |
-|         |    :alt: PyPI - Wheel                                                                 |
-|         |    :target: https://pypi.io/pypi/pyapp/                                               |
-+---------+---------------------------------------------------------------------------------------+
++---------+------------------------------------------------------------------------------------------------------------+
+| Docs    | .. image:: https://readthedocs.org/projects/pyapp/badge/?version=latest                                    |
+|         |    :target: https://docs.pyapp.info/                                                                       |
+|         |    :alt: ReadTheDocs                                                                                       |
++---------+------------------------------------------------------------------------------------------------------------+
+| Build   | .. image:: https://api.dependabot.com/badges/status?host=github&repo=pyapp-org/pyapp                       |
+|         |    :target: https://dependabot.com                                                                         |
+|         |    :alt: Dependabot Status                                                                                 |
++---------+------------------------------------------------------------------------------------------------------------+
+| Quality | .. image:: https://sonarcloud.io/api/project_badges/measure?project=pyapp-org_pyapp&metric=sqale_rating    |
+|         |    :target: https://sonarcloud.io/dashboard?id=pyapp-org_pyapp                                             |
+|         |    :alt: Maintainability                                                                                   |
+|         | .. image:: https://sonarcloud.io/api/project_badges/measure?project=pyapp-org_pyapp&metric=security_rating |
+|         |    :target: https://sonarcloud.io/project/security_hotspots                                                |
+|         |    :alt: Security                                                                                          |
+|         | .. image:: https://sonarcloud.io/api/project_badges/measure?project=pyapp-org_pyapp&metric=coverage        |
+|         |    :target: https://sonarcloud.io/code?id=pyapp-org_pyapp                                                  |
+|         |    :alt: Test Coverage                                                                                     |
+|         | .. image:: https://img.shields.io/badge/code%20style-black-000000.svg                                      |
+|         |    :target: https://github.com/ambv/black                                                                  |
+|         |    :alt: Once you go Black...                                                                              |
++---------+------------------------------------------------------------------------------------------------------------+
+| Package | .. image:: https://img.shields.io/pypi/v/pyapp                                                             |
+|         |    :target: https://pypi.io/pypi/pyapp/                                                                    |
+|         |    :alt: Latest Version                                                                                    |
+|         | .. image:: https://img.shields.io/pypi/pyversions/pyapp                                                    |
+|         |    :target: https://pypi.io/pypi/pyapp/                                                                    |
+|         | .. image:: https://img.shields.io/pypi/l/pyapp                                                             |
+|         |    :target: https://pypi.io/pypi/pyapp/                                                                    |
+|         | .. image:: https://img.shields.io/pypi/wheel/pyapp                                                         |
+|         |    :alt: PyPI - Wheel                                                                                      |
+|         |    :target: https://pypi.io/pypi/pyapp/                                                                    |
++---------+------------------------------------------------------------------------------------------------------------+
 
 pyApp takes care of the boring boilerplate code for building a CLI, managing
 settings and much more so you can focus on your business logic.
