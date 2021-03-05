@@ -283,15 +283,14 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
                     )
                 )
 
-            else:
-                if target_name not in instance_definitions:
-                    messages.append(
-                        checks.Critical(
-                            "Alias target not defined",
-                            hint="The target specified by the alias does not exist, check the `name` value.",
-                            obj=f"settings.{self.setting}[{name}][{target_name}]",
-                        )
+            elif target_name not in instance_definitions:
+                messages.append(
+                    checks.Critical(
+                        "Alias target not defined",
+                        hint="The target specified by the alias does not exist, check the `name` value.",
+                        obj=f"settings.{self.setting}[{name}][{target_name}]",
                     )
+                )
 
             if len(kwargs) > 1:
                 messages.append(
