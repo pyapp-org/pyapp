@@ -422,11 +422,12 @@ class CliApplication(CommandGroup):
         log_handler = self.default_log_handler
 
         # Auto-detect colour mode
-        if log_color is None:
-            if isinstance(log_handler, logging.StreamHandler) and hasattr(
-                log_handler.stream, "isatty"
-            ):
-                log_color = log_handler.stream.isatty()
+        if (
+            log_color is None
+            and isinstance(log_handler, logging.StreamHandler)
+            and hasattr(log_handler.stream, "isatty")
+        ):
+            log_color = log_handler.stream.isatty()
 
         # Enable colour if specified.
         if log_color:
