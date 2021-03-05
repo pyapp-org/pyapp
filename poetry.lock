@@ -215,11 +215,11 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "nox"
-version = "2020.8.22"
+version = "2020.12.31"
 description = "Flexible test automation."
 category = "dev"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.6"
 
 [package.dependencies]
 argcomplete = ">=1.9.4,<2.0"
@@ -488,7 +488,7 @@ test = ["pytest"]
 name = "toml"
 version = "0.10.1"
 description = "Python Library for Tom's Obvious, Minimal Language"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -559,12 +559,13 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [extras]
+toml = ["toml"]
 yaml = ["pyyaml"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "69edbc94cd2b5ae585fdae6b8ba416bc97955d96db202dca4d886ed8d004a20f"
+content-hash = "90e8e4bda751bf8fad29e0648f704fb5ba3679911db6fefe3402aa2eb3ebf383"
 
 [metadata.files]
 alabaster = [
@@ -753,8 +754,8 @@ multidict = [
     {file = "multidict-4.7.6.tar.gz", hash = "sha256:fbb77a75e529021e7c4a8d4e823d88ef4d23674a202be4f5addffc72cbb91430"},
 ]
 nox = [
-    {file = "nox-2020.8.22-py3-none-any.whl", hash = "sha256:55f8cab16bcfaaea08b141c83bf2b7c779e943518d0de6cd9c38cd8da95d11ea"},
-    {file = "nox-2020.8.22.tar.gz", hash = "sha256:efa5adcf1134012f96bcd0a496ccebd4c9e9da53a831888a2a779462440eebcf"},
+    {file = "nox-2020.12.31-py3-none-any.whl", hash = "sha256:f179d6990f7a0a9cebad01b9ecea34556518b8d3340dfcafdc1d85f2c1a37ea0"},
+    {file = "nox-2020.12.31.tar.gz", hash = "sha256:58a662070767ed4786beb46ce3a789fca6f1e689ed3ac15c73c4d0094e4f9dc4"},
 ]
 packaging = [
     {file = "packaging-20.4-py2.py3-none-any.whl", hash = "sha256:998416ba6962ae7fbd6596850b80e17859a5753ba17c32284f67bfff33784181"},
