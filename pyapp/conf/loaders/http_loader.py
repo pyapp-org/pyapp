@@ -31,7 +31,9 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
     if url.scheme not in ("http", "https"):
         raise InvalidConfiguration("Illegal scheme.")
 
-    context = ssl.SSLContext() if url.scheme == "https" else None
+    context = (
+        ssl.SSLContext(protocol=ssl.PROTOCOL_TLSv1_2) if url.scheme == "https" else None
+    )
 
     with contextlib.closing(
         urlopen(url, context=context)  # nosec - There is a check above for SSL
