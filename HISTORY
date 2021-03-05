@@ -1,3 +1,18 @@
+4.5.0
+=====
+
+Features
+--------
+
+- Add TOML support for remote configuration.
+
+
+Security Updates
+----------------
+
+- By default require TLS 1.2 for HTTPS connections to fetch remote configuration.
+
+
 4.4.0
 =====
 
