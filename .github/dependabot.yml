@@ -1,0 +1,26 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  labels:
+  - "\U0001F38B dependencies"
+  ignore:
+  - dependency-name: pytest-asyncio
+    versions:
+    - 0.15.0
+  - dependency-name: docutils
+    versions:
+    - "0.17"
+  - dependency-name: pyyaml
+    versions:
+    - 5.4.1
+  - dependency-name: sphinx
+    versions:
+    - 3.4.3
+    - 3.5.0
+  - dependency-name: argcomplete
+    versions:
+    - 1.12.2
