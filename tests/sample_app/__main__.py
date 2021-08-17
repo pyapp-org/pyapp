@@ -1,6 +1,8 @@
-import tests.sample_app
 from pyapp import checks
+from pyapp import feature_flags
 from pyapp.app import CliApplication
+
+import tests.sample_app
 
 app = CliApplication(tests.sample_app)
 
@@ -26,6 +28,21 @@ def cheeky(opts):
 def angry(opts):
     print(">=o(")
     raise Exception("Grrrr")
+
+
+@app.command
+def undecided(opts):
+    if feature_flags.get("happy"):
+        print("=o)")
+        return 10
+
+    elif feature_flags.get("sad", default=True):
+        print("=o(")
+        return 30
+
+    else:
+        print("=o|")
+        return 20
 
 
 @checks.register

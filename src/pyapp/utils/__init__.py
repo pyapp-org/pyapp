@@ -5,6 +5,7 @@ PyApp Utils
 import importlib
 import textwrap
 from typing import Any
+from typing import Container
 
 
 def is_iterable(obj: Any) -> bool:
@@ -66,3 +67,15 @@ def wrap_text(
         text, width - (padding * 2), initial_indent=indent, subsequent_indent=indent
     )
     return line_sep.join(f"{l}{' ' * (width - len(l))}" for l in lines)
+
+
+TRUE_VALUES = ("TRUE", "T", "YES", "Y", "ON", "1")
+
+
+def text_to_bool(value: Any, *, true_values: Container[str] = TRUE_VALUES) -> bool:
+    """
+    Resolve a string into a bool eg "yes" -> True
+    """
+    if isinstance(value, str):
+        return value.upper() in true_values
+    return False
