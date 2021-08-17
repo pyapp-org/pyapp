@@ -64,6 +64,9 @@ So what do we handle?
 
 - Dependency Injection - Easy to use dependency injection without complicated setup.
 
+- Feature Flags - Simple methods to enable and disable features in your application
+  at runtime.
+
 - Checks - A framework for checking settings are correct and environment is
   operating correctly (your ops team will love you)?
 

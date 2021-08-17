@@ -15,11 +15,11 @@ Or as an A/B switch:
 
 .. code-block:: python
 
-    instance = feature_flags.a_or_b("MY-FLAG", a="foo", b="bar")
+    instance = feature_flags.a_or_b("MY-FLAG", option_a="foo", option_b="bar")
 
-.. tip:: ``a`` and ``b`` parameters can also be callables.
+.. tip:: ``option_a`` and ``option_b`` parameters can also be callables.
 
-Or by using a a decorator:
+Or by using as a decorator:
 
 .. code-block:: python
 
