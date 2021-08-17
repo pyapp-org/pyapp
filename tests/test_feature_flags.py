@@ -99,7 +99,7 @@ class TestFeatureFlags:
 
         actual = target.a_or_b("EnableE", option_a, option_b)
 
-        assert actual is expected
+        assert actual == expected
 
     @pytest.mark.parametrize(
         "state, expected", ((True, "ValueA"), (False, None),),
