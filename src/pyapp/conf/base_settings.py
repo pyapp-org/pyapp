@@ -52,3 +52,22 @@ CHECK_LOCATIONS: Sequence[str] = []
 """
 Locations to import to ensure checks are registered.
 """
+
+
+###############################################################################
+# Feature Flags
+
+FEATURE_FLAGS: Dict[str, bool] = {}
+"""
+Feature flags definition, this is a simple configuration of::
+
+    FEATURE_FLAGS = {
+        "flag-name": True,  # State of True, False
+    }
+
+"""
+
+FEATURE_FLAG_PREFIX: str = "PYAPP_FLAG_"
+"""
+Prefix applied to flag names for environment variables
+"""
