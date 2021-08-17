@@ -151,6 +151,7 @@ import colorama
 from . import init_logger
 from .. import conf
 from .. import extensions
+from .. import feature_flags
 from ..app import builtin_handlers
 from ..injection import register_factory
 from ..utils.inspect import import_root_module
@@ -363,6 +364,23 @@ class CliApplication(CommandGroup):
             help="Minimum level of check message to display",
         )
 
+        # Feature flags
+        arg_group = self.argument_group(
+            title="feature flags", description="Enable/Disable feature flags"
+        )
+        arg_group.add_argument(
+            "--enable-flag",
+            dest="enable_feature_flags",
+            action="append",
+            help="Enable a named feature flag; this argument can be used multiple times",
+        )
+        arg_group.add_argument(
+            "--disable-flag",
+            dest="disable_feature_flags",
+            action="append",
+            help="Disable a named feature flag; this argument can be used multiple times",
+        )
+
     def register_builtin_handlers(self):
         """
         Register any built in handlers.
@@ -414,6 +432,19 @@ class CliApplication(CommandGroup):
         conf.settings.configure(
             application_settings, opts.settings, env_settings_key=self.env_settings_key
         )
+
+    @staticmethod
+    def configure_feature_flags(opts: CommandOptions):
+        """
+        Configure feature flags cache.
+        """
+        if opts.enable_feature_flags:
+            for flag in opts.enable_feature_flags:
+                feature_flags.DEFAULT.set(flag, True)
+
+        if opts.disable_feature_flags:
+            for flag in opts.disable_feature_flags:
+                feature_flags.DEFAULT.set(flag, False)
 
     def get_log_formatter(self, log_color) -> logging.Formatter:
         """
@@ -521,6 +552,7 @@ class CliApplication(CommandGroup):
 
         # Load settings and configure logger
         self.configure_settings(opts)
+        self.configure_feature_flags(opts)
         self.configure_logging(opts)
 
         handler_name = getattr(opts, ":handler", None)
