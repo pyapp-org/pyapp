@@ -1,5 +1,5 @@
-Recipes
-=======
+For Developers
+##############
 
 .. toctree::
    :maxdepth: 1
