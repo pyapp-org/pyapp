@@ -497,7 +497,7 @@ class CliApplication(CommandGroup):
             logging.root.setLevel(opts.log_level)
 
             # Replay initial entries and remove
-            self._init_logger.replay(logger.root)
+            self._init_logger.replay()
             del self._init_logger
 
     def checks_on_startup(self, opts: CommandOptions):
