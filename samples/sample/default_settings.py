@@ -19,11 +19,18 @@ LOGGING = {
     },
     "handlers": {
         "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "default",
+            "stream": "ext://sys.stdout",
+        },
+        "file": {
             "class": "logging.FileHandler",
             "formatter": "default",
             "filename": "out.log",
+            "level": "ERROR",
         },
     },
+    "loggers": {"pyapp.conf": {"handlers": ["file"]}},
     "root": {
         # 'level' : 'INFO',  # Set from command line arg parser.
         "handlers": ["console"],
