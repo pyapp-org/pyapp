@@ -23,10 +23,23 @@ try:
 except ImportError:  # pragma: no cover
     yaml_load = None
 
+try:
+    from toml import load as toml_load
+except ImportError:  # pragma: no cover
+    toml_load = None
+
 from pyapp.exceptions import UnsupportedContentType
 
+JSON_MIME_TYPE = "application/json"
+TOML_MIME_TYPE = "application/toml"  # Ref: https://toml.io/en/v1.0.0#mime-type
+YAML_MIME_TYPE = "application/x-yaml"
+
 # These are content types that are not registered but are in common use.
-UNOFFICIAL_CONTENT_TYPES = {".yaml": "application/x-yaml", ".yml": "application/x-yaml"}
+UNOFFICIAL_CONTENT_TYPES = {
+    ".toml": TOML_MIME_TYPE,
+    ".yaml": YAML_MIME_TYPE,
+    ".yml": YAML_MIME_TYPE,
+}
 
 
 def content_type_from_url(url: URL) -> str:
@@ -83,5 +96,5 @@ class ContentTypeParserRegistry(Dict[str, ContentTypeParser]):
 
 
 registry = ContentTypeParserRegistry(  # pylint: disable=invalid-name
-    {"application/json": json_load, "application/x-yaml": yaml_load}
+    {JSON_MIME_TYPE: json_load, TOML_MIME_TYPE: toml_load, YAML_MIME_TYPE: yaml_load}
 )

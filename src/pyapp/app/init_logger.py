@@ -25,13 +25,13 @@ class InitHandler(logging.Handler):
         if record.levelno >= self.pass_through_level:
             super().handle(record)
 
-    def replay(self, handler: logging.Handler):
+    def replay(self):
         """
         Replay stored log records
         """
 
         for record in self._store:
-            handler.handle(record)
+            logging.getLogger(record.name).handle(record)
         self._store.clear()
 
     def emit(self, record: logging.LogRecord) -> None:

@@ -23,6 +23,7 @@ from typing import Union
 
 from pyapp.compatability import async_run
 from pyapp.utils import cached_property
+
 from .argument_actions import EnumName
 from .argument_actions import KeyValueAction
 
@@ -198,7 +199,11 @@ class Argument:
         """
         name = str(origin)
         if name == "typing.Union":
-            if len(type_.__args__) == 2 and type(None) in type_.__args__:
+            if (
+                len(type_.__args__) == 2
+                and type(None)  # pylint: disable=unidiomatic-typecheck
+                in type_.__args__
+            ):
                 if positional:
                     kwargs["nargs"] = "?"
                 else:

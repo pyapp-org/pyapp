@@ -1,11 +1,12 @@
 import pytest
-
-import tests.sample_app
-import tests.sample_app_simple
+from pyapp import feature_flags
 from pyapp.app import _key_help
 from pyapp.app import argument
 from pyapp.app import CliApplication
 from pyapp.app.logging_formatter import ColourFormatter
+
+import tests.sample_app
+import tests.sample_app_simple
 
 
 @pytest.mark.parametrize("key, expected", (("FOO", "FOO [eek]"), ("BAR", "BAR")))
@@ -80,6 +81,33 @@ class TestCliApplication:
             target.dispatch(args=("angry",))
 
         assert str(ex.value) == "Grrrr"
+
+    def test_dispatch__set_feature_flags__where_no_flag_set(self):
+        target = tests.sample_app.__main__.app
+        feature_flags.DEFAULT._cache.clear()
+
+        with pytest.raises(SystemExit) as ex:
+            target.dispatch(args=("undecided",))
+
+        assert ex.value.code == 30
+
+    def test_dispatch__set_feature_flags__where_happy_enabled(self):
+        target = tests.sample_app.__main__.app
+        feature_flags.DEFAULT._cache.clear()
+
+        with pytest.raises(SystemExit) as ex:
+            target.dispatch(args=("--enable-flag", "happy", "undecided",))
+
+        assert ex.value.code == 10
+
+    def test_dispatch__set_feature_flags__where_sad_disabled(self):
+        target = tests.sample_app.__main__.app
+        feature_flags.DEFAULT._cache.clear()
+
+        with pytest.raises(SystemExit) as ex:
+            target.dispatch(args=("--disable-flag", "sad", "undecided",))
+
+        assert ex.value.code == 20
 
     def test_get_log_formatter__force_colour(self):
         target = tests.sample_app.__main__.app

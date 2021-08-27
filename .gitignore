@@ -10,6 +10,7 @@
 dist
 *.egg-info
 build
+reports
 _build
 .tox
 .eggs

@@ -16,12 +16,11 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
-from yarl import URL
-
 from pyapp.conf.loaders.base import Loader
 from pyapp.conf.loaders.file_loader import FileLoader
 from pyapp.conf.loaders.http_loader import HttpLoader
 from pyapp.exceptions import InvalidConfiguration
+from yarl import URL
 
 
 class ModuleLoader(Loader):

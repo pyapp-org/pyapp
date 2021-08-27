@@ -14,4 +14,5 @@ Contents:
    conf/helpers
    events
    injection
+   feature-flags
    extensions

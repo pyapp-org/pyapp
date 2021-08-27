@@ -4,7 +4,7 @@ build-backend = "rtd_poetry"
 
 [tool.poetry]
 name = "pyapp"
-version = "4.4.0"
+version = "4.6.0"
 description = "A Python application framework - Let us handle the boring stuff!"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
@@ -23,13 +23,15 @@ classifiers = [
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 packages = [
-    { include = "pyapp" },
+    { include = "pyapp", from = "src" },
     { include = "tests", format = "sdist" },
 ]
+include = ["HISTORY"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
@@ -38,17 +40,19 @@ colorama = "*"
 yarl = "*"
 
 pyyaml = {version = "*", optional = true }
+toml = {version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.0.1"
-pytest-cov = "^2.10.1"
-pytest-asyncio = "^0.14.0"
+pytest = "^6.2.2"
+pytest-cov = "^2.11.1"
+pytest-asyncio = "^0.15.1"
 nox = "*"
 docutils = "^0.16"
-sphinx = "^3.2.1"
+sphinx = "^3.5.3"
 
 [tool.poetry.extras]
 yaml = ["pyyaml"]
+toml = ["toml"]
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/pyapp-org/pyapp/issues"

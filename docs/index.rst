@@ -3,46 +3,51 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+
+
 Welcome to PyApp's documentation!
 =================================
 
 *Let us handle the boring stuff!*
 
-+---------+---------------------------------------------------------------------------------------+
-| Docs    | .. image:: https://readthedocs.org/projects/pyapp/badge/?version=latest               |
-|         |    :target: https://docs.pyapp.info/                                                  |
-|         |    :alt: ReadTheDocs                                                                  |
-+---------+---------------------------------------------------------------------------------------+
-| Build   | .. image:: https://img.shields.io/travis/pyapp-org/pyapp.svg?style=flat               |
-|         |    :target: https://travis-ci.org/pyapp-org/pyapp                                     |
-|         |    :alt: Travis CI Status                                                             |
-+---------+---------------------------------------------------------------------------------------+
-| Quality | .. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/maintainability |
-|         |    :target: https://codeclimate.com/github/pyapp-org/pyapp/maintainability            |
-|         |    :alt: Maintainability                                                              |
-|         | .. image:: https://api.codeclimate.com/v1/badges/58f9ffacb711c992610d/test_coverage   |
-|         |    :target: https://codeclimate.com/github/pyapp-org/pyapp/test_coverage              |
-|         |    :alt: Test Coverage                                                                |
-|         | .. image:: https://img.shields.io/badge/code%20style-black-000000.svg                 |
-|         |    :target: https://github.com/ambv/black                                             |
-|         |    :alt: Once you go Black...                                                         |
-+---------+---------------------------------------------------------------------------------------+
-| Package | .. image:: https://img.shields.io/pypi/v/pyapp.svg                                    |
-|         |    :target: https://pypi.io/pypi/pyapp/                                               |
-|         |    :alt: Latest Version                                                               |
-|         | .. image:: https://img.shields.io/pypi/pyversions/pyapp.svg                           |
-|         |    :target: https://pypi.io/pypi/pyapp/                                               |
-|         | .. image:: https://img.shields.io/pypi/l/pyapp.svg                                    |
-|         |    :target: https://pypi.io/pypi/pyapp/                                               |
-|         | .. image:: https://img.shields.io/pypi/wheel/pyapp.svg                                |
-|         |    :target: https://pypi.io/pypi/pyapp/                                               |
-+---------+---------------------------------------------------------------------------------------+
+As of pyApp 4.0, Python < 3.6 is no longer supported.
 
-Many features inspired by Django, but modified to be more general for use
-outside of web applications.
++---------+------------------------------------------------------------------------------------------------------------+
+| Docs    | .. image:: https://readthedocs.org/projects/pyapp/badge/?version=latest                                    |
+|         |    :target: https://docs.pyapp.info/                                                                       |
+|         |    :alt: ReadTheDocs                                                                                       |
++---------+------------------------------------------------------------------------------------------------------------+
+| Build   | .. image:: https://api.dependabot.com/badges/status?host=github&repo=pyapp-org/pyapp                       |
+|         |    :target: https://dependabot.com                                                                         |
+|         |    :alt: Dependabot Status                                                                                 |
++---------+------------------------------------------------------------------------------------------------------------+
+| Quality | .. image:: https://sonarcloud.io/api/project_badges/measure?project=pyapp-org_pyapp&metric=sqale_rating    |
+|         |    :target: https://sonarcloud.io/dashboard?id=pyapp-org_pyapp                                             |
+|         |    :alt: Maintainability                                                                                   |
+|         | .. image:: https://sonarcloud.io/api/project_badges/measure?project=pyapp-org_pyapp&metric=security_rating |
+|         |    :target: https://sonarcloud.io/project/security_hotspots                                                |
+|         |    :alt: Security                                                                                          |
+|         | .. image:: https://sonarcloud.io/api/project_badges/measure?project=pyapp-org_pyapp&metric=coverage        |
+|         |    :target: https://sonarcloud.io/code?id=pyapp-org_pyapp                                                  |
+|         |    :alt: Test Coverage                                                                                     |
+|         | .. image:: https://img.shields.io/badge/code%20style-black-000000.svg                                      |
+|         |    :target: https://github.com/ambv/black                                                                  |
+|         |    :alt: Once you go Black...                                                                              |
++---------+------------------------------------------------------------------------------------------------------------+
+| Package | .. image:: https://img.shields.io/pypi/v/pyapp                                                             |
+|         |    :target: https://pypi.io/pypi/pyapp/                                                                    |
+|         |    :alt: Latest Version                                                                                    |
+|         | .. image:: https://img.shields.io/pypi/pyversions/pyapp                                                    |
+|         |    :target: https://pypi.io/pypi/pyapp/                                                                    |
+|         | .. image:: https://img.shields.io/pypi/l/pyapp                                                             |
+|         |    :target: https://pypi.io/pypi/pyapp/                                                                    |
+|         | .. image:: https://img.shields.io/pypi/wheel/pyapp                                                         |
+|         |    :alt: PyPI - Wheel                                                                                      |
+|         |    :target: https://pypi.io/pypi/pyapp/                                                                    |
++---------+------------------------------------------------------------------------------------------------------------+
 
-.. note::
-   Python < 3.6 is no longer supported
+pyApp takes care of the boring boilerplate code for building a CLI, managing
+settings and much more so you can focus on your business logic.
 
 
 So what do we handle?
@@ -59,6 +64,9 @@ So what do we handle?
 
 - Dependency Injection - Easy to use dependency injection without complicated setup.
 
+- Feature Flags - Simple methods to enable and disable features in your application
+  at runtime.
+
 - Checks - A framework for checking settings are correct and environment is
   operating correctly (your ops team will love you)?
 
@@ -67,10 +75,8 @@ So what do we handle?
   specific default settings.
 
 - Application - Provides a extensible and simple CLI interface for running
-  commands (including Async), comes with built-in commands to execute check, setting
+  commands (including async), comes with built-in commands to execute check, setting
   and extension reports.
-
-  - Automatic building of CLI arguments from a command signature *new in 4.4!*
 
 - Logging - Initialise and apply sane logging defaults.
 

@@ -1,5 +1,4 @@
 import pytest
-
 from pyapp import utils
 
 
@@ -33,3 +32,24 @@ def test_cached_property():
     assert target.a == "foo"
     del target.a
     assert target.a == "bar"
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    (
+        ("yes", True),
+        ("True", True),
+        ("y", True),
+        ("t", True),
+        ("ON", True),
+        ("1", True),
+        ("", False),
+        ("FALSE", False),
+        ("Off", False),
+        (None, False),
+    ),
+)
+def test_text_to_bool(value, expected):
+    actual = utils.text_to_bool(value)
+
+    assert actual == expected

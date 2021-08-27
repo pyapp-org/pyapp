@@ -1,10 +1,16 @@
+import sys
 from pathlib import Path
 
 import pytest
 
-from pyapp.conf import settings
+HERE = Path(__file__).parent.absolute()
+SRC_PATH = HERE.parent / "src"
+
+sys.path.insert(0, SRC_PATH.as_posix())
 
 # Ensure settings are configured
+from pyapp.conf import settings
+
 settings.configure(["tests.settings"])
 
 

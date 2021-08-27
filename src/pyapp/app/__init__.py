@@ -141,6 +141,7 @@ import logging.config
 import os
 import sys
 from argparse import ArgumentParser
+from argparse import FileType
 from argparse import Namespace as CommandOptions
 from typing import Optional
 from typing import Sequence
@@ -151,6 +152,7 @@ import colorama
 from . import init_logger
 from .. import conf
 from .. import extensions
+from .. import feature_flags
 from ..app import builtin_handlers
 from ..injection import register_factory
 from ..utils.inspect import import_root_module
@@ -328,6 +330,11 @@ class CliApplication(CommandGroup):
             help="Specify the log level to be used. "
             f"Defaults to env variable: {_key_help(self.env_loglevel_key)}",
         )
+        # arg_group.add_argument(
+        #     "--log-file",
+        #     type=FileType(mode="w", encoding="UTF-8"),
+        #     help="Optionally override log file output.",
+        # )
         arg_group.add_argument(
             "--log-color",
             "--log-colour",
@@ -361,6 +368,23 @@ class CliApplication(CommandGroup):
             default="INFO",
             choices=("DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"),
             help="Minimum level of check message to display",
+        )
+
+        # Feature flags
+        arg_group = self.argument_group(
+            title="feature flags", description="Enable/Disable feature flags"
+        )
+        arg_group.add_argument(
+            "--enable-flag",
+            dest="enable_feature_flags",
+            action="append",
+            help="Enable a named feature flag; this argument can be used multiple times",
+        )
+        arg_group.add_argument(
+            "--disable-flag",
+            dest="disable_feature_flags",
+            action="append",
+            help="Disable a named feature flag; this argument can be used multiple times",
         )
 
     def register_builtin_handlers(self):
@@ -415,6 +439,19 @@ class CliApplication(CommandGroup):
             application_settings, opts.settings, env_settings_key=self.env_settings_key
         )
 
+    @staticmethod
+    def configure_feature_flags(opts: CommandOptions):
+        """
+        Configure feature flags cache.
+        """
+        if opts.enable_feature_flags:
+            for flag in opts.enable_feature_flags:
+                feature_flags.DEFAULT.set(flag, True)
+
+        if opts.disable_feature_flags:
+            for flag in opts.disable_feature_flags:
+                feature_flags.DEFAULT.set(flag, False)
+
     def get_log_formatter(self, log_color) -> logging.Formatter:
         """
         Get log formatter
@@ -422,11 +459,12 @@ class CliApplication(CommandGroup):
         log_handler = self.default_log_handler
 
         # Auto-detect colour mode
-        if log_color is None:
-            if isinstance(log_handler, logging.StreamHandler) and hasattr(
-                log_handler.stream, "isatty"
-            ):
-                log_color = log_handler.stream.isatty()
+        if (
+            log_color is None
+            and isinstance(log_handler, logging.StreamHandler)
+            and hasattr(log_handler.stream, "isatty")
+        ):
+            log_color = log_handler.stream.isatty()
 
         # Enable colour if specified.
         if log_color:
@@ -442,13 +480,14 @@ class CliApplication(CommandGroup):
         if hasattr(self, "_init_logger"):
             self.default_log_handler.formatter = self.get_log_formatter(opts.log_color)
 
+            if conf.settings.LOGGING:
+                logger.info("Applying logging configuration.")
+
             # Replace root handler with the default handler
             logging.root.handlers.pop(0)
             logging.root.handlers.append(self.default_log_handler)
 
             if conf.settings.LOGGING:
-                logger.info("Applying logging configuration.")
-
                 # Set a default version if not supplied by settings
                 dict_config = conf.settings.LOGGING.copy()
                 dict_config.setdefault("version", 1)
@@ -458,7 +497,7 @@ class CliApplication(CommandGroup):
             logging.root.setLevel(opts.log_level)
 
             # Replay initial entries and remove
-            self._init_logger.replay(self.default_log_handler)
+            self._init_logger.replay()
             del self._init_logger
 
     def checks_on_startup(self, opts: CommandOptions):
@@ -521,6 +560,7 @@ class CliApplication(CommandGroup):
 
         # Load settings and configure logger
         self.configure_settings(opts)
+        self.configure_feature_flags(opts)
         self.configure_logging(opts)
 
         handler_name = getattr(opts, ":handler", None)

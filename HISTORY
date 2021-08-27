@@ -1,3 +1,35 @@
+4.6.0
+=====
+
+Features
+--------
+
+- Builtin feature flags support for enabling functionality at runtime
+
+Changes
+-------
+
+- Change to initial logger so early log commands are replayed to the entire
+  logging framework after logging has been configured. This could cause initial
+  log messages to be displayed subtly different however log messages will follow
+  the rules defined in your logging configuration.
+
+
+4.5.0
+=====
+
+Features
+--------
+
+- Add TOML support for remote configuration.
+
+
+Security Updates
+----------------
+
+- By default require TLS 1.2 for HTTPS connections to fetch remote configuration.
+
+
 4.4.0
 =====
 
