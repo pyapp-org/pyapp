@@ -75,6 +75,6 @@ class SettingsReport:
         """
         Run the report
         """
-        for key, setting in self.settings.__dict__.items():
-            if key.isupper():
-                self.output_result(key, setting)
+        settings = self.settings
+        for key in settings.keys:
+            self.output_result(key, getattr(settings, key))

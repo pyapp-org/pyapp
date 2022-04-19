@@ -34,7 +34,7 @@ jobs:
           cd dist
           echo "::set-output name=source::$(ls *.tar.gz)"
           echo "::set-output name=wheel::$(ls *.whl)"
-          echo "::set-output name=version::$(poetry version | awk '{print $2}')"
+          echo "::set-output name=version::$(poetry version -s)"
       
       - name: Create a Release
         id: create_release
