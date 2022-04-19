@@ -161,6 +161,23 @@ class ModifySettingsContext:
 
             del items[item]
 
+    def reset_settings(self):
+        """
+        Completely reset all settings (including SETTINGS_SOURCES) to allow
+        reloading to occur.
+
+        This is useful for testing CLI entry points
+        """
+        setting_keys = [
+            key for key in self._container.keys if key != "SETTINGS_SOURCES"
+        ]
+
+        for setting_key in setting_keys:
+            delattr(self, setting_key)
+
+        # Clear settings sources
+        setattr(self, "SETTINGS_SOURCES", [])
+
 
 class Settings:
     """
@@ -193,6 +210,13 @@ class Settings:
         Settings have been configured (or some initial settings have been loaded).
         """
         return bool(self.SETTINGS_SOURCES)
+
+    @property
+    def keys(self) -> Sequence[str]:
+        """
+        All settings keys available
+        """
+        return [key for key in self.__dict__ if key.isupper()]
 
     def load(self, loader: Loader, apply_method=None):
         """

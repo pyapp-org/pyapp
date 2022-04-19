@@ -1,6 +1,5 @@
-import pytest
-
 import pyapp.conf
+import pytest
 
 
 class TestSettings:
@@ -133,3 +132,23 @@ class TestSettings:
         assert target.SETTING_2 == 2
         assert target.SETTING_3 == 3
         assert not hasattr(target, "SETTING_6")
+
+    def test_modify__reset_settings(self, target: pyapp.conf.Settings):
+        known_keys = {
+            "UPPER_VALUE",
+            "SETTING_2",
+            "TEST_NAMED_FACTORY",
+            "TEST_ALIAS_FACTORY",
+            "TEST_PROVIDERS",
+        }
+
+        with target.modify() as patch:
+            patch.reset_settings()
+
+            assert all(not hasattr(target, key) for key in known_keys)
+            assert target.SETTINGS_SOURCES == []
+            assert not target.is_configured
+
+        # Check items have been restored
+        assert all(hasattr(target, key) for key in known_keys)
+        assert target.SETTINGS_SOURCES == ["python:tests.settings"]
