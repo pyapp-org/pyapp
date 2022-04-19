@@ -1,3 +1,13 @@
+4.7.0
+=====
+
+Features
+--------
+
+- Add reset option to settings modify context to allow settings to be completely
+  cleared during testing. This is particularly useful for testing CLI methods.
+
+
 4.6.0
 =====
 
