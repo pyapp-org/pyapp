@@ -16,6 +16,10 @@ Usage::
     >>> settings.MY_CONFIG_VALUE
     'foo'
 
+.. note::
+    All settings must be UPPER_CASE. If a setting is not upper case it will not
+    be imported into the settings object.
+
 The settings object also has helper methods to simplify your testing::
 
     >>> from pyapp.conf import settings
@@ -30,9 +34,25 @@ In addition to changing values new values can be added or existing values
 removed using the `del` keyword. Once the context has been exited all changes
 are reverted.
 
-.. note::
-    All settings must be UPPER_CASE. If a setting is not upper case it will not
-    be imported into the settings object.
+Testing CLI Commands
+--------------------
+
+When testing the CLI settings loading can be a problem if your test case loads
+different settings or requires changes to be applied to settings files for test
+cases to execute correctly.
+
+To reset settings to allow the CLI to rebuild the settings object use the
+``reset_settings``::
+
+    >>> from pyapp.conf import settings
+    >>> with settings.modify() as patch:
+    ...     patch.reset_settings()
+    ...     assert not settings.is_configured
+    >>> assert settings.is_configured
+
+Just like with any usage of ``settings.modify()`` the origional settings are
+restored once the with block is exited.
+
 
 Settings
 ========
