@@ -93,13 +93,18 @@ HttpLoader
 import logging
 import os
 import warnings
+from typing import Any
+from typing import Iterable
 from typing import List
 from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 from pyapp.conf import base_settings
-from pyapp.conf.loaders import factory
 from pyapp.conf.loaders import Loader
 from pyapp.conf.loaders import ModuleLoader
+
+from . import loaders
 
 logger = logging.getLogger(__name__)
 
@@ -188,15 +193,25 @@ class ModifySettingsContext:
 
         This is useful for testing CLI entry points
         """
-        setting_keys = [
-            key for key in self._container.keys if key != "SETTINGS_SOURCES"
-        ]
+        container = self._container
 
-        for setting_key in setting_keys:
-            delattr(self, setting_key)
+        # Save and remove existing settings
+        saved_settings = [(key, container.__dict__.pop(key)) for key in container.keys]
 
-        # Clear settings sources
-        setattr(self, "SETTINGS_SOURCES", [])
+        # Initialise base settings
+        container._populate_base_settings()  # pylint: disable=protected-access
+
+        def restore_settings():
+            # Remove new settings
+            for key in container.keys:
+                del container.__dict__[key]
+
+            # Restore saved settings
+            container.__dict__.update(saved_settings)
+
+        # Add restore action
+        action = restore_settings, ()
+        self._roll_back.append(action)
 
 
 class Settings:
@@ -205,14 +220,7 @@ class Settings:
     """
 
     def __init__(self, base_settings_=None):
-        base_settings_ = base_settings_ or base_settings
-
-        # Copy values from base settings file.
-        self.__dict__.update(
-            (k, getattr(base_settings_, k)) for k in dir(base_settings_) if k.upper()
-        )
-
-        self.__dict__["SETTINGS_SOURCES"] = []  # pylint: disable=invalid-name
+        self._populate_base_settings(base_settings_)
 
     def __getattr__(self, item):
         raise AttributeError("Setting not defined {!r}".format(item))
@@ -220,9 +228,21 @@ class Settings:
     def __setattr__(self, key, value):
         raise AttributeError("Readonly object")
 
+    def __getitem__(self, item):
+        return self.__dict__[item]
+
     def __repr__(self) -> str:
         sources = self.SETTINGS_SOURCES or "UN-CONFIGURED"
         return f"{self.__class__.__name__}({sources})"
+
+    def _populate_base_settings(self, base_settings_=None):
+        base_settings_ = base_settings_ or base_settings
+
+        # Copy values from base settings file.
+        self.__dict__.update(
+            (k, getattr(base_settings_, k)) for k in dir(base_settings_) if k.upper()
+        )
+        self.__dict__["SETTINGS_SOURCES"] = []  # pylint: disable=invalid-name
 
     @property
     def is_configured(self) -> bool:
@@ -237,6 +257,14 @@ class Settings:
         All settings keys available
         """
         return [key for key in self.__dict__ if key.isupper()]
+
+    def items(self) -> Iterable[Tuple[str, Any]]:
+        """
+        Return a sorted iterable of all key/value pairs of settings
+        """
+        data = self.__dict__
+        for key in sorted(self.keys):
+            yield key, data[key]
 
     def load(self, loader: Loader, apply_method=None):
         """
@@ -270,7 +298,7 @@ class Settings:
         include_settings = self.__dict__.pop("INCLUDE_SETTINGS", None)
         if include_settings:
             for source_url in include_settings:
-                self.load(factory(source_url), apply_method)
+                self.load(loaders.factory(source_url), apply_method)
 
     def load_from_loaders(self, loader_list: Sequence[Loader], override: bool = True):
         """
@@ -288,7 +316,7 @@ class Settings:
 
     def configure(
         self,
-        default_settings: Sequence[str],
+        default_settings: Union[str, Sequence[str]],
         runtime_settings: str = None,
         additional_loaders: Sequence[Loader] = None,
         env_settings_key: str = DEFAULT_ENV_KEY,
@@ -304,13 +332,18 @@ class Settings:
         """
         logger.debug("Configuring settings...")
 
+        # Allow a simple string to be supplied
+        if isinstance(default_settings, str):
+            default_settings = [default_settings]
+
+        # Build list of loaders
         loader_list: List[Loader] = [ModuleLoader(s) for s in default_settings]
 
         # Add run time settings (which can be overridden or specified by an
         # environment variable).
         runtime_settings = runtime_settings or os.environ.get(env_settings_key)
         if runtime_settings:
-            loader_list.append(ModuleLoader(runtime_settings))
+            loader_list.append(loaders.factory(runtime_settings))
 
         # Append the additional loaders if defined
         if additional_loaders:
