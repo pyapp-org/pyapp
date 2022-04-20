@@ -6,7 +6,7 @@ class TestSettings:
     @pytest.fixture
     def target(self) -> pyapp.conf.Settings:
         target = pyapp.conf.Settings()
-        target.configure(["tests.settings"])
+        target.configure("tests.settings")
         return target
 
     def test_ensure_readonly(self, target: pyapp.conf.Settings):
@@ -21,6 +21,16 @@ class TestSettings:
 
     def test_configure__from_runtime_parameter(self):
         target = pyapp.conf.Settings()
+        target.configure("tests.settings", "tests.runtime_settings")
+
+        assert "python:tests.runtime_settings" in target.SETTINGS_SOURCES
+        assert hasattr(target, "UPPER_VALUE")
+        assert hasattr(target, "RUNTIME_VALUE")
+        assert not hasattr(target, "lower_value")
+        assert not hasattr(target, "mixed_VALUE")
+
+    def test_configure__with_a_list_of_settings(self):
+        target = pyapp.conf.Settings()
         target.configure(["tests.settings"], "tests.runtime_settings")
 
         assert "python:tests.runtime_settings" in target.SETTINGS_SOURCES
@@ -33,7 +43,7 @@ class TestSettings:
         monkeypatch.setenv("PYAPP_SETTINGS", "tests.runtime_settings")
 
         target = pyapp.conf.Settings()
-        target.configure(["tests.settings"])
+        target.configure("tests.settings")
 
         assert "python:tests.runtime_settings" in target.SETTINGS_SOURCES
         assert hasattr(target, "UPPER_VALUE")
@@ -46,7 +56,7 @@ class TestSettings:
 
         with pytest.warns(ImportWarning):
             target.configure(
-                ["tests.settings"],
+                "tests.settings",
                 "tests.runtime_settings",
                 [pyapp.conf.ModuleLoader("tests.runtime_settings_with_imports")],
             )
@@ -56,14 +66,14 @@ class TestSettings:
 
     def test_load__duplicate_settings_file(self):
         target = pyapp.conf.Settings()
-        target.configure(["tests.settings"], "tests.runtime_settings")
+        target.configure("tests.settings", "tests.runtime_settings")
 
         with pytest.warns(ImportWarning):
             target.load(pyapp.conf.ModuleLoader("tests.runtime_settings"))
 
     def test_load__specify_include_settings(self):
         target = pyapp.conf.Settings()
-        target.configure(["tests.settings"], "tests.runtime_settings_with_imports")
+        target.configure("tests.settings", "tests.runtime_settings_with_imports")
 
         assert "python:tests.runtime_settings_with_imports" in target.SETTINGS_SOURCES
         assert "python:tests.runtime_settings" in target.SETTINGS_SOURCES
@@ -142,13 +152,20 @@ class TestSettings:
             "TEST_PROVIDERS",
         }
 
+        initial_keys = target.keys
+
         with target.modify() as patch:
             patch.reset_settings()
 
-            assert all(not hasattr(target, key) for key in known_keys)
-            assert target.SETTINGS_SOURCES == []
-            assert not target.is_configured
+            assert all(
+                not hasattr(target, key) for key in known_keys
+            ), "Custom keys still exist"
+            assert target.SETTINGS_SOURCES == [], "Sources have not been cleared"
+            assert not target.is_configured, "Is still listed as configured"
+            assert isinstance(target.LOGGING, dict), "Base settings missing"
 
         # Check items have been restored
-        assert all(hasattr(target, key) for key in known_keys)
-        assert target.SETTINGS_SOURCES == ["python:tests.settings"]
+        assert initial_keys == target.keys, "All settings not restored"
+        assert target.SETTINGS_SOURCES == [
+            "python:tests.settings"
+        ], "Sources not restored"
