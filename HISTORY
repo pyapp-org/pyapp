@@ -1,3 +1,14 @@
+4.7.1
+=====
+
+Changes
+--------
+
+- Improve the settings reset to properly apply the base-settings after reset.
+  These are the basic settings required for the application to operate
+  correctly.
+
+
 4.7.0
 =====
 
