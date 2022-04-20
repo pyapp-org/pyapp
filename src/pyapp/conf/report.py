@@ -75,6 +75,5 @@ class SettingsReport:
         """
         Run the report
         """
-        settings = self.settings
-        for key in settings.keys:
-            self.output_result(key, getattr(settings, key))
+        for key, value in self.settings.items():
+            self.output_result(key, value)
