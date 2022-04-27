@@ -10,8 +10,8 @@ from typing import Union
 from unittest import mock
 
 import pytest
-
 from pyapp.app import CommandOptions
+from pyapp.app.argument_actions import AppendEnumName
 from pyapp.app.argument_actions import EnumName
 from pyapp.app.argument_actions import KeyValueAction
 from pyapp.app.arguments import Arg
@@ -145,6 +145,22 @@ def func_sample_12(arg1: str, *, arg2: Colour = Colour.Red):
     return arg1, arg2
 
 
+@expected_args(
+    mock.call("ARG1", type=str),
+    mock.call("--arg2", type=Colour, action=AppendEnumName),
+)
+@call_args(
+    "foo",
+    "--arg2",
+    "Red",
+    "--arg2",
+    "Green",
+    expected=("foo", [Colour.Red, Colour.Green]),
+)
+def func_sample_12_sequence_of_enums(arg1: str, *, arg2: Sequence[Colour]):
+    return arg1, arg2
+
+
 # FileType instances cannot be directly compared.
 @expected_args(mock.call("ARG1", type=mock.ANY),)
 def func_sample_13(arg1: FileType("w")):
@@ -250,6 +266,7 @@ def test_from_parameter__compatibility(handler, expected):
         func_sample_09,
         func_sample_11,
         func_sample_12,
+        func_sample_12_sequence_of_enums,
         func_sample_13,
         func_sample_14,
         func_sample_15,
@@ -330,6 +347,7 @@ def test_from_parameter__only_optional_unions():
         func_sample_08,
         func_sample_09,
         func_sample_11,
+        func_sample_12_sequence_of_enums,
         func_sample_14,
         func_sample_18,
         func_sample_19,

@@ -28,7 +28,13 @@ from typing import Sequence
 from typing import Tuple
 from typing import Union
 
-__all__ = ("KeyValueAction", "EnumValue", "EnumName")
+__all__ = (
+    "KeyValueAction",
+    "EnumValue",
+    "EnumName",
+    "AppendEnumValue",
+    "AppendEnumName",
+)
 
 
 class KeyValueAction(Action):
