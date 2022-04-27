@@ -1,3 +1,13 @@
+4.8.0
+=====
+
+Features
+--------
+
+- Support sequences of Enum values in the CLI. This is implemented via the
+  ``AppendEnumValue`` and ``AppendEnumName`` actions.
+
+
 4.7.1
 =====
 
