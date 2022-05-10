@@ -1,17 +1,17 @@
 repos:
   - repo: https://github.com/asottile/reorder_python_imports
-    rev: v1.9.0
+    rev: v3.1.0
     hooks:
       - id: reorder-python-imports
 
   - repo: https://github.com/ambv/black
-    rev: stable
+    rev: 22.3.0
     hooks:
       - id: black
         language_version: python3.6
 
   - repo: https://github.com/pre-commit/mirrors-pylint
-    rev: v2.4.4
+    rev: v3.0.0a4
     hooks:
       - id: pylint
         files: src

@@ -4,7 +4,7 @@ build-backend = "rtd_poetry"
 
 [tool.poetry]
 name = "pyapp"
-version = "4.7.1"
+version = "4.7.2"
 description = "A Python application framework - Let us handle the boring stuff!"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"

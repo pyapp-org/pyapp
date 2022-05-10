@@ -1,3 +1,13 @@
+4.7.2
+=====
+
+Changes
+--------
+
+- Fix feature_flags.if_enabled to ensure doc string and function name are passed
+  to the decorator wrapper.
+
+
 4.7.1
 =====
 
