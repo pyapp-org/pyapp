@@ -11,7 +11,12 @@ class FeatureFlagsWrapper(feature_flags.FeatureFlags):
 
 class TestFeatureFlags:
     @pytest.mark.parametrize(
-        "flag, expected", (("enable-a", True), ("Enable b", False), ("ENABLE_C", None),)
+        "flag, expected",
+        (
+            ("enable-a", True),
+            ("Enable b", False),
+            ("ENABLE_C", None),
+        ),
     )
     def test_resolve_from_environment(self, monkeypatch, flag, expected):
         monkeypatch.setenv("PYAPP_FLAG_ENABLE_A", "On")
@@ -22,7 +27,12 @@ class TestFeatureFlags:
         assert actual is expected
 
     @pytest.mark.parametrize(
-        "flag, expected", (("enable-a", True), ("Enable b", False), ("ENABLE_C", None),)
+        "flag, expected",
+        (
+            ("enable-a", True),
+            ("Enable b", False),
+            ("ENABLE_C", None),
+        ),
     )
     def test_resolve_from_settings(self, flag, expected):
         with settings.modify() as patch:
@@ -102,7 +112,11 @@ class TestFeatureFlags:
         assert actual == expected
 
     @pytest.mark.parametrize(
-        "state, expected", ((True, "ValueA"), (False, None),),
+        "state, expected",
+        (
+            (True, "ValueA"),
+            (False, None),
+        ),
     )
     def test_if_enabled__where_return_is_default(self, state, expected):
         target = FeatureFlagsWrapper()
@@ -117,7 +131,11 @@ class TestFeatureFlags:
         assert actual == expected
 
     @pytest.mark.parametrize(
-        "state, expected", ((True, "ValueA"), (False, "ValueB"),),
+        "state, expected",
+        (
+            (True, "ValueA"),
+            (False, "ValueB"),
+        ),
     )
     def test_if_enabled__where_return_is_customised(self, state, expected):
         target = FeatureFlagsWrapper()
@@ -130,3 +148,13 @@ class TestFeatureFlags:
         actual = _sample("ValueA")
 
         assert actual == expected
+
+    def test_if_enabled__where_is_wrapped_correctly(self):
+        target = FeatureFlagsWrapper()
+        target._get = Mock(return_value=True)
+
+        @target.if_enabled("FOO")
+        def foo():
+            """Sample"""
+
+        assert "Sample" == foo.__doc__
