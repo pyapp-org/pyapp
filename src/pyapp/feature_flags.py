@@ -56,6 +56,7 @@ from typing import Callable
 from typing import Dict
 from typing import Optional
 from typing import Union
+from functools import wraps
 
 from pyapp.conf import settings
 from pyapp.utils import text_to_bool
@@ -170,6 +171,7 @@ class FeatureFlags:
         """
 
         def decorator(func):
+            @wraps(func)
             def wrapper(*args, **kwargs):
                 if self._get(flag, default):
                     return func(*args, **kwargs)
