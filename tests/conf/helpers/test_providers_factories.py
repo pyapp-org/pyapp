@@ -1,5 +1,4 @@
 import pytest
-
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.conf.helpers import providers
@@ -51,7 +50,7 @@ class TestProviderFactoryBase:
         assert len(actual) == 1
         assert actual == (
             providers.ProviderSummary(
-                "tests.conf.helpers.test_providers.ProviderBaseTest",
+                "tests.conf.helpers.test_providers_factories.ProviderBaseTest",
                 "Test Provider",
                 "Description.",
             ),
@@ -60,7 +59,7 @@ class TestProviderFactoryBase:
     def test_get_provider(self):
         target = ProviderFactoryTest()
         actual = target.get_provider(
-            "tests.conf.helpers.test_providers.ProviderBaseTest"
+            "tests.conf.helpers.test_providers_factories.ProviderBaseTest"
         )
 
         assert actual is ProviderBaseTest
@@ -73,7 +72,8 @@ class TestProviderFactoryBase:
 
     def test_get_instance(self):
         target = ProviderFactoryTest(
-            "tests.conf.helpers.test_providers.ProviderBaseTest", {"foo": "bar"}
+            "tests.conf.helpers.test_providers_factories.ProviderBaseTest",
+            {"foo": "bar"},
         )
 
         actual = target.create()
@@ -95,19 +95,19 @@ class TestProviderFactoryBase:
             (
                 {},
                 checks.Critical(
-                    u"Provider definitions defined in settings not a list/tuple instance.",
-                    u"Change setting TEST_PROVIDERS to be a list or tuple in settings file.",
-                    u"settings.TEST_PROVIDERS",
+                    "Provider definitions defined in settings not a list/tuple instance.",
+                    "Change setting TEST_PROVIDERS to be a list or tuple in settings file.",
+                    "settings.TEST_PROVIDERS",
                 ),
             ),
-            (["tests.conf.helpers.test_providers.ProviderBaseTest"], []),
+            (["tests.conf.helpers.test_providers_factories.ProviderBaseTest"], []),
             (
                 [123],
                 [
                     checks.Critical(
-                        u"Provider definition is not a string.",
-                        u"Change definition to be a string in settings.",
-                        u"settings.TEST_PROVIDERS[0]",
+                        "Provider definition is not a string.",
+                        "Change definition to be a string in settings.",
+                        "settings.TEST_PROVIDERS[0]",
                     )
                 ],
             ),
@@ -127,7 +127,9 @@ class TestProviderFactoryBase:
         target = ProviderFactoryTest(multi_messages=True)
 
         with settings.modify() as ctx:
-            ctx.TEST_PROVIDERS = ("tests.conf.helpers.test_providers.ProviderBaseTest",)
+            ctx.TEST_PROVIDERS = (
+                "tests.conf.helpers.test_providers_factories.ProviderBaseTest",
+            )
 
             actual = target.checks(settings=settings)
 
@@ -142,9 +144,9 @@ class TestProviderFactoryBase:
             actual = target.checks(settings=settings)
 
             assert actual == checks.Critical(
-                u"Provider definitions missing from settings.",
-                u"Add a TEST_PROVIDERS entry into settings.",
-                u"settings.TEST_PROVIDERS",
+                "Provider definitions missing from settings.",
+                "Add a TEST_PROVIDERS entry into settings.",
+                "settings.TEST_PROVIDERS",
             )
 
     def test_checks__invalid_import(self):
@@ -152,12 +154,12 @@ class TestProviderFactoryBase:
 
         with settings.modify() as ctx:
             ctx.TEST_PROVIDERS = [
-                "tests.conf.helpers.test_providers.ProviderBaseTest",
+                "tests.conf.helpers.test_providers_factories.ProviderBaseTest",
                 "tests.wrong.ProviderBaseTest",
             ]
 
             actual = target.checks(settings=settings)[0]
 
             assert isinstance(actual, checks.Critical)
-            assert actual.msg == u"Unable to import provider type."
-            assert actual.obj == u"settings.TEST_PROVIDERS[1]"
+            assert actual.msg == "Unable to import provider type."
+            assert actual.obj == "settings.TEST_PROVIDERS[1]"
