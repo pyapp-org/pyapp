@@ -1,8 +1,10 @@
-4.7.3
+4.8.0
 =====
 
 Changes
 --------
+
+- Dropping official support for Python 3.6 and 3.7
 
 - Fix bug in NamedSingletonFactory and ThreadLocalNamedSingletonFactory classes
   that skipped the singleton wrapper causing a new instance to be generated each
