@@ -45,4 +45,4 @@ TEST_NAMED_CONFIG = {
 }
 
 # Providers
-TEST_PROVIDERS = ["tests.conf.helpers.test_providers.ProviderBaseTest"]
+TEST_PROVIDERS = ["tests.conf.helpers.test_providers_factories.ProviderBaseTest"]
