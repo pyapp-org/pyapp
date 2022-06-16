@@ -1,7 +1,6 @@
 from unittest import mock
 
 import pytest
-
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.conf.helpers import NoDefault
@@ -11,36 +10,8 @@ from pyapp.exceptions import CannotImport
 from pyapp.exceptions import InvalidSubType
 from pyapp.exceptions import NotFound
 from pyapp.exceptions import NotProvided
+
 from tests import factory
-
-
-def factory_test(key: str) -> str:
-    return f"Factory[{key}]"
-
-
-class TestDefaultCache:
-    def test_key_error_when_no_factory(self):
-        target = conf_factory.DefaultCache()
-
-        with pytest.raises(KeyError):
-            target["foo"]
-
-        assert "foo" not in target
-
-    def test_factory_not_called_if_item_exists(self):
-        target = conf_factory.DefaultCache(factory_test, foo="bar")
-
-        actual = target["foo"]
-        assert actual == "bar"
-        assert "foo" in target
-
-    def test_factory_being_called_if_item_missing(self):
-        target = conf_factory.DefaultCache(factory_test, foo="bar")
-
-        actual = target["eek"]
-        assert actual == "Factory[eek]"
-        assert "eek" in target
-        assert target["eek"] == actual
 
 
 class TestNamedFactory:
@@ -331,7 +302,7 @@ class TestNamedFactory:
         assert message.obj == "settings.FACTORY[default]"
 
 
-class TestNamedSingletonFactory:
+class TestNamedSingletonPluginFactory:
     def test_get_default(self):
         target = conf_factory.NamedSingletonPluginFactory("TEST_NAMED_FACTORY")
 
