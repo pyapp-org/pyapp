@@ -1,7 +1,6 @@
 from argparse import ArgumentTypeError
 
 import pytest
-
 from pyapp.app import argument_types
 
 
@@ -13,11 +12,12 @@ class TestRegexType:
 
         assert actual == "abc"
 
-    def test_invalid_value(self):
+    @pytest.mark.parametrize("value", ("123", "1abc2"))
+    def test_invalid_value(self, value):
         target = argument_types.RegexType(r"[a-z]+")
 
         with pytest.raises(ArgumentTypeError, match="Value does not match "):
-            target("123")
+            target(value)
 
     def test_invalid_value_with_a_custom_message(self):
         target = argument_types.RegexType(r"[a-z]+", message="Value not alpha")
