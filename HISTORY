@@ -1,3 +1,15 @@
+4.8.1
+=====
+
+Changes
+--------
+
+- Fix bug with RegexType argument where regex searched input string not raising
+  an invalid argument if the input _contained_ a valid string.
+
+- Support RegexType in type annotations for command line generation.
+
+
 4.8.0
 =====
 
