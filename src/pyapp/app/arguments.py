@@ -26,6 +26,7 @@ from pyapp.utils import cached_property
 
 from .argument_actions import EnumName
 from .argument_actions import KeyValueAction
+from .argument_types import RegexType
 
 __all__ = ("Handler", "argument", "CommandGroup", "Arg")
 
@@ -299,7 +300,7 @@ class Argument:
             type_ = cls._handle_generics(origin, type_, positional, kwargs)
         elif isinstance(type_, type):
             type_ = cls._handle_types(type_, positional, kwargs)
-        elif isinstance(type_, argparse.FileType):
+        elif isinstance(type_, (argparse.FileType, RegexType)):
             pass  # Just pass as this is an `argparse` builtin
         else:
             raise TypeError(f"Unsupported type: {type_!r}")
