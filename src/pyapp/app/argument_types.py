@@ -7,8 +7,10 @@ Additional "types" to handle common CLI situations.
 import argparse
 import re
 
+from pyapp.app.arguments import ArgumentType
 
-class RegexType:
+
+class RegexType(ArgumentType):
     """
     Factory for validating string options against a regular expression.
 

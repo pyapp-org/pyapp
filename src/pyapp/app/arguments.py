@@ -6,6 +6,7 @@ process of accepting and validating input/flags for commands.
 .. autofunction:: argument
 
 """
+import abc
 import argparse
 import asyncio
 import inspect
@@ -26,9 +27,8 @@ from pyapp.utils import cached_property
 
 from .argument_actions import EnumName
 from .argument_actions import KeyValueAction
-from .argument_types import RegexType
 
-__all__ = ("Handler", "argument", "CommandGroup", "Arg")
+__all__ = ("Handler", "argument", "CommandGroup", "Arg", "ArgumentType")
 
 
 Handler = Union[
@@ -143,6 +143,16 @@ class AsyncCommandProxy(CommandProxy):
 
     def __call__(self, opts: argparse.Namespace):
         return async_run(super().__call__(opts))
+
+
+class ArgumentType(abc.ABC):
+    """
+    Custom argument type
+    """
+
+    @abc.abstractmethod
+    def __call__(self, value: str) -> Any:
+        ...
 
 
 class Argument:
@@ -300,7 +310,7 @@ class Argument:
             type_ = cls._handle_generics(origin, type_, positional, kwargs)
         elif isinstance(type_, type):
             type_ = cls._handle_types(type_, positional, kwargs)
-        elif isinstance(type_, (argparse.FileType, RegexType)):
+        elif isinstance(type_, (argparse.FileType, ArgumentType)):
             pass  # Just pass as this is an `argparse` builtin
         else:
             raise TypeError(f"Unsupported type: {type_!r}")
