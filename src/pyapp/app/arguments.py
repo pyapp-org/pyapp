@@ -6,6 +6,7 @@ process of accepting and validating input/flags for commands.
 .. autofunction:: argument
 
 """
+import abc
 import argparse
 import asyncio
 import inspect
@@ -25,10 +26,10 @@ from pyapp.compatability import async_run
 from pyapp.utils import cached_property
 
 from .argument_actions import EnumName
+from .argument_actions import EnumNameList
 from .argument_actions import KeyValueAction
-from .argument_types import RegexType
 
-__all__ = ("Handler", "argument", "CommandGroup", "Arg")
+__all__ = ("Handler", "argument", "CommandGroup", "Arg", "ArgumentType")
 
 
 Handler = Union[
@@ -145,6 +146,16 @@ class AsyncCommandProxy(CommandProxy):
         return async_run(super().__call__(opts))
 
 
+class ArgumentType(abc.ABC):
+    """
+    Custom argument type
+    """
+
+    @abc.abstractmethod
+    def __call__(self, value: str) -> Any:
+        ...
+
+
 class Argument:
     """
     Decorator for adding arguments to a handler.
@@ -192,7 +203,7 @@ class Argument:
         )
 
     @staticmethod
-    def _handle_generics(
+    def _handle_generics(  # pylint: disable=too-many-branches
         origin, type_, positional: bool, kwargs: Dict[str, Any]
     ) -> type:
         """
@@ -218,7 +229,10 @@ class Argument:
             kwargs["nargs"] = len(type_.__args__)
 
         elif issubclass(origin, Sequence):
-            if positional:
+            args = type_.__args__
+            if len(args) == 1 and issubclass(args[0], Enum):
+                kwargs["action"] = EnumNameList
+            elif positional:
                 kwargs["nargs"] = "+"
             else:
                 kwargs["action"] = "append"
@@ -300,7 +314,7 @@ class Argument:
             type_ = cls._handle_generics(origin, type_, positional, kwargs)
         elif isinstance(type_, type):
             type_ = cls._handle_types(type_, positional, kwargs)
-        elif isinstance(type_, (argparse.FileType, RegexType)):
+        elif isinstance(type_, (argparse.FileType, ArgumentType)):
             pass  # Just pass as this is an `argparse` builtin
         else:
             raise TypeError(f"Unsupported type: {type_!r}")

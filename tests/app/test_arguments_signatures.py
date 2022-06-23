@@ -12,6 +12,7 @@ from unittest import mock
 import pytest
 from pyapp.app import CommandOptions
 from pyapp.app.argument_actions import EnumName
+from pyapp.app.argument_actions import EnumNameList
 from pyapp.app.argument_actions import KeyValueAction
 from pyapp.app.argument_types import RegexType
 from pyapp.app.arguments import Arg
@@ -228,6 +229,12 @@ def func_sample_24(*, arg_1: re_type):
     return arg_1
 
 
+@expected_args(mock.call("--arg-1", type=Colour, action=EnumNameList))
+@call_args("--arg-1", "Green", "--arg-1", "Red", expected=[Colour.Green, Colour.Red])
+def func_sample_25(*, arg_1: Sequence[Colour]):
+    return arg_1
+
+
 def func_sample_31(*, arg1: object() = None):
     return arg1
 
@@ -283,6 +290,7 @@ def test_from_parameter__compatibility(handler, expected):
         func_sample_22,
         func_sample_23,
         func_sample_24,
+        func_sample_25,
     ),
 )
 def test_from_parameter__typed(handler):
@@ -359,6 +367,7 @@ def test_from_parameter__only_optional_unions():
         func_sample_21,
         func_sample_22,
         func_sample_24,
+        func_sample_25,
     ),
 )
 def test_called(handler):
