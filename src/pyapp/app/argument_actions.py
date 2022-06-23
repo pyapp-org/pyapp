@@ -24,7 +24,7 @@ from typing import Sequence
 from typing import Tuple
 from typing import Union
 
-__all__ = ("KeyValueAction", "EnumValue", "EnumName")
+__all__ = ("KeyValueAction", "EnumValue", "EnumName", "EnumNameList")
 
 
 class KeyValueAction(Action):
@@ -37,6 +37,10 @@ class KeyValueAction(Action):
         @argument("--option", action=KeyValueAction)
         def my_command(args: Namespace):
             print(args.option)
+
+        @app.command
+        def my_command(options: Mapping[str, str]):
+            print(options)
 
     From CLI::
 
@@ -194,3 +198,42 @@ class EnumName(_EnumAction):
 
     def to_enum(self, value):
         return self._enum[value]
+
+
+class EnumNameList(EnumName):
+    """
+    Action to use an Enum as the type of an argument. In this mode the Enum is
+    reference by name and appended to a list.
+
+    The choices are automatically generated for help.
+
+    Example of use::
+
+        class Colour(Enum):
+            Red = "red"
+            Green = "green"
+            Blue = "blue"
+
+        @app.command
+        @argument("--colour", type=Colour, action=EnumNameList)
+        def my_command(args: Namespace):
+            print(args.colour)
+
+        @app.command
+        def my_command(*, colour: Sequence[Colour]):
+            print(args.colour)
+
+    From CLI::
+
+        > my_app m_command --colour Red --colour Green
+        [Colour.Red, Colour.Green]
+
+    .. versionadded:: 4.8.2
+
+    """
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        enum = self.to_enum(values)
+        items = getattr(namespace, self.dest, None) or []
+        items.append(enum)
+        setattr(namespace, self.dest, items)

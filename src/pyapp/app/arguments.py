@@ -26,6 +26,7 @@ from pyapp.compatability import async_run
 from pyapp.utils import cached_property
 
 from .argument_actions import EnumName
+from .argument_actions import EnumNameList
 from .argument_actions import KeyValueAction
 
 __all__ = ("Handler", "argument", "CommandGroup", "Arg", "ArgumentType")
@@ -202,7 +203,7 @@ class Argument:
         )
 
     @staticmethod
-    def _handle_generics(
+    def _handle_generics(  # pylint: disable=too-many-branches
         origin, type_, positional: bool, kwargs: Dict[str, Any]
     ) -> type:
         """
@@ -228,7 +229,10 @@ class Argument:
             kwargs["nargs"] = len(type_.__args__)
 
         elif issubclass(origin, Sequence):
-            if positional:
+            args = type_.__args__
+            if len(args) == 1 and issubclass(args[0], Enum):
+                kwargs["action"] = EnumNameList
+            elif positional:
                 kwargs["nargs"] = "+"
             else:
                 kwargs["action"] = "append"
