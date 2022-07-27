@@ -13,7 +13,9 @@ import pytest
 from pyapp.app import CommandOptions
 from pyapp.app.argument_actions import AppendEnumName
 from pyapp.app.argument_actions import EnumName
+from pyapp.app.argument_actions import EnumNameList
 from pyapp.app.argument_actions import KeyValueAction
+from pyapp.app.argument_types import RegexType
 from pyapp.app.arguments import Arg
 from pyapp.app.arguments import CommandProxy
 
@@ -79,7 +81,8 @@ def func_sample_02(arg1: int):
 
 
 @expected_args(
-    mock.call("ARG1", type=str), mock.call("--arg2", type=str, default="foo"),
+    mock.call("ARG1", type=str),
+    mock.call("--arg2", type=str, default="foo"),
 )
 @call_args("42", expected=("42", "foo"))
 def func_sample_03(arg1: str, *, arg2: str = "foo"):
@@ -87,28 +90,33 @@ def func_sample_03(arg1: str, *, arg2: str = "foo"):
 
 
 @expected_args(
-    mock.call("ARG1", type=str), mock.call("--arg2", action="store_true"),
+    mock.call("ARG1", type=str),
+    mock.call("--arg2", action="store_true"),
 )
 @call_args("42", "--arg2", expected=("42", True))
 def func_sample_04(arg1: str, *, arg2: bool):
     return arg1, arg2
 
 
-@expected_args(mock.call("ARG1", action=KeyValueAction, nargs="+"),)
+@expected_args(
+    mock.call("ARG1", action=KeyValueAction, nargs="+"),
+)
 @call_args("foo=a", "bar=b", expected={"foo": "a", "bar": "b"})
 def func_sample_05(arg1: dict):
     return arg1
 
 
 @expected_args(
-    mock.call("ARG1", type=str), mock.call("--arg2", action=KeyValueAction),
+    mock.call("ARG1", type=str),
+    mock.call("--arg2", action=KeyValueAction),
 )
 def func_sample_06(arg1: str, *, arg2: dict):
     return arg1, arg2
 
 
 @expected_args(
-    mock.call("ARG1", type=str), mock.call("--arg2", action="append"),
+    mock.call("ARG1", type=str),
+    mock.call("--arg2", action="append"),
 )
 @call_args("foo", "--arg2", "a", "--arg2", "b", expected=("foo", ["a", "b"]))
 def func_sample_07(arg1: str, *, arg2: list):
@@ -116,7 +124,8 @@ def func_sample_07(arg1: str, *, arg2: list):
 
 
 @expected_args(
-    mock.call("ARG1", type=str), mock.call("ARG2", nargs="+"),
+    mock.call("ARG1", type=str),
+    mock.call("ARG2", nargs="+"),
 )
 @call_args("foo", "a", "b", "c", expected=("foo", ["a", "b", "c"]))
 def func_sample_08(arg1: str, arg2: list):
@@ -124,14 +133,17 @@ def func_sample_08(arg1: str, arg2: list):
 
 
 @expected_args(
-    mock.call("ARG1", type=str), mock.call("--arg2", type=int, required=True),
+    mock.call("ARG1", type=str),
+    mock.call("--arg2", type=int, required=True),
 )
 @call_args("foo", "--arg2", "42", expected=("foo", 42))
 def func_sample_09(arg1: str, *, arg2: int):
     return arg1, arg2
 
 
-@expected_args(mock.call("ARG1", type=Colour, action=EnumName),)
+@expected_args(
+    mock.call("ARG1", type=Colour, action=EnumName),
+)
 @call_args("Red", expected=Colour.Red)
 def func_sample_11(arg1: Colour):
     return arg1
@@ -162,7 +174,9 @@ def func_sample_12_sequence_of_enums(arg1: str, *, arg2: Sequence[Colour]):
 
 
 # FileType instances cannot be directly compared.
-@expected_args(mock.call("ARG1", type=mock.ANY),)
+@expected_args(
+    mock.call("ARG1", type=mock.ANY),
+)
 def func_sample_13(arg1: FileType("w")):
     return arg1
 
@@ -223,6 +237,21 @@ def func_sample_23(*, arg_1: int = Arg(default=42)):
     return arg_1
 
 
+re_type = RegexType(r"[a-f0-9]{2}")
+
+
+@expected_args(mock.call("--arg-1", type=re_type))
+@call_args("--arg-1", "42", expected="42")
+def func_sample_24(*, arg_1: re_type):
+    return arg_1
+
+
+@expected_args(mock.call("--arg-1", type=Colour, action=EnumNameList))
+@call_args("--arg-1", "Green", "--arg-1", "Red", expected=[Colour.Green, Colour.Red])
+def func_sample_25(*, arg_1: Sequence[Colour]):
+    return arg_1
+
+
 def func_sample_31(*, arg1: object() = None):
     return arg1
 
@@ -278,6 +307,8 @@ def test_from_parameter__compatibility(handler, expected):
         func_sample_21,
         func_sample_22,
         func_sample_23,
+        func_sample_24,
+        func_sample_25,
     ),
 )
 def test_from_parameter__typed(handler):
@@ -354,6 +385,8 @@ def test_from_parameter__only_optional_unions():
         func_sample_20,
         func_sample_21,
         func_sample_22,
+        func_sample_24,
+        func_sample_25,
     ),
 )
 def test_called(handler):
@@ -368,3 +401,11 @@ def test_called(handler):
     actual = target(opts)
 
     assert actual == expected
+
+
+def test_regex_type__with_invalid_args_raises_an_error():
+    parser = argparse.ArgumentParser()
+    CommandProxy(func_sample_24, parser)
+
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--arg-1", "xx"])

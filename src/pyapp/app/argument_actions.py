@@ -44,6 +44,10 @@ class KeyValueAction(Action):
     Example of use::
 
         @app.command
+        def my_command(options: Mapping[str, str]):
+            print(options)
+
+        @app.command
         @argument("--option", action=KeyValueAction)
         def my_command(args: Namespace):
             print(args.option)
