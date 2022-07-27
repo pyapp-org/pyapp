@@ -14,8 +14,10 @@ from typing import Sequence
 
 import pkg_resources
 from pyapp.app.arguments import CommandGroup
+from pyapp.utils.compatibility import deprecated_argument
 
 __all__ = ("registry", "ExtensionEntryPoints", "ExtensionDetail")
+
 
 ENTRY_POINTS = "pyapp.extensions"
 
@@ -72,19 +74,32 @@ class ExtensionEntryPoints:
     Identifies and loads extensions.
     """
 
-    def __init__(self, white_list: Sequence[str] = None):
-        self.white_list = white_list
+    __slots__ = ("allow_list",)
+
+    def __init__(
+        self,
+        allow_list: Sequence[str] = None,
+        *,
+        white_list: Sequence[str] = None,
+    ):
+        if white_list:
+            deprecated_argument("white_list", "has been replaced by `allow_list`")
+            allow_list = (
+                (set(allow_list) | set(white_list)) if allow_list else white_list
+            )
+
+        self.allow_list = tuple(allow_list) if allow_list else None
 
     def _entry_points(self) -> Iterator[pkg_resources.EntryPoint]:
         """
         Iterator of filtered extension entry points
         """
-        white_list = self.white_list
+        allow_list = self.allow_list
         for entry_point in pkg_resources.iter_entry_points(ENTRY_POINTS):
-            if white_list is None or entry_point.name in white_list:
+            if allow_list is None or entry_point.name in allow_list:
                 yield entry_point
 
-    def extensions(self, load: bool = True) -> Iterator[object]:
+    def extensions(self, load: bool = True) -> Iterator[ExtensionDetail]:
         """
         Iterator of loaded extensions.
         """
