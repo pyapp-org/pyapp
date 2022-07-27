@@ -13,7 +13,6 @@ import pytest
 from pyapp.app import CommandOptions
 from pyapp.app.argument_actions import AppendEnumName
 from pyapp.app.argument_actions import EnumName
-from pyapp.app.argument_actions import EnumNameList
 from pyapp.app.argument_actions import KeyValueAction
 from pyapp.app.argument_types import RegexType
 from pyapp.app.arguments import Arg
@@ -246,7 +245,7 @@ def func_sample_24(*, arg_1: re_type):
     return arg_1
 
 
-@expected_args(mock.call("--arg-1", type=Colour, action=EnumNameList))
+@expected_args(mock.call("--arg-1", type=Colour, action=AppendEnumName))
 @call_args("--arg-1", "Green", "--arg-1", "Red", expected=[Colour.Green, Colour.Red])
 def func_sample_25(*, arg_1: Sequence[Colour]):
     return arg_1

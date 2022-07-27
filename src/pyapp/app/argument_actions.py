@@ -32,6 +32,7 @@ __all__ = (
     "KeyValueAction",
     "EnumValue",
     "EnumName",
+    "EnumNameList",
     "AppendEnumValue",
     "AppendEnumName",
 )
@@ -283,7 +284,7 @@ class AppendEnumValue(EnumValue, _AppendEnumActionMixin):
         > my_app m_command --colour red --colour blue
         [Colour.Red, Colour.Blue]
 
-    .. versionadded:: 4.8
+    .. versionadded:: 4.9
 
     """
 
@@ -312,6 +313,9 @@ class AppendEnumName(EnumName, _AppendEnumActionMixin):
         > my_app m_command --colour Red --colour Blue
         [Colour.Red, Colour.Blue]
 
-    .. versionadded:: 4.8
+    .. versionadded:: 4.9
 
     """
+
+
+EnumNameList = AppendEnumName
