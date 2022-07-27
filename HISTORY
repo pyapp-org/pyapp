@@ -1,3 +1,17 @@
+4.9.0
+=====
+
+Changes
+--------
+
+- Redesign of the init process. Mostly moved into the `pyapp.init` module to allow
+  for init of applications that are not using the CliApplication mechanism. The init
+  methods also provide an easy location for initialisation of testing.
+
+- Creation of the `pytest-pyapp` package, a PyTest plugin with helper methods and
+  fixtures for simplifying the testing of pyApp applications.
+
+
 4.8.2
 =====
 
