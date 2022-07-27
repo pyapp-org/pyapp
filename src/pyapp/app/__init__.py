@@ -146,6 +146,7 @@ from typing import Optional
 from typing import Sequence
 
 import argcomplete
+import colorama
 
 from .. import conf
 from .. import init
@@ -387,7 +388,7 @@ class CliApplication(CommandGroup):
             additional_handler(self)
 
     @deprecated("This method is no longer used, call pyapp.init.pre_configure_logging")
-    def pre_configure_logging(self):
+    def pre_configure_logging(self):  # p
         """
         Deprecated please use :func:`pyapp.init.pre_configure_logging`. Will be removed in pyApp 5
         """
@@ -508,6 +509,8 @@ class CliApplication(CommandGroup):
         """
         Dispatch command to registered handler.
         """
+        colorama.init()
+
         # Initialisation phase
         _set_running_application(self)
         init.register_factories()
