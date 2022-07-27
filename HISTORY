@@ -1,3 +1,72 @@
+4.8.2
+=====
+
+Changes
+--------
+
+- Extend change to RegexType to allow for any custom ArgumentType by extending
+  the ArgumentType ABC.
+
+- Allow CLI entry points to define an argument as Sequence[Enum] and obtain a
+  list of enum values.
+
+
+4.8.1
+=====
+
+Changes
+--------
+
+- Fix bug with RegexType argument where regex searched input string not raising
+  an invalid argument if the input _contained_ a valid string.
+
+- Support RegexType in type annotations for command line generation.
+
+
+4.8.0
+=====
+
+Changes
+--------
+
+- Dropping official support for Python 3.6 and 3.7
+
+- Fix bug in NamedSingletonFactory and ThreadLocalNamedSingletonFactory classes
+  that skipped the singleton wrapper causing a new instance to be generated each
+  time.
+
+
+4.7.2
+=====
+
+Changes
+--------
+
+- Fix feature_flags.if_enabled to ensure doc string and function name are passed
+  to the decorator wrapper.
+
+
+4.7.1
+=====
+
+Changes
+--------
+
+- Improve the settings reset to properly apply the base-settings after reset.
+  These are the basic settings required for the application to operate
+  correctly.
+
+
+4.7.0
+=====
+
+Features
+--------
+
+- Add reset option to settings modify context to allow settings to be completely
+  cleared during testing. This is particularly useful for testing CLI methods.
+
+
 4.6.0
 =====
 
@@ -5,6 +74,14 @@ Features
 --------
 
 - Builtin feature flags support for enabling functionality at runtime
+
+Changes
+-------
+
+- Change to initial logger so early log commands are replayed to the entire
+  logging framework after logging has been configured. This could cause initial
+  log messages to be displayed subtly different however log messages will follow
+  the rules defined in your logging configuration.
 
 
 4.5.0

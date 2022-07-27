@@ -281,16 +281,16 @@ class NamedConfiguration:
 
 # TODO: Remove when pylint handles typing.Dict correctly  pylint: disable=fixme
 # pylint: disable=unsubscriptable-object
-class NamedFactory(NamedConfiguration, FactoryMixin[FT], metaclass=ABCMeta):
+class NamedFactory(FactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta):
     """
     Factory for creating instances from a named configuration.
     """
 
 
 class NamedSingletonFactory(
-    NamedConfiguration, SingletonFactoryMixin[FT], metaclass=ABCMeta
+    SingletonFactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta
 ):
-    """"
+    """ "
     :py:class:`NamedFactory` that provides a single instance of an object.
 
     This instance factory type is useful for instance types that only require
@@ -302,7 +302,7 @@ class NamedSingletonFactory(
 
 
 class ThreadLocalNamedSingletonFactory(
-    NamedConfiguration, ThreadLocalSingletonFactoryMixin[FT], metaclass=ABCMeta
+    ThreadLocalSingletonFactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta
 ):
     """
     :py:class:`NamedFactory` that provides a single instance of an object per

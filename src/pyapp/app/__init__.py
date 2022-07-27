@@ -141,6 +141,7 @@ import logging.config
 import os
 import sys
 from argparse import ArgumentParser
+from argparse import FileType
 from argparse import Namespace as CommandOptions
 from typing import Optional
 from typing import Sequence
@@ -329,6 +330,11 @@ class CliApplication(CommandGroup):
             help="Specify the log level to be used. "
             f"Defaults to env variable: {_key_help(self.env_loglevel_key)}",
         )
+        # arg_group.add_argument(
+        #     "--log-file",
+        #     type=FileType(mode="w", encoding="UTF-8"),
+        #     help="Optionally override log file output.",
+        # )
         arg_group.add_argument(
             "--log-color",
             "--log-colour",
@@ -474,13 +480,14 @@ class CliApplication(CommandGroup):
         if hasattr(self, "_init_logger"):
             self.default_log_handler.formatter = self.get_log_formatter(opts.log_color)
 
+            if conf.settings.LOGGING:
+                logger.info("Applying logging configuration.")
+
             # Replace root handler with the default handler
             logging.root.handlers.pop(0)
             logging.root.handlers.append(self.default_log_handler)
 
             if conf.settings.LOGGING:
-                logger.info("Applying logging configuration.")
-
                 # Set a default version if not supplied by settings
                 dict_config = conf.settings.LOGGING.copy()
                 dict_config.setdefault("version", 1)
@@ -490,7 +497,7 @@ class CliApplication(CommandGroup):
             logging.root.setLevel(opts.log_level)
 
             # Replay initial entries and remove
-            self._init_logger.replay(self.default_log_handler)
+            self._init_logger.replay()
             del self._init_logger
 
     def checks_on_startup(self, opts: CommandOptions):

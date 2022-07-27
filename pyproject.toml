@@ -4,7 +4,7 @@ build-backend = "rtd_poetry"
 
 [tool.poetry]
 name = "pyapp"
-version = "4.6.0"
+version = "4.8.2"
 description = "A Python application framework - Let us handle the boring stuff!"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
@@ -20,10 +20,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
@@ -34,7 +33,7 @@ packages = [
 include = ["HISTORY"]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 argcomplete = "*"
 colorama = "*"
 yarl = "*"
@@ -43,12 +42,11 @@ pyyaml = {version = "*", optional = true }
 toml = {version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.2"
-pytest-cov = "^2.11.1"
-pytest-asyncio = "^0.15.1"
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
+pytest-asyncio = "^0.18.3"
 nox = "*"
-docutils = "^0.16"
-sphinx = "^3.5.3"
+sphinx = "^5.0.2"
 
 [tool.poetry.extras]
 yaml = ["pyyaml"]

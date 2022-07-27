@@ -1,5 +1,4 @@
 import pytest
-
 from pyapp import checks
 from pyapp.conf import helpers
 from pyapp.conf import settings
@@ -137,3 +136,32 @@ class TestNamedConfiguration:
             actual = target.checks(settings=settings)
 
         assert len(actual) == 0
+
+
+def factory_test(key: str) -> str:
+    return f"Factory[{key}]"
+
+
+class TestDefaultCache:
+    def test_key_error_when_no_factory(self):
+        target = helpers.DefaultCache()
+
+        with pytest.raises(KeyError):
+            target["foo"]
+
+        assert "foo" not in target
+
+    def test_factory_not_called_if_item_exists(self):
+        target = helpers.DefaultCache(factory_test, foo="bar")
+
+        actual = target["foo"]
+        assert actual == "bar"
+        assert "foo" in target
+
+    def test_factory_being_called_if_item_missing(self):
+        target = helpers.DefaultCache(factory_test, foo="bar")
+
+        actual = target["eek"]
+        assert actual == "Factory[eek]"
+        assert "eek" in target
+        assert target["eek"] == actual
