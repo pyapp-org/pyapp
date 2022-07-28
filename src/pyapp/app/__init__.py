@@ -388,7 +388,7 @@ class CliApplication(CommandGroup):
             additional_handler(self)
 
     @deprecated("This method is no longer used, call pyapp.init.pre_configure_logging")
-    def pre_configure_logging(self):  # p
+    def pre_configure_logging(self):  # pragma: no cover
         """
         Deprecated please use :func:`pyapp.init.pre_configure_logging`. Will be removed in pyApp 5
         """
@@ -398,21 +398,21 @@ class CliApplication(CommandGroup):
         )
 
     @deprecated("This method is no longer used, call pyapp.init.register_factories")
-    def register_factories(self):
+    def register_factories(self):  # pragma: no cover
         """
         Deprecated please use :func:`pyapp.init.register_factories`. Will be removed in pyApp 5
         """
         init.register_factories()
 
     @deprecated("This method is no longer used, call pyapp.init.load_extensions")
-    def load_extensions(self):
+    def load_extensions(self):  # pragma: no cover
         """
         Deprecated please use :func:`pyapp.init.load_extensions`. Will be removed in pyApp 5
         """
         init.load_extensions(self.ext_allow_list, command_group=self)
 
     @deprecated("This method is no longer used, call pyapp.init.configure_settings")
-    def configure_settings(self, opts: CommandOptions):
+    def configure_settings(self, opts: CommandOptions):  # pragma: no cover
         """
         Deprecated please use :func:`pyapp.init.configure_settings`. Will be removed in pyApp 5
         """
@@ -425,7 +425,7 @@ class CliApplication(CommandGroup):
     @deprecated(
         "This method is no longer used, call pyapp.init.configure_feature_flags"
     )
-    def configure_feature_flags(self, opts: CommandOptions):
+    def configure_feature_flags(self, opts: CommandOptions):  # pragma: no cover
         """
         Deprecated please use :func:`pyapp.init.configure_feature_flags`. Will be removed in pyApp 5
         """
@@ -454,7 +454,7 @@ class CliApplication(CommandGroup):
         return self.default_log_formatter
 
     @deprecated("This method is no longer used, call pyapp.init.configure_logging")
-    def configure_logging(self, opts: CommandOptions):
+    def configure_logging(self, opts: CommandOptions):  # pragma: no cover
         """
         Deprecated please use :func:`pyapp.init.configure_logging`. Will be removed in pyApp 5
         """
