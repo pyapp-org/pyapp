@@ -8,6 +8,7 @@ from nox.sessions import Session
 def tests(session: Session):
     with TemporaryDirectory() as tmpdir:
         session.install("poetry")
+        session.run("poetry", "build")
         session.run(
             "poetry",
             "export",
@@ -15,5 +16,5 @@ def tests(session: Session):
             "--format=requirements.txt",
             f"--output={tmpdir}/requirements.txt",
         )
-        session.install(f"-r{tmpdir}/requirements.txt")
+        session.install(f"-r{tmpdir}/requirements.txt dist/pytest_pyapp*")
     session.run("pytest")

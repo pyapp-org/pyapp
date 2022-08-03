@@ -2,93 +2,41 @@
 Extensions
 ##########
 
-
-Available Extensions
-====================
-
-pyApp Developed
----------------
-
-🔌 SQLAlchemy - `pyapp.sqlalchemy`_
-
-🔌 Redis - `pyapp.redis`_
-
-In Beta
-~~~~~~~
-
-🐛 Rollbar - `pyapp.rollbar`_
-
-📧 AIO SMTPlib - `pyapp.aiosmtplib`_ Extension for aiosmtplib
-
-☁ Boto3 - `pyapp.boto3`_
-
-☁ AIOBotocore - `pyapp.aiobotocore`_
-
-📨 Messaging - `pyapp.messaging`_ - Extension to provide abstract interfaces for Message Queues.
-
-- 📨 AWS Messaging - `pyapp.messaging-aws`_ - Messaging extension for AWS (SQS/SNS)
-
-In development
-~~~~~~~~~~~~~~
-
-📧 SMTP - `pyapp.SMTP`_
-
-📨 Aio-Pika - `pyapp.aiopika`_ - Messaging extension for pika (RabbitMQ/AMQP)
-
-🔌 PySpark - `pyapp.pyspark`_ - Extension for PySpark
-
-🔎 Elastic Search - `pyapp.elasticsearch`_ - Extension for Elasticsearch
-
-Coming soon
------------
-
-📨 AMQP Messaging - Messaging extension for AMQP (RabbitMQ)
-
-.. _pyapp.sqlalchemy: https://www.github.com/pyapp-org/pyapp.sqlalchemy
-.. _pyapp.redis: https://www.github.com/pyapp-org/pyapp.redis
-.. _pyapp.aiobotocore: https://www.github.com/pyapp-org/pyapp.aiobotocore
-.. _pyapp.SMTP: https://www.github.com/pyapp-org/pyapp.SMTP
-.. _pyapp.boto3: https://www.github.com/pyapp-org/pyapp.boto3
-.. _pyapp.rollbar: https://www.github.com/pyapp-org/pyapp.rollbar
-.. _pyapp.aiosmtplib: https://www.github.com/pyapp-org/pyapp.aiosmtplib
-.. _pyapp.messaging: https://www.github.com/pyapp-org/pyapp-messaging
-.. _pyapp.messaging-aws: https://www.github.com/pyapp-org/pyapp-messaging-aws
-.. _pyapp.aiopika: https://www.github.com/pyapp-org/pyapp.aiopika
-.. _pyapp.pyspark: https://www.github.com/pyapp-org/pyapp.pyspark
-.. _pyapp.elasticsearch: https://www.github.com/pyapp-org/pyapp.elasticsearch
-
-.. note::
-    The development status of these projects may have changed from when this
-    documentation was generated, see the repository (or PyPi) of the extension
-    package for up to date status.
-
-
 Developing an Extension
 =======================
 
-An extension is a standard Python package that exports a known entry point that
-pyApp uses to identify extensions.  This entry point will reference a class with
-known attributes that pyApp recognises.
+A pyApp extension is a standard Python package that exports an entry point that
+pyApp utilises to load/activate the code.  The entry point will reference a class
+with attributes that pyApp recognises.
 
 A Basic Project
 ---------------
 
-An extensions consists of a standard Python project structure eg::
+The structure of an extension is similar to any other Python package.
+
+With Setuptools::
+
+    ├┬ my_extension
+    │└ __init__.py
+    ├ README.rst
+    ├ setup.cfg
+    └ setup.py
+
+
+With Poetry::
 
     ├┬ my_extension
     │└ __init__.py
     ├ README.rst
     ├ pyproject.toml
-    ├ setup.cfg
-    └ setup.py
+    ├ poetry.lock
 
 
-
-The contents of which are:
+The contents of each file:
 
 ``my_extension/__init__.py``
     The package init file, this file contains the extension entry point. While a
-    package must container an Extension class every attribute on the class is optional.
+    package must contain an Extension class every attribute on the class is optional.
 
     .. code-block:: python
 
@@ -114,11 +62,13 @@ The contents of which are:
 
 
 .. tip::
-    A gotcha when building extensions is attempting to access settings to early
-    this is the reason for the ``ready`` event on the Extension class. Once ready
-    has been called settings are setup and ready for use.
+    One gotcha when building extensions is attempting to access settings too early
+    before they have been loaded by pyApp, this is the use of the ``ready`` event
+    on the Extension class. The ``ready`` method will be called once all initialisation
+    activities have been completed and settings etc are ready for use.
 
-``README.rst``
+
+``README.rst`` or ``README.md``
     While not strictly necessary a README document is *highly recommended* and is
     included in the package as the long description.
 
@@ -211,3 +161,63 @@ Using poetry
 
         [tool.poetry.plugins."pyapp.extensions"]
         "my-extension" = "my_extension:Extension"
+
+
+Available Extensions
+====================
+
+pyApp Developed
+---------------
+
+🔌 SQLAlchemy - `pyapp.sqlalchemy`_
+
+🔌 Redis - `pyapp.redis`_
+
+In Beta
+~~~~~~~
+
+🐛 Rollbar - `pyapp.rollbar`_
+
+📧 AIO SMTPlib - `pyapp.aiosmtplib`_ Extension for aiosmtplib
+
+☁ Boto3 - `pyapp.boto3`_
+
+☁ AIOBotocore - `pyapp.aiobotocore`_
+
+📨 Messaging - `pyapp.messaging`_ - Extension to provide abstract interfaces for Message Queues.
+
+- 📨 AWS Messaging - `pyapp.messaging-aws`_ - Messaging extension for AWS (SQS/SNS)
+
+In development
+~~~~~~~~~~~~~~
+
+📧 SMTP - `pyapp.SMTP`_
+
+📨 Aio-Pika - `pyapp.aiopika`_ - Messaging extension for pika (RabbitMQ/AMQP)
+
+🔌 PySpark - `pyapp.pyspark`_ - Extension for PySpark
+
+🔎 Elastic Search - `pyapp.elasticsearch`_ - Extension for Elasticsearch
+
+Coming soon
+-----------
+
+📨 AMQP Messaging - Messaging extension for AMQP (RabbitMQ)
+
+.. _pyapp.sqlalchemy: https://www.github.com/pyapp-org/pyapp.sqlalchemy
+.. _pyapp.redis: https://www.github.com/pyapp-org/pyapp.redis
+.. _pyapp.aiobotocore: https://www.github.com/pyapp-org/pyapp.aiobotocore
+.. _pyapp.SMTP: https://www.github.com/pyapp-org/pyapp.SMTP
+.. _pyapp.boto3: https://www.github.com/pyapp-org/pyapp.boto3
+.. _pyapp.rollbar: https://www.github.com/pyapp-org/pyapp.rollbar
+.. _pyapp.aiosmtplib: https://www.github.com/pyapp-org/pyapp.aiosmtplib
+.. _pyapp.messaging: https://www.github.com/pyapp-org/pyapp-messaging
+.. _pyapp.messaging-aws: https://www.github.com/pyapp-org/pyapp-messaging-aws
+.. _pyapp.aiopika: https://www.github.com/pyapp-org/pyapp.aiopika
+.. _pyapp.pyspark: https://www.github.com/pyapp-org/pyapp.pyspark
+.. _pyapp.elasticsearch: https://www.github.com/pyapp-org/pyapp.elasticsearch
+
+.. note::
+    The development status of these projects may have changed from when this
+    documentation was generated, see the repository (or PyPi) of the extension
+    package for up to date status.

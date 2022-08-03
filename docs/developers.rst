@@ -1,27 +1,29 @@
 Developers
 ==========
 
-We welcome contributions to the pyApp project (and sub projects).
+Contributions to the pyApp project (and sub projects) are welcome.
 
-To get our PR accepted quickly please ensure the following requirements are
+To get a PR accepted quickly please ensure the following requirements are
 met:
 
 - Install the `pre-commit <https://github.com/pre-commit/pre-commit>`_ hooks to
-  ensure you code is formatted by `black <https://github.com/ambv/black>`_.
+  ensure:
 
-- Ensure your code has unit test coverage (using pyTest). Unittests should be
+  - All code is formatted by `black <https://github.com/ambv/black>`_
+  - Code passes PyLint checks (this is part of the automated build)
+
+- Ensure code has unit test coverage (using pyTest). Unittests should be
   designed to be as fast as possible.
 
-- Ensure your code passes the pyLint checks (this is part of the automated build).
-
-- Update the docs with the details if required.
+- Documentation has been updated to reflect the change
 
 - The API matters, ensure any features provide a nice API for end users.
 
+The core pyApp package is intended to be light and primarily made up of plumbing
+code. To add support for a particular service or server a new pyApp extension is
+the way to achieve this.
 
-The core pyApp package is intended to be light and mainly made up of plumbing
-code. If you want to add support for a particular service or server an extension
-is the way to do this.
+See the `Developing an Extension`_ section of the extensions doc for guidance on
+building a new extension.
 
-See the *Developing an Extension* section of the extensions doc for guidance on
-building your own extension.
+.. _Developing an Extension:

@@ -8,9 +8,13 @@ Utils for managing deprecation of methods and tools
 import functools
 import inspect
 import warnings
+from typing import Type
 
 
-def deprecated(message: str, category: Warning = DeprecationWarning):
+def deprecated(
+    message: str,
+    category: Type[Warning] = DeprecationWarning,
+):
     """
     Decorator for marking classes/functions as being deprecated and are to be removed in the future.
 
@@ -37,7 +41,7 @@ def deprecated(message: str, category: Warning = DeprecationWarning):
         @functools.wraps(obj)
         def func_wrapper(*args, **kwargs):
             warnings.warn(
-                "{obj.__name__} is deprecated and scheduled for removal. {message}",
+                f"{obj.__name__} is deprecated and scheduled for removal. {message}",
                 category=category,
             )
             return obj(*args, **kwargs)
@@ -45,3 +49,22 @@ def deprecated(message: str, category: Warning = DeprecationWarning):
         return func_wrapper
 
     return decorator
+
+
+def deprecated_argument(
+    argument: str,
+    message: str,
+    category: Type[Warning] = DeprecationWarning,
+):
+    """
+    Method to marking an argument as deprecated
+
+    :param argument: Name of argument
+    :param message: Message provided.
+    :param category: Category of warning.
+
+    """
+    warnings.warn(
+        f"Argument {argument!r} is deprecated and scheduled for removal. {message}",
+        category=category,
+    )

@@ -1,25 +1,12 @@
-.. PyApp documentation master file, created by
-   sphinx-quickstart on Thu Jan 12 12:26:34 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-
-
 Welcome to PyApp's documentation!
 =================================
 
-*Let us handle the boring stuff!*
-
-As of pyApp 4.0, Python < 3.6 is no longer supported.
+*Let pyApp handle the boring stuff!*
 
 +---------+------------------------------------------------------------------------------------------------------------+
 | Docs    | .. image:: https://readthedocs.org/projects/pyapp/badge/?version=latest                                    |
 |         |    :target: https://docs.pyapp.info/                                                                       |
 |         |    :alt: ReadTheDocs                                                                                       |
-+---------+------------------------------------------------------------------------------------------------------------+
-| Build   | .. image:: https://api.dependabot.com/badges/status?host=github&repo=pyapp-org/pyapp                       |
-|         |    :target: https://dependabot.com                                                                         |
-|         |    :alt: Dependabot Status                                                                                 |
 +---------+------------------------------------------------------------------------------------------------------------+
 | Quality | .. image:: https://sonarcloud.io/api/project_badges/measure?project=pyapp-org_pyapp&metric=sqale_rating    |
 |         |    :target: https://sonarcloud.io/dashboard?id=pyapp-org_pyapp                                             |
@@ -46,12 +33,12 @@ As of pyApp 4.0, Python < 3.6 is no longer supported.
 |         |    :target: https://pypi.io/pypi/pyapp/                                                                    |
 +---------+------------------------------------------------------------------------------------------------------------+
 
-pyApp takes care of the boring boilerplate code for building a CLI, managing
-settings and much more so you can focus on your business logic.
+pyApp takes care of the boilerplate code for building an modern application with a CLI, managing
+settings and much more so you can focus on the business logic.
 
 
-So what do we handle?
-=====================
+So what does pyApp handle?
+==========================
 
 - Configuration - Loading, merging your settings from different sources
 
@@ -74,7 +61,7 @@ So what do we handle?
   startup, extension of the CLI and the ability to register checks and extension
   specific default settings.
 
-- Application - Provides a extensible and simple CLI interface for running
+- User Interface - Provides a extensible and simple CLI interface for running
   commands (including async), comes with built-in commands to execute check, setting
   and extension reports.
 
@@ -98,11 +85,12 @@ Table of Contents
    :maxdepth: 2
 
    getting-started
+   topics/index
    sys-admin-playbook
-   recipes/index
-   reference/index
    extensions
    developers
+   reference/index
+   recipes/index
    change-history
 
 Indices and tables

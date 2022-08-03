@@ -141,7 +141,6 @@ import logging.config
 import os
 import sys
 from argparse import ArgumentParser
-from argparse import FileType
 from argparse import Namespace as CommandOptions
 from typing import Optional
 from typing import Sequence
@@ -149,16 +148,14 @@ from typing import Sequence
 import argcomplete
 import colorama
 
-from . import init_logger
 from .. import conf
-from .. import extensions
-from .. import feature_flags
+from .. import init
 from ..app import builtin_handlers
-from ..injection import register_factory
+from ..utils.compatibility import deprecated
 from ..utils.inspect import import_root_module
 from .argument_actions import *
 from .arguments import *
-from .logging_formatter import ColourFormatter
+
 
 logger = logging.getLogger(__name__)
 
@@ -189,24 +186,17 @@ class CliApplication(CommandGroup):
 
     """
 
-    default_log_handler = logging.StreamHandler(sys.stderr)
+    default_log_handler = init.DEFAULT_LOG_HANDLER
     """
     Log handler applied by default to root logger.
     """
 
-    default_log_formatter = logging.Formatter(
-        "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
-    )
+    default_log_formatter = init.DEFAULT_LOG_FORMATTER
     """
     Log formatter applied by default to root logger handler.
     """
 
-    default_color_log_formatter = ColourFormatter(
-        f"{colorama.Fore.YELLOW}%(asctime)s{colorama.Fore.RESET} "
-        f"%(clevelname)s "
-        f"{colorama.Fore.LIGHTBLUE_EX}%(name)s{colorama.Fore.RESET} "
-        f"%(message)s"
-    )
+    default_color_log_formatter = init.DEFAULT_COLOR_LOG_FORMATTER
     """
     Log formatter applied by default to root logger handler.
     """
@@ -270,8 +260,10 @@ class CliApplication(CommandGroup):
             self.env_loglevel_key = env_loglevel_key
 
         # Configure Logging as early as possible
-        self._init_logger = init_logger.InitHandler(self.default_log_handler)
-        self.pre_configure_logging()
+        init.pre_configure_logging(
+            log_handler=self.default_log_handler,
+            log_formatter=self.default_log_formatter,
+        )
 
         self._init_parser()
         self.register_builtin_handlers()
@@ -395,64 +387,53 @@ class CliApplication(CommandGroup):
         for additional_handler in self.additional_handlers:
             additional_handler(self)
 
-    def pre_configure_logging(self):
+    @deprecated("This method is no longer used, call pyapp.init.pre_configure_logging")
+    def pre_configure_logging(self):  # pragma: no cover
         """
-        Set some default logging so settings are logged.
-
-        The main logging configuration is in settings leaving us with a chicken
-        and egg situation.
-
+        Deprecated please use :func:`pyapp.init.pre_configure_logging`. Will be removed in pyApp 5
         """
-        self.default_log_handler.formatter = self.default_log_formatter
-
-        # Apply handler to root logger
-        logging.root.setLevel(logging.DEBUG)
-        logging.root.handlers = [self._init_logger]
-
-    @staticmethod
-    def register_factories():
-        """
-        Register any abstract interface factories.
-        """
-        # pylint: disable=import-outside-toplevel
-        from asyncio import AbstractEventLoop, get_event_loop
-
-        register_factory(AbstractEventLoop, get_event_loop)
-
-    def load_extensions(self):
-        """
-        Load/Configure extensions.
-        """
-        entry_points = extensions.ExtensionEntryPoints(self.ext_allow_list)
-        extensions.registry.load_from(entry_points.extensions())
-        extensions.registry.register_commands(self)
-
-    def configure_settings(self, opts: CommandOptions):
-        """
-        Configure settings container.
-        """
-        application_settings = list(extensions.registry.default_settings)
-        if self.application_settings:
-            application_settings.append(self.application_settings)
-
-        conf.settings.configure(
-            application_settings, opts.settings, env_settings_key=self.env_settings_key
+        return init.pre_configure_logging(
+            log_handler=self.default_log_handler,
+            log_formatter=self.default_log_formatter,
         )
 
-    @staticmethod
-    def configure_feature_flags(opts: CommandOptions):
+    @deprecated("This method is no longer used, call pyapp.init.register_factories")
+    def register_factories(self):  # pragma: no cover
         """
-        Configure feature flags cache.
+        Deprecated please use :func:`pyapp.init.register_factories`. Will be removed in pyApp 5
         """
-        if opts.enable_feature_flags:
-            for flag in opts.enable_feature_flags:
-                feature_flags.DEFAULT.set(flag, True)
+        init.register_factories()
 
-        if opts.disable_feature_flags:
-            for flag in opts.disable_feature_flags:
-                feature_flags.DEFAULT.set(flag, False)
+    @deprecated("This method is no longer used, call pyapp.init.load_extensions")
+    def load_extensions(self):  # pragma: no cover
+        """
+        Deprecated please use :func:`pyapp.init.load_extensions`. Will be removed in pyApp 5
+        """
+        init.load_extensions(self.ext_allow_list, command_group=self)
 
-    def get_log_formatter(self, log_color) -> logging.Formatter:
+    @deprecated("This method is no longer used, call pyapp.init.configure_settings")
+    def configure_settings(self, opts: CommandOptions):  # pragma: no cover
+        """
+        Deprecated please use :func:`pyapp.init.configure_settings`. Will be removed in pyApp 5
+        """
+        init.configure_settings(
+            self.application_settings,
+            opts.settings,
+            env_settings_key=self.env_settings_key,
+        )
+
+    @deprecated(
+        "This method is no longer used, call pyapp.init.configure_feature_flags"
+    )
+    def configure_feature_flags(self, opts: CommandOptions):  # pragma: no cover
+        """
+        Deprecated please use :func:`pyapp.init.configure_feature_flags`. Will be removed in pyApp 5
+        """
+        init.configure_feature_flags(
+            opts.enable_feature_flags, opts.disable_feature_flags
+        )
+
+    def get_log_formatter(self, log_colour) -> logging.Formatter:
         """
         Get log formatter
         """
@@ -460,45 +441,28 @@ class CliApplication(CommandGroup):
 
         # Auto-detect colour mode
         if (
-            log_color is None
+            log_colour is None
             and isinstance(log_handler, logging.StreamHandler)
             and hasattr(log_handler.stream, "isatty")
         ):
-            log_color = log_handler.stream.isatty()
+            log_colour = log_handler.stream.isatty()
 
         # Enable colour if specified.
-        if log_color:
+        if log_colour:
             return self.default_color_log_formatter
 
         return self.default_log_formatter
 
-    def configure_logging(self, opts: CommandOptions):
+    @deprecated("This method is no longer used, call pyapp.init.configure_logging")
+    def configure_logging(self, opts: CommandOptions):  # pragma: no cover
         """
-        Configure the logging framework.
+        Deprecated please use :func:`pyapp.init.configure_logging`. Will be removed in pyApp 5
         """
-        # Prevent duplicate runs
-        if hasattr(self, "_init_logger"):
-            self.default_log_handler.formatter = self.get_log_formatter(opts.log_color)
-
-            if conf.settings.LOGGING:
-                logger.info("Applying logging configuration.")
-
-            # Replace root handler with the default handler
-            logging.root.handlers.pop(0)
-            logging.root.handlers.append(self.default_log_handler)
-
-            if conf.settings.LOGGING:
-                # Set a default version if not supplied by settings
-                dict_config = conf.settings.LOGGING.copy()
-                dict_config.setdefault("version", 1)
-                logging.config.dictConfig(dict_config)
-
-            # Configure root log level
-            logging.root.setLevel(opts.log_level)
-
-            # Replay initial entries and remove
-            self._init_logger.replay()
-            del self._init_logger
+        init.configure_logging(
+            opts.log_level,
+            log_handler=self.default_log_handler,
+            log_formatter=self.get_log_formatter(opts.log_color),
+        )
 
     def checks_on_startup(self, opts: CommandOptions):
         """
@@ -545,10 +509,12 @@ class CliApplication(CommandGroup):
         """
         Dispatch command to registered handler.
         """
+        colorama.init()
+
         # Initialisation phase
         _set_running_application(self)
-        self.register_factories()
-        self.load_extensions()
+        init.register_factories()
+        init.load_extensions(self.ext_allow_list, command_group=self)
 
         # Parse arguments phase
         argcomplete.autocomplete(self.parser)
@@ -559,17 +525,26 @@ class CliApplication(CommandGroup):
         logger.info("Starting %s", self.application_summary)
 
         # Load settings and configure logger
-        self.configure_settings(opts)
-        self.configure_feature_flags(opts)
-        self.configure_logging(opts)
+        init.configure_settings(
+            self.application_settings,
+            opts.settings,
+            env_settings_key=self.env_settings_key,
+        )
+        init.configure_feature_flags(
+            opts.enable_feature_flags,
+            opts.disable_feature_flags,
+        )
+        init.configure_logging(
+            opts.log_level,
+            log_handler=self.default_log_handler,
+            log_formatter=self.get_log_formatter(opts.log_color),
+        )
 
         handler_name = getattr(opts, ":handler", None)
         if handler_name != "checks":
             self.checks_on_startup(opts)
-        else:
-            self.configure_settings(opts)
 
-        extensions.registry.ready()
+        init.startup_completed()
 
         # Dispatch to handler.
         try:
@@ -589,7 +564,7 @@ class CliApplication(CommandGroup):
                 sys.exit(exit_code)
 
         finally:
-            self.logging_shutdown()
+            init.shutdown_completed()
 
 
 CURRENT_APP: Optional[CliApplication] = None
