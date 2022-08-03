@@ -1,12 +1,12 @@
 System Admin Playbook
 #####################
 
-While pyApp offers a lot of features to help developers be more productive, it
-also provides a suite of tools for Sysadmins to help identify application issues
-and simplify operation of an application developed with pyApp.
+While pyApp offers a lot of features to help developers be more productive, there
+is also a suite of tools for Sys-Admins to help identify application issues and
+simplify operation of an application developed with pyApp.
 
 .. tip::
-  pyApp provides a CLI that provides a ``--help`` option at most locations, this
+  pyApp generates a CLI that provides a ``--help`` option at most locations, this
   is a great way to find out more about a command or what commands are available.
 
   All builtin commands include help using this method.
