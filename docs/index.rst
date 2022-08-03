@@ -17,10 +17,6 @@ As of pyApp 4.0, Python < 3.6 is no longer supported.
 |         |    :target: https://docs.pyapp.info/                                                                       |
 |         |    :alt: ReadTheDocs                                                                                       |
 +---------+------------------------------------------------------------------------------------------------------------+
-| Build   | .. image:: https://api.dependabot.com/badges/status?host=github&repo=pyapp-org/pyapp                       |
-|         |    :target: https://dependabot.com                                                                         |
-|         |    :alt: Dependabot Status                                                                                 |
-+---------+------------------------------------------------------------------------------------------------------------+
 | Quality | .. image:: https://sonarcloud.io/api/project_badges/measure?project=pyapp-org_pyapp&metric=sqale_rating    |
 |         |    :target: https://sonarcloud.io/dashboard?id=pyapp-org_pyapp                                             |
 |         |    :alt: Maintainability                                                                                   |
