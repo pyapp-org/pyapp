@@ -1,3 +1,16 @@
+4.9.0
+=====
+
+Changes
+--------
+
+- Changed settings to be support being pickled.
+
+- Added feature to export and restore settings into a serialised form for
+  use-cases where settings need to be duplicated (eg deploying tasks into a
+  spark cluster where settings are required).
+
+
 4.8.2
 =====
 

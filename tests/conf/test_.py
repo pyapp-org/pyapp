@@ -1,3 +1,8 @@
+import json
+from io import BytesIO
+from io import StringIO
+from unittest.mock import patch
+
 import pyapp.conf
 import pytest
 
@@ -169,3 +174,54 @@ class TestSettings:
         assert target.SETTINGS_SOURCES == [
             "python:tests.settings"
         ], "Sources not restored"
+
+    def test_getitem(self, target: pyapp.conf.Settings):
+        actual = target["UPPER_VALUE"]
+
+        assert actual == "foo"
+
+
+class TestExportRestoreSettings:
+    def test_roundtrip_default_serialiser(self, monkeypatch):
+        file = BytesIO()
+
+        source_settings = pyapp.conf.Settings()
+        source_settings.__dict__["FOO"] = "foo"
+        source_settings.__dict__["BAR"] = "bar"
+        source_settings.SETTINGS_SOURCES.append("self")
+        with patch("pyapp.conf.settings", source_settings):
+            pyapp.conf.export_settings(file)
+
+            assert len(file.getvalue()) > 0
+
+        file.seek(0)
+
+        target_settings = pyapp.conf.Settings()
+        with patch("pyapp.conf.settings", target_settings):
+            pyapp.conf.restore_settings(file)
+
+            assert target_settings.FOO == source_settings.FOO
+            assert target_settings.BAR == source_settings.BAR
+            assert target_settings.SETTINGS_SOURCES == source_settings.SETTINGS_SOURCES
+
+    def test_roundtrip_json_serialiser(self, monkeypatch):
+        file = StringIO()
+
+        source_settings = pyapp.conf.Settings()
+        source_settings.__dict__["FOO"] = "foo"
+        source_settings.__dict__["BAR"] = "bar"
+        source_settings.SETTINGS_SOURCES.append("self")
+        with patch("pyapp.conf.settings", source_settings):
+            pyapp.conf.export_settings(file, serialiser=json)
+
+            assert len(file.getvalue()) > 0
+
+        file.seek(0)
+
+        target_settings = pyapp.conf.Settings()
+        with patch("pyapp.conf.settings", target_settings):
+            pyapp.conf.restore_settings(file, serialiser=json)
+
+            assert target_settings.FOO == source_settings.FOO
+            assert target_settings.BAR == source_settings.BAR
+            assert target_settings.SETTINGS_SOURCES == source_settings.SETTINGS_SOURCES

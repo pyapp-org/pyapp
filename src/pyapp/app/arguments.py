@@ -153,7 +153,9 @@ class ArgumentType(abc.ABC):
 
     @abc.abstractmethod
     def __call__(self, value: str) -> Any:
-        ...
+        """
+        Construct a value from type
+        """
 
 
 class Argument:
@@ -170,7 +172,7 @@ class Argument:
     :param default: The value produced if the argument is absent from the command line.
     :param type: The type to which the command-line argument should be converted.
     :param choices: A container of the allowable values for the argument.
-    :param required: Whether or not the command-line option may be omitted (optionals only).
+    :param required: Whether the command-line option may be omitted (optionals only).
     :param help_text: A brief description of what the argument does.
     :param metavar: A name for the argument in usage messages.
     :param dest: The name of the attribute to be added to the object returned by parse_args().

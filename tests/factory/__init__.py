@@ -1,10 +1,7 @@
 import abc
 
-import six
 
-
-@six.add_metaclass(abc.ABCMeta)
-class BarABC(object):
+class BarABC(abc.ABC):
     @abc.abstractmethod
     def is_long(self):
         raise NotImplementedError()
