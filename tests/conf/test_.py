@@ -175,6 +175,11 @@ class TestSettings:
             "python:tests.settings"
         ], "Sources not restored"
 
+    def test_getitem(self, target: pyapp.conf.Settings):
+        actual = target["UPPER_VALUE"]
+
+        assert actual == "foo"
+
 
 class TestExportRestoreSettings:
     def test_roundtrip_default_serialiser(self, monkeypatch):
