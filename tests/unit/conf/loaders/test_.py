@@ -7,20 +7,20 @@ from yarl import URL
 
 class TestModuleLoader:
     def test__module_exists(self):
-        target = loaders.ModuleLoader("tests.unit.settings")
+        target = loaders.ModuleLoader("tests.settings")
 
         actual = dict(target)
 
-        assert str(target) == "python:tests.unit.settings"
+        assert str(target) == "python:tests.settings"
         assert all(key.isupper() for key in actual)
 
     def test__module_not_found(self):
-        target = loaders.ModuleLoader("tests.unit.unknown.settings")
+        target = loaders.ModuleLoader("tests.unknown.settings")
 
         with pytest.raises(InvalidConfiguration):
             dict(target)
 
-        assert str(target) == "python:tests.unit.unknown.settings"
+        assert str(target) == "python:tests.unknown.settings"
 
 
 class TestObjectLoader:

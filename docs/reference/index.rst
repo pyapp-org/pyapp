@@ -15,4 +15,5 @@ Contents:
    events
    injection
    feature-flags
+   multiprocessing
    extensions
