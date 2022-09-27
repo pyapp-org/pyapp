@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 HERE = Path(__file__).parent.absolute()
-SRC_PATH = HERE.parent / "src"
+SRC_PATH = HERE.parent.parent / "src"
 
 sys.path.insert(0, SRC_PATH.as_posix())
 
@@ -12,6 +12,9 @@ sys.path.insert(0, SRC_PATH.as_posix())
 from pyapp.conf import settings
 
 settings.configure(["tests.settings"])
+
+# Enable the pytester plugin
+pytest_plugins = "pytester"
 
 
 @pytest.fixture

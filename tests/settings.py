@@ -12,19 +12,19 @@ SETTING_5 = 5
 
 # Factory sample values
 TEST_NAMED_FACTORY = {
-    "default": ("tests.factory.Bar", {"length": 42}),
-    "iron": ("tests.factory.IronBar", {"length": 24}),
-    "steel": ("tests.factory.SteelBeam", {}),
+    "default": ("tests.unit.factory.Bar", {"length": 42}),
+    "iron": ("tests.unit.factory.IronBar", {"length": 24}),
+    "steel": ("tests.unit.factory.SteelBeam", {}),
 }
 
 # Factory sample values
 TEST_NAMED_FACTORY_NO_DEFAULT = {
-    "iron": ("tests.factory.IronBar", {"length": 24}),
-    "steel": ("tests.factory.SteelBeam", {}),
+    "iron": ("tests.unit.factory.IronBar", {"length": 24}),
+    "steel": ("tests.unit.factory.SteelBeam", {}),
 }
 
 TEST_ALIAS_FACTORY = {
-    "steel": ("tests.factory.SteelBeam", {}),
+    "steel": ("tests.unit.factory.SteelBeam", {}),
     "metal": ("alias", {"name": "steel"}),
     # Bad entries
     "plastic": ("alias", {}),
@@ -45,4 +45,4 @@ TEST_NAMED_CONFIG = {
 }
 
 # Providers
-TEST_PROVIDERS = ["tests.conf.helpers.test_providers_factories.ProviderBaseTest"]
+TEST_PROVIDERS = ["tests.unit.conf.helpers.test_providers_factories.ProviderBaseTest"]
