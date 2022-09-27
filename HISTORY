@@ -1,8 +1,18 @@
+4.10.0
+======
+
+Changes
+-------
+
+- Add implementation of ``multiprocessing.Pool`` that ensures that settings are
+  mirrored into any worker process.
+
+
 4.9.0
 =====
 
 Changes
---------
+-------
 
 - Changed settings to be support being pickled.
 
@@ -15,7 +25,7 @@ Changes
 =====
 
 Changes
---------
+-------
 
 - Extend change to RegexType to allow for any custom ArgumentType by extending
   the ArgumentType ABC.
@@ -28,7 +38,7 @@ Changes
 =====
 
 Changes
---------
+-------
 
 - Fix bug with RegexType argument where regex searched input string not raising
   an invalid argument if the input _contained_ a valid string.
@@ -40,7 +50,7 @@ Changes
 =====
 
 Changes
---------
+-------
 
 - Dropping official support for Python 3.6 and 3.7
 
@@ -63,7 +73,7 @@ Changes
 =====
 
 Changes
---------
+-------
 
 - Improve the settings reset to properly apply the base-settings after reset.
   These are the basic settings required for the application to operate
