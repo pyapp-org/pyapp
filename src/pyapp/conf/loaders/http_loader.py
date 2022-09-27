@@ -13,11 +13,12 @@ from typing import Tuple
 from urllib.error import ContentTooShortError
 from urllib.request import urlopen
 
+from yarl import URL
+
 from pyapp.conf.loaders.base import Loader
 from pyapp.conf.loaders.content_types import content_type_from_url
 from pyapp.conf.loaders.content_types import registry
 from pyapp.exceptions import InvalidConfiguration
-from yarl import URL
 
 
 def retrieve_file(url: URL) -> Tuple[TextIO, str]:
@@ -31,7 +32,9 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
         raise InvalidConfiguration("Illegal scheme.")
 
     context = (
-        ssl.SSLContext(protocol=ssl.PROTOCOL_TLSv1_2) if url.scheme == "https" else None
+        ssl.SSLContext(protocol=ssl.PROTOCOL_TLS_CLIENT)
+        if url.scheme == "https"
+        else None
     )
 
     with contextlib.closing(
