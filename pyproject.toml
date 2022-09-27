@@ -54,3 +54,6 @@ toml = ["toml"]
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/pyapp-org/pyapp/issues"
+
+[tool.poetry.plugins."pytest11"]
+"pyapp-pytest" = "pyapp.testing.pytest_plugin"

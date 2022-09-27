@@ -13,6 +13,9 @@ from pyapp.conf import settings
 
 settings.configure(["tests.settings"])
 
+# Enable the pytester plugin
+pytest_plugins = "pytester"
+
 
 @pytest.fixture
 def fixture_path() -> Path:
