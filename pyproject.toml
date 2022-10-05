@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyapp"
-version = "4.10.0"
+version = "4.10.1"
 description = "A Python application framework - Let us handle the boring stuff!"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
