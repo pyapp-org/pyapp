@@ -1,3 +1,12 @@
+4.10.1
+======
+
+Changes
+-------
+
+- Fix issue with docs build related to Poetry and RTD
+
+
 4.10.0
 ======
 
