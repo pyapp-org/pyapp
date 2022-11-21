@@ -82,6 +82,30 @@ class TestCliApplication:
 
         assert str(ex.value) == "Grrrr"
 
+    def test_dispatch__plain_group(self):
+        target = tests.unit.sample_app.__main__.app
+
+        with pytest.raises(SystemExit) as ex:
+            target.dispatch(args=("plain", "sample"))
+
+        assert ex.value.code == 1324
+
+    def test_dispatch__class_group_static_function(self):
+        target = tests.unit.sample_app.__main__.app
+
+        with pytest.raises(SystemExit) as ex:
+            target.dispatch(args=("class", "static"))
+
+        assert ex.value.code == 1332
+
+    def test_dispatch__class_group_with_non_static_function(self):
+        target = tests.unit.sample_app.__main__.app
+
+        with pytest.raises(SystemExit) as ex:
+            target.dispatch(args=("class", "non-static", "2"))
+
+        assert ex.value.code == 1350
+
     def test_dispatch__set_feature_flags__where_no_flag_set(self):
         target = tests.unit.sample_app.__main__.app
         feature_flags.DEFAULT._cache.clear()

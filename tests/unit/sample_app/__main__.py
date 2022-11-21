@@ -8,12 +8,12 @@ app = CliApplication(tests.unit.sample_app)
 
 
 @app.command
-def happy(opts):
+def happy():
     print("=o)")
 
 
 @app.command
-def sad(opts):
+def sad():
     print("=o(")
     return -2
 
@@ -31,7 +31,7 @@ def angry(opts):
 
 
 @app.command
-def undecided(opts):
+def undecided():
     if feature_flags.get("happy"):
         print("=o)")
         return 10
@@ -43,6 +43,27 @@ def undecided(opts):
     else:
         print("=o|")
         return 20
+
+
+plain_group = app.create_command_group("plain")
+
+
+@plain_group.command(name="sample")
+def plain_group_sample():
+    return 1324
+
+
+class ClassGroup:
+    group = app.create_command_group("class")
+
+    @staticmethod
+    @group.command
+    def static():
+        return 1332
+
+    @group.command(name="non-static")
+    def non_static(self, arg1: int):
+        return 1348 + arg1
 
 
 @checks.register

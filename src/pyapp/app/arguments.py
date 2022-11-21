@@ -120,9 +120,14 @@ class CommandProxy(ParserBase):
                 self._require_namespace = name
                 return
 
-        for name, parameter in sig.parameters.items():
+        for idx, (name, parameter) in enumerate(sig.parameters.items()):
             if parameter.annotation is argparse.Namespace:
                 self._require_namespace = name
+            elif name == "self" and idx == 0:
+                # Special case for non-static function groups
+                arg = Argument("SELF", action="store_const", const=self)
+                action = arg.register_with_proxy(self)
+                self._args.append((name, action.dest))
             else:
                 arg = Argument.from_parameter(name, parameter)
                 action = arg.register_with_proxy(self)
