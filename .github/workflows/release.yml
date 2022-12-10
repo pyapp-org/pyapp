@@ -66,8 +66,8 @@ jobs:
           asset_name: ${{ steps.build_package.outputs.source }}
           asset_content_type: application/x-tar+gzip
 
-      - name: Upload to PyPI
-        id: upload_to_pypi
-        run: |
-          poetry config http-basic.pypi "__token__" "${{ secrets.POETRY_PYPI_TOKEN_PYPI }}"	
-          poetry publish
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.5.0
+        with:
+            user: __token__
+            password: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
