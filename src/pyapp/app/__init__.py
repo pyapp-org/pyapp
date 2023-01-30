@@ -136,13 +136,14 @@ Argument Actions
 .. automodule:: pyapp.app.argument_actions
 
 """
+import argparse
 import io
 import logging.config
 import os
 import sys
 from argparse import ArgumentParser
-from argparse import FileType
 from argparse import Namespace as CommandOptions
+from typing import Callable
 from typing import Optional
 from typing import Sequence
 
@@ -154,6 +155,7 @@ from .. import conf
 from .. import extensions
 from .. import feature_flags
 from ..app import builtin_handlers
+from ..events import Event
 from ..injection import register_factory
 from ..utils.inspect import import_root_module
 from .argument_actions import *
@@ -164,9 +166,7 @@ logger = logging.getLogger(__name__)
 
 
 def _key_help(key: str) -> str:
-    """
-    Helper method that formats a key value from the environment vars
-    """
+    """Helper method that formats a key value from the environment vars."""
     if key in os.environ:
         return f"{key} [{os.environ[key]}]"
     return key
@@ -174,8 +174,7 @@ def _key_help(key: str) -> str:
 
 # pylint: disable=too-many-instance-attributes
 class CliApplication(CommandGroup):
-    """
-    Application interface that provides a CLI interface.
+    """Application interface that provides a CLI interface.
 
     :param root_module: The root module for this application (used for discovery of other modules)
     :param prog: Name of your application; defaults to `sys.argv[0]`
@@ -190,16 +189,12 @@ class CliApplication(CommandGroup):
     """
 
     default_log_handler = logging.StreamHandler(sys.stderr)
-    """
-    Log handler applied by default to root logger.
-    """
+    """Log handler applied by default to root logger."""
 
     default_log_formatter = logging.Formatter(
         "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
     )
-    """
-    Log formatter applied by default to root logger handler.
-    """
+    """Log formatter applied by default to root logger handler."""
 
     default_color_log_formatter = ColourFormatter(
         f"{colorama.Fore.YELLOW}%(asctime)s{colorama.Fore.RESET} "
@@ -207,28 +202,25 @@ class CliApplication(CommandGroup):
         f"{colorama.Fore.LIGHTBLUE_EX}%(name)s{colorama.Fore.RESET} "
         f"%(message)s"
     )
-    """
-    Log formatter applied by default to root logger handler.
-    """
+    """Log formatter applied by default to root logger handler."""
 
     env_settings_key = conf.DEFAULT_ENV_KEY
-    """
-    Key used to define settings file in environment.
-    """
+    """Key used to define settings file in environment."""
 
     env_loglevel_key = "PYAPP_LOGLEVEL"
-    """
-    Key used to define log level in environment
-    """
+    """Key used to define log level in environment."""
 
     additional_handlers = (
         builtin_handlers.checks,
         builtin_handlers.extensions,
         builtin_handlers.settings,
     )
-    """
-    Handlers to be added when builtin handlers are registered.
-    """
+    """Handlers to be added when builtin handlers are registered."""
+
+    # Events
+    pre_dispatch = Event[Callable[[argparse.Namespace], None]]()
+    post_dispatch = Event[Callable[[Optional[int], argparse.Namespace], None]]()
+    unhandled_error = Event[Callable[[Exception, argparse.Namespace], None]]()
 
     def __init__(
         self,
@@ -284,16 +276,12 @@ class CliApplication(CommandGroup):
 
     @property
     def application_name(self) -> str:
-        """
-        Name of the application
-        """
+        """Name of the application."""
         return self.parser.prog
 
     @property
     def application_summary(self) -> str:
-        """
-        Summary of the application, name version and description.
-        """
+        """Summary of the application, name version and description."""
         description = self.parser.description
         if description:
             return f"{self.application_name} version {self.application_version} - {description}"
@@ -388,20 +376,16 @@ class CliApplication(CommandGroup):
         )
 
     def register_builtin_handlers(self):
-        """
-        Register any built in handlers.
-        """
+        """Register any built in handlers."""
         # Register any additional handlers
         for additional_handler in self.additional_handlers:
             additional_handler(self)
 
     def pre_configure_logging(self):
-        """
-        Set some default logging so settings are logged.
+        """Set some default logging so settings are logged.
 
         The main logging configuration is in settings leaving us with a chicken
         and egg situation.
-
         """
         self.default_log_handler.formatter = self.default_log_formatter
 
@@ -411,26 +395,20 @@ class CliApplication(CommandGroup):
 
     @staticmethod
     def register_factories():
-        """
-        Register any abstract interface factories.
-        """
+        """Register any abstract interface factories."""
         # pylint: disable=import-outside-toplevel
         from asyncio import AbstractEventLoop, get_event_loop
 
         register_factory(AbstractEventLoop, get_event_loop)
 
     def load_extensions(self):
-        """
-        Load/Configure extensions.
-        """
+        """Load/Configure extensions."""
         entry_points = extensions.ExtensionEntryPoints(self.ext_allow_list)
         extensions.registry.load_from(entry_points.extensions())
         extensions.registry.register_commands(self)
 
     def configure_settings(self, opts: CommandOptions):
-        """
-        Configure settings container.
-        """
+        """Configure settings container."""
         application_settings = list(extensions.registry.default_settings)
         if self.application_settings:
             application_settings.append(self.application_settings)
@@ -441,9 +419,7 @@ class CliApplication(CommandGroup):
 
     @staticmethod
     def configure_feature_flags(opts: CommandOptions):
-        """
-        Configure feature flags cache.
-        """
+        """Configure feature flags cache."""
         if opts.enable_feature_flags:
             for flag in opts.enable_feature_flags:
                 feature_flags.DEFAULT.set(flag, True)
@@ -453,9 +429,7 @@ class CliApplication(CommandGroup):
                 feature_flags.DEFAULT.set(flag, False)
 
     def get_log_formatter(self, log_color) -> logging.Formatter:
-        """
-        Get log formatter
-        """
+        """Get log formatter."""
         log_handler = self.default_log_handler
 
         # Auto-detect colour mode
@@ -473,9 +447,7 @@ class CliApplication(CommandGroup):
         return self.default_log_formatter
 
     def configure_logging(self, opts: CommandOptions):
-        """
-        Configure the logging framework.
-        """
+        """Configure the logging framework."""
         # Prevent duplicate runs
         if hasattr(self, "_init_logger"):
             self.default_log_handler.formatter = self.get_log_formatter(opts.log_color)
@@ -501,9 +473,7 @@ class CliApplication(CommandGroup):
             del self._init_logger
 
     def checks_on_startup(self, opts: CommandOptions):
-        """
-        Run checks on startup.
-        """
+        """Run checks on startup."""
         # pylint: disable=import-outside-toplevel
         from pyapp.checks.report import execute_report
 
@@ -524,9 +494,7 @@ class CliApplication(CommandGroup):
                 logger.info("Check results:\n%s", out.getvalue())
 
     def exception_report(self, exception: BaseException, opts: CommandOptions):
-        """
-        Generate a report for any unhandled exceptions caught by the framework.
-        """
+        """Generate a report for any unhandled exceptions caught by the framework."""
         logger.exception(
             "Un-handled exception %s caught executing handler: %s",
             exception,
@@ -536,15 +504,11 @@ class CliApplication(CommandGroup):
 
     @staticmethod
     def logging_shutdown():
-        """
-        Call at shutdown to ensure logging is cleaned up.
-        """
+        """Call at shutdown to ensure logging is cleaned up."""
         logging.shutdown()
 
     def dispatch(self, args: Sequence[str] = None) -> None:
-        """
-        Dispatch command to registered handler.
-        """
+        """Dispatch command to registered handler."""
         # Initialisation phase
         _set_running_application(self)
         self.register_factories()
@@ -572,10 +536,12 @@ class CliApplication(CommandGroup):
         extensions.registry.ready()
 
         # Dispatch to handler.
+        self.pre_dispatch(opts)
         try:
             exit_code = self.dispatch_handler(opts)
 
         except Exception as ex:  # pylint: disable=broad-except
+            self.unhandled_error(ex, opts)
             if not self.exception_report(ex, opts):
                 raise
 
@@ -585,6 +551,7 @@ class CliApplication(CommandGroup):
 
         else:
             # Provide exit code.
+            self.post_dispatch(exit_code, opts)
             if exit_code:
                 sys.exit(exit_code)
 
@@ -601,7 +568,5 @@ def _set_running_application(app: CliApplication):
 
 
 def get_running_application() -> CliApplication:
-    """
-    Get the current running application instance
-    """
+    """Get the current running application instance."""
     return CURRENT_APP

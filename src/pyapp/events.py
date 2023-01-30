@@ -7,7 +7,7 @@ A simple framework to publish events or callbacks to subscribed listener(s).
 Async events/callbacks are also supported via the `AsyncEvent` and `AsyncCallback`
 descriptors.
 
-An event can have multiple listening functions where as callbacks can only have
+An event can have multiple listening functions whereas callbacks can only have
 a single function bound (assigning a second will remove the previous binding).
 
 .. note::
@@ -63,8 +63,7 @@ _CT = TypeVar("_CT")
 
 
 class ListenerContext(Generic[_CT]):
-    """
-    Context manager to manage temporary listeners.
+    """Context manager to manage temporary listeners.
 
     This is useful for testing.
     """
@@ -85,9 +84,7 @@ class ListenerContext(Generic[_CT]):
 # TODO: Remove when pylint handles typing.Set correctly  pylint: disable=fixme
 # pylint: disable=not-an-iterable,no-member
 class BaseListenerSet(Set[_CT]):
-    """
-    Set of event listeners.
-    """
+    """Set of event listeners."""
 
     __slots__ = ()
 
@@ -96,9 +93,7 @@ class BaseListenerSet(Set[_CT]):
         return f"ListenerSet({', '.join(listeners)})"
 
     def __iadd__(self, other: Union[Set[_CT], _CT]) -> "BaseListenerSet[_CT]":
-        """
-        Allow listeners to be registered using the += operator.
-        """
+        """Allow listeners to be registered using the += operator."""
         # Merge sets
         if isinstance(other, set):
             self.update(other)
@@ -107,8 +102,7 @@ class BaseListenerSet(Set[_CT]):
         return self
 
     def tap(self, listener: _CT) -> ListenerContext[_CT]:
-        """
-        Tap into an event with a temporary context.
+        """Tap into an event with a temporary context.
 
         :param listener: Listener callback method
         :return: Context manager
@@ -123,9 +117,7 @@ class BaseListenerSet(Set[_CT]):
 
 
 class ListenerSet(BaseListenerSet[_CT]):
-    """
-    Set of event listeners.
-    """
+    """Set of event listeners."""
 
     __slots__ = ()
 
@@ -138,8 +130,7 @@ class ListenerSet(BaseListenerSet[_CT]):
 
 
 class Event(Generic[_CT]):
-    """
-    Event publisher descriptor.
+    """Event publisher descriptor.
 
     Used to gain access to the listener list.
 
@@ -166,9 +157,7 @@ _ACT = TypeVar("_ACT", bound=Union[Callable[..., Coroutine], "AsyncListenerList"
 
 
 class AsyncListenerSet(BaseListenerSet[_ACT]):
-    """
-    Set of event listeners.
-    """
+    """Set of event listeners."""
 
     __slots__ = ()
 
@@ -182,8 +171,7 @@ class AsyncListenerSet(BaseListenerSet[_ACT]):
 
 
 class AsyncEvent(Generic[_ACT]):
-    """
-    Async event publisher descriptor.
+    """Async event publisher descriptor.
 
     Used to gain access to the listener list.
 
@@ -203,9 +191,7 @@ class AsyncEvent(Generic[_ACT]):
 
 
 def listen_to(event: ListenerSet[_CT]) -> _CT:
-    """
-    Decorator for attaching listeners to events
-    """
+    """Decorator for attaching listeners to events."""
 
     def decorator(func: _CT) -> _CT:
         event.add(func)
@@ -215,9 +201,7 @@ def listen_to(event: ListenerSet[_CT]) -> _CT:
 
 
 class CallbackBindingBase(Generic[_CT]):
-    """
-    Descriptor binding instance that provides a single method binding.
-    """
+    """Descriptor binding instance that provides a single method binding."""
 
     __slots__ = ("_callback",)
 
@@ -229,22 +213,16 @@ class CallbackBindingBase(Generic[_CT]):
         return self
 
     def bind(self, callback: _CT):
-        """
-        Bind callback
-        """
+        """Bind callback."""
         self._callback = callback
 
     def unbind(self):
-        """
-        Unbind the callback
-        """
+        """Unbind the callback."""
         self._callback = None
 
 
 class CallbackBinding(CallbackBindingBase[_ACT]):
-    """
-    Descriptor binding instance that provides a single method binding.
-    """
+    """Descriptor binding instance that provides a single method binding."""
 
     __slots__ = ()
 
@@ -254,8 +232,7 @@ class CallbackBinding(CallbackBindingBase[_ACT]):
 
 
 class Callback(Generic[_CT]):
-    """
-    Callback descriptor.
+    """Callback descriptor.
 
     Used to attach a single callback.
 
@@ -279,9 +256,7 @@ class Callback(Generic[_CT]):
 
 
 class AsyncCallbackBinding(CallbackBindingBase[_ACT]):
-    """
-    Descriptor binding instance that provides a single method binding.
-    """
+    """Descriptor binding instance that provides a single method binding."""
 
     __slots__ = ()
 
@@ -291,8 +266,7 @@ class AsyncCallbackBinding(CallbackBindingBase[_ACT]):
 
 
 class AsyncCallback(Generic[_ACT]):
-    """
-    Async callback descriptor
+    """Async callback descriptor.
 
     Use to attach a single async callback
 
@@ -312,9 +286,7 @@ class AsyncCallback(Generic[_ACT]):
 
 
 def bind_to(callback: CallbackBinding[_CT]) -> _CT:
-    """
-    Decorator for attaching a listener to a callback
-    """
+    """Decorator for attaching a listener to a callback."""
 
     def decorator(func: _CT) -> _CT:
         callback.bind(func)
