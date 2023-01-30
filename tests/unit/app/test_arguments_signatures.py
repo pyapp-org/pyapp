@@ -1,4 +1,5 @@
 import argparse
+import datetime
 from argparse import FileType
 from enum import Enum
 from typing import Callable
@@ -11,9 +12,12 @@ from unittest import mock
 
 import pytest
 from pyapp.app import CommandOptions
+from pyapp.app.argument_actions import DateAction
+from pyapp.app.argument_actions import DateTimeAction
 from pyapp.app.argument_actions import EnumName
 from pyapp.app.argument_actions import EnumNameList
 from pyapp.app.argument_actions import KeyValueAction
+from pyapp.app.argument_actions import TimeAction
 from pyapp.app.argument_types import RegexType
 from pyapp.app.arguments import Arg
 from pyapp.app.arguments import CommandProxy
@@ -247,6 +251,33 @@ def func_sample_33(*, arg1: Union[int, str, None] = None):
     return arg1
 
 
+# Date and time types
+
+
+@expected_args(
+    mock.call("--arg-1", action=DateAction),
+    mock.call("--arg-2", action=TimeAction),
+    mock.call("--arg-3", action=DateTimeAction),
+)
+@call_args(
+    "--arg-1",
+    "2022-10-03",
+    "--arg-2",
+    "12:52:13",
+    "--arg-3",
+    "2022-10-03t12:52:13",
+    expected=(
+        datetime.date(2022, 10, 3),
+        datetime.time(12, 52, 13),
+        datetime.datetime(2022, 10, 3, 12, 52, 13),
+    ),
+)
+def func_sample_35(
+    *, arg_1: datetime.date, arg_2: datetime.time, arg_3: datetime.datetime
+):
+    return arg_1, arg_2, arg_3
+
+
 @pytest.mark.parametrize(
     "handler, expected",
     (
@@ -291,6 +322,7 @@ def test_from_parameter__compatibility(handler, expected):
         func_sample_23,
         func_sample_24,
         func_sample_25,
+        func_sample_35,
     ),
 )
 def test_from_parameter__typed(handler):
@@ -368,6 +400,7 @@ def test_from_parameter__only_optional_unions():
         func_sample_22,
         func_sample_24,
         func_sample_25,
+        func_sample_35,
     ),
 )
 def test_called(handler):

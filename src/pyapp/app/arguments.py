@@ -28,6 +28,7 @@ from pyapp.utils import cached_property
 from .argument_actions import EnumName
 from .argument_actions import EnumNameList
 from .argument_actions import KeyValueAction
+from .argument_actions import TYPE_ACTIONS
 
 __all__ = ("Handler", "argument", "CommandGroup", "Arg", "ArgumentType")
 
@@ -202,7 +203,7 @@ class Argument:
         :param default: The value produced if the argument is absent from the command line.
         :param choices: A container of the allowable values for the argument.
         :param help: A brief description of what the argument does.
-        :param metavar: - A name for the argument in usage messages.
+        :param metavar: A name for the argument in usage messages.
 
         """
         return cls(
@@ -280,6 +281,10 @@ class Argument:
 
         if issubclass(type_, Enum):
             kwargs["action"] = EnumName
+
+        elif action := TYPE_ACTIONS.get(type_):
+            kwargs["action"] = action
+            return None
 
         elif not positional and "default" not in kwargs:
             kwargs["required"] = True
@@ -459,7 +464,7 @@ class CommandGroup(ParserBase):
 
         :param handler: Handler function
         :param name: Optional name to use for CLI; defaults to the function name.
-        :param aliases: A sequence a name aliases for this command command.
+        :param aliases: A sequence a name aliases for this command.
         :param help_text: Information provided to the user if help is invoked;
             default is taken from the handlers doc string.
 
