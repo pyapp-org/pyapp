@@ -1,3 +1,4 @@
+import datetime
 from argparse import ArgumentError
 from argparse import ArgumentParser
 from argparse import Namespace
@@ -116,3 +117,36 @@ class TestEnumActions:
         value_target(parser, namespace, "blue")
 
         assert namespace.colour == Colour.Blue
+
+
+class TestDateTimeActions:
+    @pytest.mark.parametrize(
+        "value, action, expected",
+        (
+            ("2022-10-03", argument_actions.DateAction, datetime.date(2022, 10, 3)),
+            ("12:43:12", argument_actions.TimeAction, datetime.time(12, 43, 12)),
+            (
+                "2022-10-03t12:43:12",
+                argument_actions.DateTimeAction,
+                datetime.datetime(2022, 10, 3, 12, 43, 12),
+            ),
+            (
+                "2022-10-03 12:43:12",
+                argument_actions.DateTimeAction,
+                datetime.datetime(2022, 10, 3, 12, 43, 12),
+            ),
+            (
+                "2022-10-03T12:43:12",
+                argument_actions.DateTimeAction,
+                datetime.datetime(2022, 10, 3, 12, 43, 12),
+            ),
+        ),
+    )
+    def test_call__valid(self, value, action, expected):
+        parser = ArgumentParser()
+        namespace = Namespace()
+        target = action(option_strings="--actual", dest="actual")
+
+        target(parser, namespace, value)
+
+        assert namespace.actual == expected
