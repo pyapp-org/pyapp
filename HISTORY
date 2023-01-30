@@ -8,6 +8,11 @@ Changes
   the case where a non ``staticfunction`` is used as a handler when grouped as part
   of a command group.
 
+- Allow CLI entry points to define an argument as a date, time or datetime type
+  which will accept an valid ISO8601 string.
+
+- Add pre_dispatch, post_dispatch and dispatch_error events to CliApplication
+
 
 4.10.1
 ======
