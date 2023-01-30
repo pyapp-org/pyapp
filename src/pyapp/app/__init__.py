@@ -4,7 +4,7 @@ Application
 
 *Application with bindings for commands*
 
-The application object handles all of the initial configuration to setup the
+The application object handles all the initial configuration to set up the
 run-time environment.
 
 Quick demo::
@@ -117,6 +117,22 @@ CliApplication
 .. autoclass:: CliApplication
     :members: command, create_command_group, default, dispatch
 
+Events
+~~~~~~
+
+CliApplication generates the following events, all methods are provided with the
+``argparse`` namespace.
+
++--------------------------------------------------------------+----------------------------------------------------+
+| ``pre_dispatch[[argparse.Namespace], None]``                 | Generated before command dispatch is called        |
++--------------------------------------------------------------+----------------------------------------------------+
+| ``post_dispatch[[Optional[int], argparse.Namespace], None]`` | Generated after command dispatch returns without   |
+|                                                              | error includes the return code if one is provided. |
++--------------------------------------------------------------+----------------------------------------------------+
+| ``dispatch_error[[Exception, argparse.Namespace], None]``    | Generated when an exception is raised in a command |
+|                                                              | function before the standard exception reporting.  |
++--------------------------------------------------------------+----------------------------------------------------+
+
 
 Arguments
 ---------
@@ -220,7 +236,7 @@ class CliApplication(CommandGroup):
     # Events
     pre_dispatch = Event[Callable[[argparse.Namespace], None]]()
     post_dispatch = Event[Callable[[Optional[int], argparse.Namespace], None]]()
-    unhandled_error = Event[Callable[[Exception, argparse.Namespace], None]]()
+    dispatch_error = Event[Callable[[Exception, argparse.Namespace], None]]()
 
     def __init__(
         self,
@@ -541,7 +557,7 @@ class CliApplication(CommandGroup):
             exit_code = self.dispatch_handler(opts)
 
         except Exception as ex:  # pylint: disable=broad-except
-            self.unhandled_error(ex, opts)
+            self.dispatch_error(ex, opts)
             if not self.exception_report(ex, opts):
                 raise
 
