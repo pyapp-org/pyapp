@@ -2,7 +2,7 @@ from pyapp.checks import built_in
 from pyapp.conf import settings
 
 
-class TestSecurityChecks(object):
+class TestSecurityChecks:
     def test_debug_enabled__check_defaults(self):
         result = built_in.debug_enabled(settings)
 

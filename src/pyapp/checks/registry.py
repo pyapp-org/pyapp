@@ -48,7 +48,7 @@ class CheckRegistry(List[Check]):
     """
 
     def register(
-        self, check: Check = None, *tags
+        self, check: Union[Check, str] = None, *tags: str
     ):  # pylint: disable=keyword-arg-before-vararg
         """
         Can be used as a function or a decorator. Register given function

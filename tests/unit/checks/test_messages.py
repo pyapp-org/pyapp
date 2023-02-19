@@ -6,7 +6,7 @@ def exception_check():
     raise RuntimeError("Didn't see that one!")
 
 
-class TestCheckMessage(object):
+class TestCheckMessage:
     @pytest.mark.parametrize(
         ("message_type", "expected", "is_serious"),
         (
