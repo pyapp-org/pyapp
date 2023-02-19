@@ -8,10 +8,16 @@ from typing import Any
 from typing import Dict
 from typing import Sequence
 
-DEBUG: bool = False
-"""
-Enable debug mode
-"""
+from pyapp.conf.typed_settings import SettingsDef
+
+
+class BaseSettings(SettingsDef):
+    """Base settings def instance."""
+
+    DEBUG: bool = False
+    """
+    Enable debug mode
+    """
 
 
 ###############################################################################
