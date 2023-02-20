@@ -8,39 +8,37 @@ from typing import Tuple
 class SettingDescriptor:
     """Descriptor that can access a named setting."""
 
-    __slots__ = ("setting", "default", "data_type")
+    __slots__ = ("setting",)
 
-    def __init__(self, setting, default, data_type):
+    def __init__(self, setting):
         self.setting = setting
-        self.default = default
-        self.data_type = data_type
 
     def __get__(self, instance, owner):
         from pyapp.conf import settings  # pylint: disable=import-outside-toplevel
 
-        return getattr(settings, self.setting)
+        if settings.is_configured:
+            return getattr(settings, self.setting)
+        return None
 
 
 class SettingsDefType(type):
     """Typed Settings definition type."""
 
-    def __new__(cls, name: str, bases, dct: Dict[str, Any], *, prefix: str = ""):
+    def __new__(cls, name: str, bases, dct: Dict[str, Any]):
         """Generate new type."""
 
-        setting_descriptors = {}
-        annotations = dct.get("__annotations__")
+        values = []
+        descriptors = {}
         for key, value in dct.items():
-            name = f"{prefix}{key}"
             # Settings must be upper case (or constant style)
-            if name.isupper():
-                setting_descriptors[key] = SettingDescriptor(
-                    name, value, annotations.get(key)
-                )
+            if key.isupper():
+                values.append((key, value))
+                descriptors[key] = SettingDescriptor(key)
 
         # Update original dict.
-        dct.update(setting_descriptors)
-        dct["_settings"] = tuple(setting_descriptors)
-        dct["_prefix"] = tuple(prefix)
+        dct.update(descriptors)
+        dct["_settings"] = tuple(values)
+        dct["__slots__"] = ()
 
         return super().__new__(cls, name, bases, dct)
 

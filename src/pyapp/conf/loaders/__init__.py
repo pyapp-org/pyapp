@@ -20,7 +20,18 @@ from pyapp.conf.loaders.base import Loader
 from pyapp.conf.loaders.file_loader import FileLoader
 from pyapp.conf.loaders.http_loader import HttpLoader
 from pyapp.exceptions import InvalidConfiguration
+from pyapp.typed_settings import SettingsDefType
 from yarl import URL
+
+
+def _settings_iterator(obj):
+    """Iterate settings from an object"""
+    for key in dir(obj):
+        value = getattr(obj, key)
+        if isinstance(value, SettingsDefType):
+            yield from getattr(value, "_settings", ())
+        elif key.isupper():
+            yield key, value
 
 
 class ModuleLoader(Loader):
@@ -57,7 +68,7 @@ class ModuleLoader(Loader):
         except ImportError as ex:
             raise InvalidConfiguration(f"Unable to load module: {self}\n{ex}") from ex
 
-        return ((k, getattr(mod, k)) for k in dir(mod) if k.isupper())
+        return _settings_iterator(mod)
 
     def __str__(self):
         return f"{self.scheme}:{self.module}"  # pylint: disable=no-member
