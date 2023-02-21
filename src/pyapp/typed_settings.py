@@ -1,4 +1,9 @@
-"""Settings accessor definitions."""
+"""
+Typed Settings
+~~~~~~~~~~~~~~
+
+
+"""
 from typing import Any
 from typing import Dict
 from typing import Mapping

@@ -11,6 +11,7 @@ from typing import Iterable
 from typing import List
 from typing import NamedTuple
 from typing import Sequence
+from typing import TypeVar
 from typing import Union
 
 from pyapp import extensions
@@ -29,6 +30,7 @@ class Tags:
 
 
 Check = Callable[[Settings], Union[CheckMessage, Sequence[CheckMessage]]]
+_C = TypeVar("_C", bound=Callable[[Check], Check])
 
 
 class CheckResult(NamedTuple):
@@ -47,9 +49,11 @@ class CheckRegistry(List[Check]):
     Registry list for checks.
     """
 
-    def register(
-        self, check: Union[Check, str] = None, *tags: str
-    ):  # pylint: disable=keyword-arg-before-vararg
+    def register(  # pylint: disable=keyword-arg-before-vararg
+        self,
+        check: Union[Check, str] = None,
+        *tags: str,
+    ) -> Union[_C, Callable[[_C], _C]]:
         """
         Can be used as a function or a decorator. Register given function
         `func` labeled with given `tags`. The function should receive **kwargs

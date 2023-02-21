@@ -47,6 +47,7 @@ Example::
 
 """
 import asyncio
+from typing import Any
 from typing import Callable
 from typing import Coroutine
 from typing import Generic
@@ -60,6 +61,7 @@ from pyapp.exceptions import UnsupportedObject
 __all__ = ("Event", "AsyncEvent", "listen_to", "Callback", "AsyncCallback", "bind_to")
 
 _CT = TypeVar("_CT")
+_F = TypeVar("_F", bound=Callable[..., Any])
 
 
 class ListenerContext(Generic[_CT]):
@@ -190,10 +192,10 @@ class AsyncEvent(Generic[_ACT]):
         self.name = name  # pylint: disable=attribute-defined-outside-init
 
 
-def listen_to(event: ListenerSet[_CT]) -> _CT:
+def listen_to(event: ListenerSet[_F]) -> Callable[[_F], _F]:
     """Decorator for attaching listeners to events."""
 
-    def decorator(func: _CT) -> _CT:
+    def decorator(func: _F) -> _F:
         event.add(func)
         return func
 
@@ -285,10 +287,10 @@ class AsyncCallback(Generic[_ACT]):
         self.name = name  # pylint: disable=attribute-defined-outside-init
 
 
-def bind_to(callback: CallbackBinding[_CT]) -> _CT:
+def bind_to(callback: CallbackBinding[_F]) -> Callable[[_F], _F]:
     """Decorator for attaching a listener to a callback."""
 
-    def decorator(func: _CT) -> _CT:
+    def decorator(func: _F) -> _F:
         callback.bind(func)
         return func
 
