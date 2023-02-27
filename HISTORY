@@ -1,3 +1,14 @@
+4.12
+====
+
+Changes
+-------
+
+- Introduction of typed_settings, providing a cleaner way to access default settings
+  that supports auto-completion and type inference. And preparing the way for more
+  in-depth checks that ensure settings values match the expected types.
+
+
 4.11.0
 ======
 
