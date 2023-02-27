@@ -4,6 +4,7 @@ from argparse import FileType
 from enum import Enum
 from typing import Callable
 from typing import Dict
+from typing import Literal
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
@@ -239,6 +240,13 @@ def func_sample_25(*, arg_1: Sequence[Colour]):
     return arg_1
 
 
+@expected_args(mock.call("--arg-1", type=str, choices=("foo", "bar")))
+@call_args("-arg-1", "foo", expected="foo")
+def func_sample_26(*, arg_1: Literal["foo", "bar"]):
+    """Support literal strings as choices."""
+    return arg_1
+
+
 def func_sample_31(*, arg1: object() = None):
     return arg1
 
@@ -248,6 +256,16 @@ def func_sample_32(*, arg1: Callable[[int], None] = None):
 
 
 def func_sample_33(*, arg1: Union[int, str, None] = None):
+    return arg1
+
+
+def func_sample_34(*, arg1: Literal[42, "no"]):
+    """Literal with multiple types."""
+    return arg1
+
+
+def func_sample_37(*, arg1: Literal[b"no"]):
+    """Literal with an unsupported type."""
     return arg1
 
 
@@ -322,6 +340,7 @@ def test_from_parameter__compatibility(handler, expected):
         func_sample_23,
         func_sample_24,
         func_sample_25,
+        func_sample_26,
         func_sample_35,
     ),
 )
@@ -379,6 +398,28 @@ def test_from_parameter__only_optional_unions():
         TypeError, match=r"Only Optional\[TYPE\] or Union\[TYPE, None\] are supported"
     ):
         CommandProxy(func_sample_33, mock_parser)
+
+
+def test_from_parameter__multiple_value_types_in_literal():
+    """
+    Given a literal with multiple value types in list, ensure correct exception is raised
+    """
+    mock_parser = mock.Mock()
+
+    with pytest.raises(TypeError, match="All literal values must be the same type"):
+        CommandProxy(func_sample_34, mock_parser)
+
+
+def test_from_parameter__unsupported_literal_value_type():
+    """
+    Given a literal with and unsupported value type, ensure correct exception is raised
+    """
+    mock_parser = mock.Mock()
+
+    with pytest.raises(
+        TypeError, match=r"Only str and int Literal types are supported"
+    ):
+        CommandProxy(func_sample_37, mock_parser)
 
 
 @pytest.mark.parametrize(

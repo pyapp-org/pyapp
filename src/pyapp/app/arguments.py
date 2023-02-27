@@ -233,6 +233,18 @@ class Argument:
                     "Only Optional[TYPE] or Union[TYPE, None] are supported"
                 )
 
+        elif name == "typing.Literal":
+            choices = type_.__args__
+            choice_type = type(choices[0])
+            if choice_type not in (str, int):
+                raise TypeError("Only str and int Literal types are supported")
+            # Ensure only a single type is supplied
+            if not all(isinstance(choice, choice_type) for choice in choices):
+                raise TypeError("All literal values must be the same type")
+
+            kwargs["choices"] = type_.__args__
+            return choice_type
+
         elif issubclass(origin, Tuple):
             kwargs["nargs"] = len(type_.__args__)
 
