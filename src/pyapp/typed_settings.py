@@ -2,6 +2,35 @@
 Typed Settings
 ~~~~~~~~~~~~~~
 
+Building on the standard settings features that is a core part of pyApp typed
+settings provides a more convenient way to define and access settings.
+
+Default settings are defined using a `SettingsDef` object along with the expected
+type via type annotations. The settings can then be accessed at runtime using the
+same definition.
+
+For example settings are defined in the `default_settings.py` file as:
+
+.. code-block:: python
+
+    from pyapp.typed_settings import SettingsDef
+
+    class MyAppSettings(SettingsDef):
+        MY_CONFIG_VALUE: str = "Foo"
+
+`MY_CONFIG_VALUE` is added to `pyapp.conf.settings` just like any other setting
+and can be overridden by any other settings file.
+
+Where typed settings really shine is using the settings in your application.
+The `SettingsDef` object can be imported from the `default_settings` file and
+used to access the runtime settings values using the same definition with all
+the benefits of auto-completion and typing.
+
+.. code-block:: python
+
+    from myapp.default_settings import MyAppSettings
+
+    print(MyAppSettings.MY_CONFIG_VALUE)
 
 """
 from typing import Any

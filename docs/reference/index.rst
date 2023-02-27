@@ -10,7 +10,7 @@ Contents:
    app
    checks
    conf
-   conf/base_settings
+   typed-settings
    conf/helpers
    events
    injection
