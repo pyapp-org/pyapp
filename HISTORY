@@ -8,6 +8,7 @@ Changes
   that supports auto-completion and type inference. And preparing the way for more
   in-depth checks that ensure settings values match the expected types.
 
+- Support ``Literal`` types in CLI. Maps str and int literals to choices.
 
 4.11.0
 ======
