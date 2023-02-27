@@ -1,9 +1,4 @@
-"""
-Default Settings
-~~~~~~~~~~~~~~~~
-
-.. auto
-"""
+"""Base settings used to initialise settings object."""
 from typing import Any
 from typing import Dict
 from typing import Sequence
