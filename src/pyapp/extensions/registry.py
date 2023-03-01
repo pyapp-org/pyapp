@@ -6,7 +6,10 @@ Central location for registering and obtaining information about registered
 extensions.
 
 """
-from importlib import metadata
+try:
+    import importlib_metadata as metadata
+except ImportError:
+    from importlib import metadata
 from typing import Iterator
 from typing import List
 from typing import NamedTuple

@@ -66,10 +66,10 @@ def _make_entry_point(name: str, project_name, version):
         name=name,
         value=f"{name.replace('-', '_')}:Extension",
     )
-    entry_point.load = mock.Mock(
+    entry_point.__dict__["load"] = mock.Mock(
         return_value=f"{project_name.replace(' ', '')}Instance"
     )
-    entry_point.dist = mock.Mock()
+    entry_point.__dict__["dist"] = mock.Mock()
     entry_point.dist.name = project_name
     entry_point.dist.version = version
     return entry_point
@@ -77,7 +77,7 @@ def _make_entry_point(name: str, project_name, version):
 
 class TestExtensionEntryPoints:
     @pytest.fixture
-    def patchentrypoints(self, monkeypatch) -> metadata.EntryPoints():
+    def patchentrypoints(self, monkeypatch) -> metadata.EntryPoints:
         entry_points = metadata.EntryPoints(
             (
                 _make_entry_point("foo-extension", "Foo Extension", "0.1.2"),
