@@ -10,6 +10,8 @@ Changes
 
 - Support ``Literal`` types in CLI. Maps str and int literals to choices.
 
+- Migrate from pkg_resources to the standardised builtin importlib.metadata.
+
 4.11.0
 ======
 
