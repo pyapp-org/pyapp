@@ -351,7 +351,7 @@ class Argument:
     def __init__(
         self,
         *name_or_flags,
-        action: str = None,
+        action: Union[str, Type[argparse.Action]] = None,
         nargs: Union[int, str] = None,
         const: Any = None,
         default: Any = EMPTY,
