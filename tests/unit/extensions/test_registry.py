@@ -1,10 +1,11 @@
 from unittest import mock
 
 import pytest
+from pyapp.extensions.registry import ENTRY_POINTS
 from pyapp.extensions.registry import ExtensionDetail
 from pyapp.extensions.registry import ExtensionEntryPoints
 from pyapp.extensions.registry import ExtensionRegistry
-from pyapp.extensions.registry import pkg_resources
+from pyapp.extensions.registry import metadata
 
 from tests.unit.sample_ext import SampleExtension
 from tests.unit.sample_ext_simple import SampleSimpleExtension
@@ -59,25 +60,33 @@ class TestExtensionDetail:
         assert target_simple.extension.ready_called is False
 
 
-def _make_entry_point(name, project_name, version):
-    mock_entry_point = mock.Mock()
-    mock_entry_point.name = name
-    mock_entry_point.dist.project_name = project_name
-    mock_entry_point.dist.version = version
-    mock_entry_point.resolve.return_value = "ExtensionInstance"
-    return mock_entry_point
+def _make_entry_point(name: str, project_name, version):
+    entry_point = metadata.EntryPoint(
+        group=ENTRY_POINTS,
+        name=name,
+        value=f"{name.replace('-', '_')}:Extension",
+    )
+    entry_point.load = mock.Mock(
+        return_value=f"{project_name.replace(' ', '')}Instance"
+    )
+    entry_point.dist = mock.Mock()
+    entry_point.dist.name = project_name
+    entry_point.dist.version = version
+    return entry_point
 
 
 class TestExtensionEntryPoints:
     @pytest.fixture
-    def patchentrypoints(self, monkeypatch):
-        entry_points = (
-            _make_entry_point("FooExtension", "foo-extension", "0.1.2"),
-            _make_entry_point("BarExtension", "bar-extension", "3.2.1"),
+    def patchentrypoints(self, monkeypatch) -> metadata.EntryPoints():
+        entry_points = metadata.EntryPoints(
+            (
+                _make_entry_point("foo-extension", "Foo Extension", "0.1.2"),
+                _make_entry_point("bar-extension", "Bar Extension", "3.2.1"),
+            )
         )
 
-        mock_iter_entry_points = mock.Mock(return_value=entry_points)
-        monkeypatch.setattr(pkg_resources, "iter_entry_points", mock_iter_entry_points)
+        mock_entry_points = mock.Mock(return_value=entry_points)
+        monkeypatch.setattr(metadata, "entry_points", mock_entry_points)
 
     @pytest.fixture
     def target(self, patchentrypoints):
@@ -86,34 +95,34 @@ class TestExtensionEntryPoints:
     def test_entry_points(self, target: ExtensionEntryPoints):
         actual = [ep.name for ep in target._entry_points()]
 
-        assert ["FooExtension", "BarExtension"] == actual
+        assert actual == ["foo-extension", "bar-extension"]
 
     def test_entry_points__with_white_list(self, patchentrypoints):
-        target = ExtensionEntryPoints(white_list=("BarExtension",))
+        target = ExtensionEntryPoints(allow_list=("bar-extension",))
 
         actual = [ep.name for ep in target._entry_points()]
 
-        assert ["BarExtension"] == actual
+        assert actual == ["bar-extension"]
 
     def test_extensions(self, target: ExtensionEntryPoints):
         actual = list(target.extensions())
 
-        assert [
+        assert actual == [
             ExtensionDetail(
-                "ExtensionInstance", "FooExtension", "foo-extension", "0.1.2"
+                "FooExtensionInstance", "foo-extension", "Foo Extension", "0.1.2"
             ),
             ExtensionDetail(
-                "ExtensionInstance", "BarExtension", "bar-extension", "3.2.1"
+                "BarExtensionInstance", "bar-extension", "Bar Extension", "3.2.1"
             ),
-        ] == actual
+        ]
 
     def test_extensions__no_load(self, target: ExtensionEntryPoints):
         actual = list(target.extensions(False))
 
-        assert [
-            ExtensionDetail(None, "FooExtension", "foo-extension", "0.1.2"),
-            ExtensionDetail(None, "BarExtension", "bar-extension", "3.2.1"),
-        ] == actual
+        assert actual == [
+            ExtensionDetail(None, "foo-extension", "Foo Extension", "0.1.2"),
+            ExtensionDetail(None, "bar-extension", "Bar Extension", "3.2.1"),
+        ]
 
 
 class TestExtensionRegistry:

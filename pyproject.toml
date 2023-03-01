@@ -37,6 +37,7 @@ python = "^3.8"
 argcomplete = "*"
 colorama = "*"
 yarl = "*"
+importlib_metadata = {version = "*", python = "<=3.9"}
 
 pyyaml = {version = "*", optional = true }
 toml = {version = "*", optional = true }
