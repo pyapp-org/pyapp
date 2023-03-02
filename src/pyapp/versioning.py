@@ -10,8 +10,7 @@ at build time.
 """
 from pathlib import Path
 
-from pkg_resources import DistributionNotFound
-from pkg_resources import get_distribution
+from pkg_resources import DistributionNotFound, get_distribution
 
 
 def get_installed_version(package_name: str, package_root: str):

@@ -1,7 +1,7 @@
 import pytest
-from pyapp.conf import settings
 
 import tests.unit.sample_app_simple
+from pyapp.conf import settings
 from tests.unit.sample_app.__main__ import app
 
 

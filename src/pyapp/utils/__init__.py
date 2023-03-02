@@ -4,8 +4,7 @@ PyApp Utils
 """
 import importlib
 import textwrap
-from typing import Any
-from typing import Container
+from typing import Any, Container
 
 
 def is_iterable(obj: Any) -> bool:

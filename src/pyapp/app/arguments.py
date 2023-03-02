@@ -11,24 +11,23 @@ import argparse
 import asyncio
 import inspect
 from enum import Enum
-from typing import Any
-from typing import Awaitable
-from typing import Callable
-from typing import Dict
-from typing import Mapping
-from typing import Optional
-from typing import Sequence
-from typing import Tuple
-from typing import Type
-from typing import Union
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+)
 
 from pyapp.compatability import async_run
 from pyapp.utils import cached_property
 
-from .argument_actions import EnumName
-from .argument_actions import EnumNameList
-from .argument_actions import KeyValueAction
-from .argument_actions import TYPE_ACTIONS
+from .argument_actions import TYPE_ACTIONS, EnumName, EnumNameList, KeyValueAction
 
 __all__ = ("Handler", "argument", "CommandGroup", "Arg", "ArgumentType")
 
@@ -355,7 +354,9 @@ class Argument:
         nargs: Union[int, str] = None,
         const: Any = None,
         default: Any = EMPTY,
-        type: Type[Any] = None,  # pylint: disable=redefined-builtin
+        type_: Union[
+            Type[Any], Callable[[str], Any]
+        ] = None,  # pylint: disable=redefined-builtin
         choices: Sequence[Any] = None,
         required: bool = None,
         help_text: str = None,
@@ -369,7 +370,7 @@ class Argument:
             ("action", action),
             ("nargs", nargs),
             ("const", const),
-            ("type", type),
+            ("type", type_),
             ("choices", choices),
             ("required", required),
             ("help", help_text),

@@ -1,6 +1,7 @@
 import abc
 
 import pytest
+
 from pyapp import injection
 
 

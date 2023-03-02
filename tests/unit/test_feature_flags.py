@@ -1,6 +1,7 @@
 from unittest.mock import Mock
 
 import pytest
+
 from pyapp import feature_flags
 from pyapp.conf import settings
 

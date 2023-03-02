@@ -6,9 +6,7 @@ Conf Helper Bases
 import abc
 import threading
 from abc import ABCMeta
-from typing import Any
-from typing import Generic
-from typing import TypeVar
+from typing import Any, Generic, TypeVar
 
 
 class DefaultCache(dict):
@@ -48,7 +46,7 @@ class FactoryMixin(Generic[FT], metaclass=ABCMeta):
 
 
 class SingletonFactoryMixin(FactoryMixin[FT], metaclass=ABCMeta):
-    """"
+    """
     Mixin that provides a single named instance.
 
     This instance factory type is useful for instance types that only require

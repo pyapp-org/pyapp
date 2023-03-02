@@ -6,19 +6,11 @@ Location for registering and listing checks.
 
 """
 from itertools import chain
-from typing import Callable
-from typing import Iterable
-from typing import List
-from typing import NamedTuple
-from typing import Sequence
-from typing import TypeVar
-from typing import Union
+from typing import Callable, Iterable, List, NamedTuple, Sequence, TypeVar, Union
 
 from pyapp import extensions
-from pyapp.checks.messages import CheckMessage
-from pyapp.checks.messages import UnhandledException
-from pyapp.conf import Settings
-from pyapp.conf import settings
+from pyapp.checks.messages import CheckMessage, UnhandledException
+from pyapp.conf import Settings, settings
 
 
 class Tags:

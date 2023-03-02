@@ -25,21 +25,10 @@ Date and Time types
 .. autoclass:: DateTimeAction
 
 """
-from argparse import Action
-from argparse import ArgumentError
-from argparse import ArgumentParser
-from argparse import Namespace
-from datetime import date
-from datetime import datetime
-from datetime import time
+from argparse import Action, ArgumentError, ArgumentParser, Namespace
+from datetime import date, datetime, time
 from enum import Enum
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import Sequence
-from typing import Tuple
-from typing import Type
-from typing import Union
+from typing import Any, Callable, Dict, Sequence, Tuple, Type, Union
 
 __all__ = (
     "KeyValueAction",

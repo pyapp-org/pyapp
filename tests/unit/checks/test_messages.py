@@ -1,4 +1,5 @@
 import pytest
+
 from pyapp.checks import messages
 
 

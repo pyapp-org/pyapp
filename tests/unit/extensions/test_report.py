@@ -1,7 +1,7 @@
 import pytest
+
 from pyapp.extensions import report
 from pyapp.extensions.registry import ExtensionDetail
-
 from tests.unit.sample_app.__main__ import app
 from tests.unit.sample_ext import SampleExtension
 from tests.unit.sample_ext_simple import SampleSimpleExtension

@@ -1,8 +1,8 @@
-from unittest.mock import Mock
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+
+import pytest
 
 import pyapp.conf
-import pytest
 from pyapp import multiprocessing
 
 

@@ -2,26 +2,22 @@ import argparse
 import datetime
 from argparse import FileType
 from enum import Enum
-from typing import Callable
-from typing import Dict
-from typing import Literal
-from typing import Optional
-from typing import Sequence
-from typing import Tuple
-from typing import Union
+from typing import Callable, Dict, Literal, Optional, Sequence, Tuple, Union
 from unittest import mock
 
 import pytest
+
 from pyapp.app import CommandOptions
-from pyapp.app.argument_actions import DateAction
-from pyapp.app.argument_actions import DateTimeAction
-from pyapp.app.argument_actions import EnumName
-from pyapp.app.argument_actions import EnumNameList
-from pyapp.app.argument_actions import KeyValueAction
-from pyapp.app.argument_actions import TimeAction
+from pyapp.app.argument_actions import (
+    DateAction,
+    DateTimeAction,
+    EnumName,
+    EnumNameList,
+    KeyValueAction,
+    TimeAction,
+)
 from pyapp.app.argument_types import RegexType
-from pyapp.app.arguments import Arg
-from pyapp.app.arguments import CommandProxy
+from pyapp.app.arguments import Arg, CommandProxy
 
 
 def expected_args(*args):

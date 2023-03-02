@@ -9,19 +9,15 @@ A loader provides key/value pairs to the settings container to merge into the
 application settings.
 """
 import importlib
-from typing import Any
-from typing import Dict
-from typing import Iterator
-from typing import Tuple
-from typing import Type
-from typing import Union
+from typing import Any, Dict, Iterator, Tuple, Type, Union
+
+from yarl import URL
 
 from pyapp.conf.loaders.base import Loader
 from pyapp.conf.loaders.file_loader import FileLoader
 from pyapp.conf.loaders.http_loader import HttpLoader
 from pyapp.exceptions import InvalidConfiguration
 from pyapp.typed_settings import SettingsDefType
-from yarl import URL
 
 
 def _settings_iterator(obj):

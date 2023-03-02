@@ -159,21 +159,16 @@ import os
 import sys
 from argparse import ArgumentParser
 from argparse import Namespace as CommandOptions
-from typing import Callable
-from typing import Optional
-from typing import Sequence
+from typing import Callable, Optional, Sequence
 
 import argcomplete
-import colorama
 
-from . import init_logger
-from .. import conf
-from .. import extensions
-from .. import feature_flags
+from .. import conf, extensions, feature_flags
 from ..app import builtin_handlers
 from ..events import Event
 from ..injection import register_factory
 from ..utils.inspect import import_root_module
+from . import init_logger
 from .argument_actions import *
 from .arguments import *
 from .logging_formatter import ColourFormatter
@@ -213,10 +208,7 @@ class CliApplication(CommandGroup):
     """Log formatter applied by default to root logger handler."""
 
     default_color_log_formatter = ColourFormatter(
-        f"{colorama.Fore.YELLOW}%(asctime)s{colorama.Fore.RESET} "
-        f"%(clevelname)s "
-        f"{colorama.Fore.LIGHTBLUE_EX}%(name)s{colorama.Fore.RESET} "
-        f"%(message)s"
+        "%(asctime)s %(clevelname)s %(name)s %(message)s"
     )
     """Log formatter applied by default to root logger handler."""
 

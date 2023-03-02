@@ -56,25 +56,14 @@ Example::CheckMessage
 
 
 """
-from abc import ABCMeta
-from abc import abstractmethod
-from collections import namedtuple
-from collections import OrderedDict
-from typing import Any
-from typing import Dict
-from typing import Generic
-from typing import Optional
-from typing import Sequence
-from typing import Tuple
-from typing import Type
-from typing import TypeVar
-from typing import Union
+from abc import ABCMeta, abstractmethod
+from collections import OrderedDict, namedtuple
+from typing import Any, Dict, Generic, Optional, Sequence, Tuple, Type, TypeVar, Union
 
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.exceptions import ProviderNotFound
-from pyapp.utils import cached_property
-from pyapp.utils import import_type
+from pyapp.utils import cached_property, import_type
 
 __all__ = ("ProviderSummary", "ProviderFactoryBase")
 

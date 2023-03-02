@@ -1,10 +1,10 @@
 import json
-from io import BytesIO
-from io import StringIO
+from io import BytesIO, StringIO
 from unittest.mock import patch
 
-import pyapp.conf
 import pytest
+
+import pyapp.conf
 
 
 class TestSettings:

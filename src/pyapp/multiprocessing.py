@@ -13,12 +13,9 @@ implementation.
 """
 from io import BytesIO
 from multiprocessing.pool import Pool as _Pool
-from typing import Any
-from typing import Callable
-from typing import Sequence
+from typing import Any, Callable, Sequence
 
-from pyapp.conf import export_settings
-from pyapp.conf import restore_settings
+from pyapp.conf import export_settings, restore_settings
 
 
 def pyapp_initializer(pickled_settings: bytes, initializer, init_args):

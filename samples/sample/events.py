@@ -1,10 +1,7 @@
 import asyncio
-from typing import Awaitable
-from typing import Callable
+from typing import Awaitable, Callable
 
-from pyapp.events import AsyncEvent
-from pyapp.events import Event
-from pyapp.events import listen_to
+from pyapp.events import AsyncEvent, Event, listen_to
 
 
 class MyClass:

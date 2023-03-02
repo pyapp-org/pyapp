@@ -3,8 +3,7 @@ CLI Interface
 ~~~~~~~~~~~~~
 
 """
-from pyapp.app import Arg
-from pyapp.app import CliApplication
+from pyapp.app import Arg, CliApplication
 from pyapp.app.argument_actions import KeyValueAction
 from pyapp.conf import settings
 

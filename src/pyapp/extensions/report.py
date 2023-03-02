@@ -5,12 +5,10 @@ Extension Report
 Generates the report of the currently loaded/available extensions.
 
 """
-from rich.console import Console
-from rich.console import group
+from rich.console import Console, group
 from rich.table import Table
 
-from .registry import ExtensionRegistry
-from .registry import registry
+from .registry import ExtensionRegistry, registry
 
 
 class ExtensionReport:

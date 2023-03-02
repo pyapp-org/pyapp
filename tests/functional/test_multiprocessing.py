@@ -1,6 +1,4 @@
 import pyapp.multiprocessing
-import pytest
-
 
 _DATA = []
 

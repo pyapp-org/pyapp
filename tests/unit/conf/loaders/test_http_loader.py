@@ -3,11 +3,10 @@ from unittest import mock
 from urllib.error import ContentTooShortError
 
 import pytest
-from pyapp.conf.loaders import http_loader
-from pyapp.exceptions import InvalidConfiguration
-from pyapp.exceptions import UnsupportedContentType
 from yarl import URL
 
+from pyapp.conf.loaders import http_loader
+from pyapp.exceptions import InvalidConfiguration, UnsupportedContentType
 from tests.unit.mock import ANY_INSTANCE_OF
 
 

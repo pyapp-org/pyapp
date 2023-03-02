@@ -2,6 +2,7 @@ import logging
 
 import colorama
 import pytest
+
 from pyapp.app import logging_formatter
 
 

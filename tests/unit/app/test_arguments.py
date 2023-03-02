@@ -2,6 +2,7 @@ import argparse
 from unittest import mock
 
 import pytest
+
 from pyapp.app import arguments
 
 

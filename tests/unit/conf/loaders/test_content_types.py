@@ -1,8 +1,9 @@
 from unittest import mock
 
 import pytest
-from pyapp.conf.loaders import content_types
 from yarl import URL
+
+from pyapp.conf.loaders import content_types
 
 
 @pytest.mark.parametrize(

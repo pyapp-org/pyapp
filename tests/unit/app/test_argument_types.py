@@ -1,6 +1,7 @@
 from argparse import ArgumentTypeError
 
 import pytest
+
 from pyapp.app import argument_types
 
 

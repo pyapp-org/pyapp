@@ -47,14 +47,7 @@ Example::
 
 """
 import asyncio
-from typing import Any
-from typing import Callable
-from typing import Coroutine
-from typing import Generic
-from typing import Optional
-from typing import Set
-from typing import TypeVar
-from typing import Union
+from typing import Any, Callable, Coroutine, Generic, Optional, Set, TypeVar, Union
 
 from pyapp.exceptions import UnsupportedObject
 

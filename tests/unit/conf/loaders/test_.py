@@ -1,8 +1,9 @@
 import pytest
+from yarl import URL
+
 from pyapp.conf import loaders
 from pyapp.conf.loaders import Loader
 from pyapp.exceptions import InvalidConfiguration
-from yarl import URL
 
 
 class TestModuleLoader:

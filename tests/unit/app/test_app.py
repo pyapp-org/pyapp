@@ -1,12 +1,10 @@
 import pytest
-from pyapp import feature_flags
-from pyapp.app import _key_help
-from pyapp.app import argument
-from pyapp.app import CliApplication
-from pyapp.app.logging_formatter import ColourFormatter
 
 import tests.unit.sample_app
 import tests.unit.sample_app_simple
+from pyapp import feature_flags
+from pyapp.app import CliApplication, _key_help, argument
+from pyapp.app.logging_formatter import ColourFormatter
 
 
 @pytest.mark.parametrize("key, expected", (("FOO", "FOO [eek]"), ("BAR", "BAR")))

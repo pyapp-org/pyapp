@@ -1,4 +1,5 @@
 import pytest
+
 from pyapp import utils
 
 

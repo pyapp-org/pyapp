@@ -33,10 +33,7 @@ the benefits of auto-completion and typing.
     print(MyAppSettings.MY_CONFIG_VALUE)
 
 """
-from typing import Any
-from typing import Dict
-from typing import Mapping
-from typing import Tuple
+from typing import Any, Dict, Mapping, Tuple
 
 
 class SettingDescriptor:

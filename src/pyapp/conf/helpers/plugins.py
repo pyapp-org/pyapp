@@ -28,22 +28,24 @@ factory::
 """
 import threading
 from abc import ABCMeta
-from typing import Type
-from typing import TypeVar
+from typing import Type, TypeVar
 
 from pyapp import checks
 from pyapp.conf import settings
-from pyapp.conf.helpers.bases import DefaultCache
-from pyapp.conf.helpers.bases import FactoryMixin
-from pyapp.conf.helpers.bases import SingletonFactoryMixin
-from pyapp.conf.helpers.bases import ThreadLocalSingletonFactoryMixin
-from pyapp.exceptions import BadAlias
-from pyapp.exceptions import CannotImport
-from pyapp.exceptions import InvalidSubType
-from pyapp.exceptions import NotFound
-from pyapp.exceptions import NotProvided
-from pyapp.utils import cached_property
-from pyapp.utils import import_type
+from pyapp.conf.helpers.bases import (
+    DefaultCache,
+    FactoryMixin,
+    SingletonFactoryMixin,
+    ThreadLocalSingletonFactoryMixin,
+)
+from pyapp.exceptions import (
+    BadAlias,
+    CannotImport,
+    InvalidSubType,
+    NotFound,
+    NotProvided,
+)
+from pyapp.utils import cached_property, import_type
 
 __all__ = (
     "NamedPluginFactory",

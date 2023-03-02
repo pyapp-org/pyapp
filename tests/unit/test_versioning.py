@@ -1,6 +1,7 @@
 from unittest import mock
 
 from pkg_resources import Distribution
+
 from pyapp import versioning
 
 

@@ -2,9 +2,9 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
-from pyapp.utils import inspect
 
 import tests
+from pyapp.utils import inspect
 
 
 @pytest.mark.parametrize(
