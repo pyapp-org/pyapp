@@ -18,7 +18,7 @@ from typing import Sequence
 
 from pyapp.app.arguments import CommandGroup
 
-__all__ = ("registry", "ExtensionEntryPoints", "ExtensionDetail")
+__all__ = ("registry", "ExtensionRegistry", "ExtensionEntryPoints", "ExtensionDetail")
 
 ENTRY_POINTS = "pyapp.extensions"
 
@@ -32,6 +32,9 @@ class ExtensionDetail(NamedTuple):
     key: str
     name: str
     version: str
+
+    def __rich__(self):
+        return f"[yellow]+ [cyan]{self.name}[/cyan] ({self.version or 'Unknown'})"
 
     @property
     def default_settings(self) -> Optional[str]:
