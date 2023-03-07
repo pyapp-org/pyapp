@@ -89,16 +89,25 @@ HttpLoader
 
 .. autoclass:: HttpLoader
 
+Default settings
+================
+
+.. automodule:: pyapp.conf.base_settings
+    :members:
+
 """
 import logging
 import os
 import warnings
 from typing import Any
+from typing import Dict
 from typing import Iterable
 from typing import List
+from typing import Protocol
 from typing import Sequence
 from typing import Tuple
 from typing import Union
+from typing.io import IO
 
 from pyapp.conf import base_settings
 from pyapp.conf.loaders import Loader
@@ -201,7 +210,7 @@ class ModifySettingsContext:
         # Initialise base settings
         container._populate_base_settings()  # pylint: disable=protected-access
 
-        def restore_settings():
+        def restore_():
             # Remove new settings
             for key in container.keys:
                 del container.__dict__[key]
@@ -210,7 +219,7 @@ class ModifySettingsContext:
             container.__dict__.update(saved_settings)
 
         # Add restore action
-        action = restore_settings, ()
+        action = restore_, ()
         self._roll_back.append(action)
 
 
@@ -230,6 +239,12 @@ class Settings:
 
     def __getitem__(self, item):
         return self.__dict__[item]
+
+    def __getstate__(self) -> Dict[str, Any]:
+        return dict(self.items())
+
+    def __setstate__(self, state: Dict[str, Any]):
+        self.__dict__.update(state)
 
     def __repr__(self) -> str:
         sources = self.SETTINGS_SOURCES or "UN-CONFIGURED"
@@ -375,3 +390,45 @@ class Settings:
 
 
 settings = Settings()  # pylint: disable=invalid-name
+
+
+class Serialiser(Protocol):
+    """
+    Protocol a serialiser must meet
+    """
+
+    def dump(self, obj: Dict[str, Any], file: IO):
+        """
+        Dump data into the file(like) object
+        """
+
+    def load(self, file: IO) -> Dict[str, Any]:
+        """
+        Load data from a file(like) object
+        """
+
+
+def export_settings(file: IO, *, serialiser: Serialiser = None):
+    """
+    Export settings into specified file(like) object using specified serialiser.
+
+    The default serialiser is pickle
+    """
+    if serialiser is None:
+        import pickle as serialiser  # pylint: disable=import-outside-toplevel
+
+    state = settings.__getstate__()
+    serialiser.dump(state, file)
+
+
+def restore_settings(file: IO, *, serialiser: Serialiser = None):
+    """
+    Restore settings from specified file(like) object using specified serialiser.
+
+    The default serialiser is pickle
+    """
+    if serialiser is None:
+        import pickle as serialiser  # pylint: disable=import-outside-toplevel
+
+    state = serialiser.load(file)
+    settings.__setstate__(state)

@@ -10,9 +10,10 @@ Contents:
    app
    checks
    conf
-   conf/base_settings
+   conf/typed-settings
    conf/helpers
    events
    injection
    feature-flags
+   multiprocessing
    extensions

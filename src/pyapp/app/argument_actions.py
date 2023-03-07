@@ -18,14 +18,31 @@ Enum types
 
 .. autoclass:: AppendEnumName
 
+
+Date and Time types
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: DateAction
+
+.. autoclass:: TimeAction
+
+.. autoclass:: DateTimeAction
+
 """
 from argparse import Action
 from argparse import ArgumentError
 from argparse import ArgumentParser
 from argparse import Namespace
+from datetime import date
+from datetime import datetime
+from datetime import time
 from enum import Enum
+from typing import Any
+from typing import Callable
+from typing import Dict
 from typing import Sequence
 from typing import Tuple
+from typing import Type
 from typing import Union
 
 __all__ = (
@@ -35,6 +52,10 @@ __all__ = (
     "EnumNameList",
     "AppendEnumValue",
     "AppendEnumName",
+    "DateAction",
+    "TimeAction",
+    "DateTimeAction",
+    "TYPE_ACTIONS",
 )
 
 
@@ -319,3 +340,38 @@ class AppendEnumName(EnumName, _AppendEnumActionMixin):
 
 
 EnumNameList = AppendEnumName
+
+
+class _DateTimeAction(Action):
+    """DateTime types."""
+
+    parser: Callable[[str], Any]
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        value = self.parser(values)
+        setattr(namespace, self.dest, value)
+
+
+class DateAction(_DateTimeAction):
+    """Parse ISO date string."""
+
+    parser = date.fromisoformat
+
+
+class TimeAction(_DateTimeAction):
+    """Parse ISO time string."""
+
+    parser = time.fromisoformat
+
+
+class DateTimeAction(_DateTimeAction):
+    """Parse ISO datetime string."""
+
+    parser = datetime.fromisoformat
+
+
+TYPE_ACTIONS: Dict[type, Type[Action]] = {
+    date: DateAction,
+    time: TimeAction,
+    datetime: DateTimeAction,
+}

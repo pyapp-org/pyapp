@@ -50,13 +50,14 @@ Or from the command line::
 
 """
 import logging
+from functools import wraps
 from os import getenv
 from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import Optional
+from typing import TypeVar
 from typing import Union
-from functools import wraps
 
 from pyapp.conf import settings
 from pyapp.utils import text_to_bool
@@ -65,6 +66,7 @@ LOGGER = logging.getLogger(__name__)
 ENV_TRANSLATE = str.maketrans(
     " -abcdefghijklmnopqrstuvwxyz", "__ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 )
+_F = TypeVar("_F", bound=Callable[..., Any])
 
 
 class FeatureFlags:
@@ -160,7 +162,7 @@ class FeatureFlags:
 
     def if_enabled(
         self, flag: str, *, default: bool = False, disabled_return: Any = None
-    ):
+    ) -> Callable[[_F], _F]:
         """
         Decorator that is enabled by flag.
 

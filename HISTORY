@@ -1,18 +1,78 @@
+4.12
+====
+
+Changes
+-------
+
+- Introduction of typed_settings, providing a cleaner way to access default settings
+  that supports auto-completion and type inference. And preparing the way for more
+  in-depth checks that ensure settings values match the expected types.
+
+- Support ``Literal`` types in CLI. Maps str and int literals to choices.
+
+- Support sequences of Enum values in the CLI. This is implemented via the
+  ``AppendEnumValue`` and ``AppendEnumName`` actions.
+
+- Migrate from pkg_resources to the standardised builtin importlib.metadata.
+
+- Fix for handling events/callbacks on classes where the parent has __slots__ defined.
+
+
+4.11.0
+======
+
+Changes
+-------
+
+- Self is now ignored in command handlers if it is the first argument. This covers
+  the case where a non ``staticfunction`` is used as a handler when grouped as part
+  of a command group.
+
+- Allow CLI entry points to define an argument as a date, time or datetime type
+  which will accept an valid ISO8601 string.
+
+- Add pre_dispatch, post_dispatch and dispatch_error events to CliApplication
+
+
+4.10.1
+======
+
+Changes
+-------
+
+- Fix issue with docs build related to Poetry and RTD
+
+
+4.10.0
+======
+
+Changes
+-------
+
+- Add implementation of ``multiprocessing.Pool`` that ensures that settings are
+  mirrored into any worker process.
+
+- Include pytest plugin to provide fixtures
+
+
 4.9.0
 =====
 
 Changes
---------
+-------
 
-- Support sequences of Enum values in the CLI. This is implemented via the
-  ``AppendEnumValue`` and ``AppendEnumName`` actions.
+- Changed settings to be support being pickled.
+
+- Added feature to export and restore settings into a serialised form for
+  use-cases where settings need to be duplicated (eg deploying tasks into a
+  spark cluster where settings are required).
 
 
 4.8.2
 =====
 
 Changes
---------
+-------
 
 - Extend change to RegexType to allow for any custom ArgumentType by extending
   the ArgumentType ABC.
@@ -25,7 +85,7 @@ Changes
 =====
 
 Changes
---------
+-------
 
 - Fix bug with RegexType argument where regex searched input string not raising
   an invalid argument if the input _contained_ a valid string.
@@ -37,7 +97,7 @@ Changes
 =====
 
 Changes
---------
+-------
 
 - Dropping official support for Python 3.6 and 3.7
 
@@ -60,7 +120,7 @@ Changes
 =====
 
 Changes
---------
+-------
 
 - Improve the settings reset to properly apply the base-settings after reset.
   These are the basic settings required for the application to operate

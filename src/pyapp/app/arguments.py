@@ -28,6 +28,7 @@ from pyapp.utils import cached_property
 from .argument_actions import AppendEnumName
 from .argument_actions import EnumName
 from .argument_actions import KeyValueAction
+from .argument_actions import TYPE_ACTIONS
 
 __all__ = ("Handler", "argument", "CommandGroup", "Arg", "ArgumentType")
 
@@ -120,9 +121,14 @@ class CommandProxy(ParserBase):
                 self._require_namespace = name
                 return
 
-        for name, parameter in sig.parameters.items():
+        for idx, (name, parameter) in enumerate(sig.parameters.items()):
             if parameter.annotation is argparse.Namespace:
                 self._require_namespace = name
+            elif name == "self" and idx == 0:
+                # Special case for non-static function groups
+                arg = Argument("SELF", action="store_const", const=self)
+                action = arg.register_with_proxy(self)
+                self._args.append((name, action.dest))
             else:
                 arg = Argument.from_parameter(name, parameter)
                 action = arg.register_with_proxy(self)
@@ -153,7 +159,9 @@ class ArgumentType(abc.ABC):
 
     @abc.abstractmethod
     def __call__(self, value: str) -> Any:
-        ...
+        """
+        Construct a value from type
+        """
 
 
 class Argument:
@@ -170,7 +178,7 @@ class Argument:
     :param default: The value produced if the argument is absent from the command line.
     :param type: The type to which the command-line argument should be converted.
     :param choices: A container of the allowable values for the argument.
-    :param required: Whether or not the command-line option may be omitted (optionals only).
+    :param required: Whether the command-line option may be omitted (optionals only).
     :param help_text: A brief description of what the argument does.
     :param metavar: A name for the argument in usage messages.
     :param dest: The name of the attribute to be added to the object returned by parse_args().
@@ -195,7 +203,7 @@ class Argument:
         :param default: The value produced if the argument is absent from the command line.
         :param choices: A container of the allowable values for the argument.
         :param help: A brief description of what the argument does.
-        :param metavar: - A name for the argument in usage messages.
+        :param metavar: A name for the argument in usage messages.
 
         """
         return cls(
@@ -224,6 +232,18 @@ class Argument:
                 raise TypeError(
                     "Only Optional[TYPE] or Union[TYPE, None] are supported"
                 )
+
+        elif name == "typing.Literal":
+            choices = type_.__args__
+            choice_type = type(choices[0])
+            if choice_type not in (str, int):
+                raise TypeError("Only str and int Literal types are supported")
+            # Ensure only a single type is supplied
+            if not all(isinstance(choice, choice_type) for choice in choices):
+                raise TypeError("All literal values must be the same type")
+
+            kwargs["choices"] = type_.__args__
+            return choice_type
 
         elif issubclass(origin, Tuple):
             kwargs["nargs"] = len(type_.__args__)
@@ -273,6 +293,10 @@ class Argument:
 
         if issubclass(type_, Enum):
             kwargs["action"] = EnumName
+
+        elif action := TYPE_ACTIONS.get(type_):
+            kwargs["action"] = action
+            return None
 
         elif not positional and "default" not in kwargs:
             kwargs["required"] = True
@@ -327,7 +351,7 @@ class Argument:
     def __init__(
         self,
         *name_or_flags,
-        action: str = None,
+        action: Union[str, Type[argparse.Action]] = None,
         nargs: Union[int, str] = None,
         const: Any = None,
         default: Any = EMPTY,
@@ -452,7 +476,7 @@ class CommandGroup(ParserBase):
 
         :param handler: Handler function
         :param name: Optional name to use for CLI; defaults to the function name.
-        :param aliases: A sequence a name aliases for this command command.
+        :param aliases: A sequence a name aliases for this command.
         :param help_text: Information provided to the user if help is invoked;
             default is taken from the handlers doc string.
 

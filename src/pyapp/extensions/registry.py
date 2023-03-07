@@ -6,13 +6,16 @@ Central location for registering and obtaining information about registered
 extensions.
 
 """
+try:
+    import importlib_metadata as metadata
+except ImportError:
+    from importlib import metadata
 from typing import Iterator
 from typing import List
 from typing import NamedTuple
 from typing import Optional
 from typing import Sequence
 
-import pkg_resources
 from pyapp.app.arguments import CommandGroup
 
 __all__ = ("registry", "ExtensionEntryPoints", "ExtensionDetail")
@@ -72,17 +75,23 @@ class ExtensionEntryPoints:
     Identifies and loads extensions.
     """
 
-    def __init__(self, white_list: Sequence[str] = None):
-        self.white_list = white_list
+    def __init__(self, allow_list: Sequence[str] = None):
+        self.allow_list = allow_list
 
-    def _entry_points(self) -> Iterator[pkg_resources.EntryPoint]:
+    def _entry_points(self) -> Iterator[metadata.EntryPoint]:
         """
         Iterator of filtered extension entry points
         """
-        white_list = self.white_list
-        for entry_point in pkg_resources.iter_entry_points(ENTRY_POINTS):
-            if white_list is None or entry_point.name in white_list:
-                yield entry_point
+        entry_points = metadata.entry_points(group=ENTRY_POINTS)
+        allow_list = self.allow_list
+        if allow_list is None:
+            yield from entry_points
+        else:
+            yield from (
+                entry_point
+                for entry_point in entry_points
+                if entry_point.name in allow_list
+            )
 
     def extensions(self, load: bool = True) -> Iterator[object]:
         """
@@ -90,9 +99,9 @@ class ExtensionEntryPoints:
         """
         for entry_point in self._entry_points():
             yield ExtensionDetail(
-                entry_point.resolve() if load else None,
+                entry_point.load() if load else None,
                 entry_point.name,
-                entry_point.dist.project_name,
+                entry_point.dist.name,
                 entry_point.dist.version,
             )
 
