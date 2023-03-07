@@ -1,3 +1,23 @@
+4.12
+====
+
+Changes
+-------
+
+- Introduction of typed_settings, providing a cleaner way to access default settings
+  that supports auto-completion and type inference. And preparing the way for more
+  in-depth checks that ensure settings values match the expected types.
+
+- Support ``Literal`` types in CLI. Maps str and int literals to choices.
+
+- Support sequences of Enum values in the CLI. This is implemented via the
+  ``AppendEnumValue`` and ``AppendEnumName`` actions.
+
+- Migrate from pkg_resources to the standardised builtin importlib.metadata.
+
+- Fix for handling events/callbacks on classes where the parent has __slots__ defined.
+
+
 4.11.0
 ======
 

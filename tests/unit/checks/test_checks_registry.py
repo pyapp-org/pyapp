@@ -2,7 +2,7 @@ from pyapp.checks import messages
 from pyapp.checks import registry
 
 
-class TestCheckRegistry(object):
+class TestCheckRegistry:
     def test_register__with_decorator_without_tags(self):
         target = registry.CheckRegistry()
 

@@ -4,6 +4,7 @@ from argparse import FileType
 from enum import Enum
 from typing import Callable
 from typing import Dict
+from typing import Literal
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
@@ -12,10 +13,10 @@ from unittest import mock
 
 import pytest
 from pyapp.app import CommandOptions
+from pyapp.app.argument_actions import AppendEnumName
 from pyapp.app.argument_actions import DateAction
 from pyapp.app.argument_actions import DateTimeAction
 from pyapp.app.argument_actions import EnumName
-from pyapp.app.argument_actions import EnumNameList
 from pyapp.app.argument_actions import KeyValueAction
 from pyapp.app.argument_actions import TimeAction
 from pyapp.app.argument_types import RegexType
@@ -160,6 +161,22 @@ def func_sample_12(arg1: str, *, arg2: Colour = Colour.Red):
     return arg1, arg2
 
 
+@expected_args(
+    mock.call("ARG1", type=str),
+    mock.call("--arg2", type=Colour, action=AppendEnumName),
+)
+@call_args(
+    "foo",
+    "--arg2",
+    "Red",
+    "--arg2",
+    "Green",
+    expected=("foo", [Colour.Red, Colour.Green]),
+)
+def func_sample_12_sequence_of_enums(arg1: str, *, arg2: Sequence[Colour]):
+    return arg1, arg2
+
+
 # FileType instances cannot be directly compared.
 @expected_args(
     mock.call("ARG1", type=mock.ANY),
@@ -233,9 +250,16 @@ def func_sample_24(*, arg_1: re_type):
     return arg_1
 
 
-@expected_args(mock.call("--arg-1", type=Colour, action=EnumNameList))
+@expected_args(mock.call("--arg-1", type=Colour, action=AppendEnumName))
 @call_args("--arg-1", "Green", "--arg-1", "Red", expected=[Colour.Green, Colour.Red])
 def func_sample_25(*, arg_1: Sequence[Colour]):
+    return arg_1
+
+
+@expected_args(mock.call("--arg-1", type=str, choices=("foo", "bar")))
+@call_args("-arg-1", "foo", expected="foo")
+def func_sample_26(*, arg_1: Literal["foo", "bar"]):
+    """Support literal strings as choices."""
     return arg_1
 
 
@@ -248,6 +272,16 @@ def func_sample_32(*, arg1: Callable[[int], None] = None):
 
 
 def func_sample_33(*, arg1: Union[int, str, None] = None):
+    return arg1
+
+
+def func_sample_34(*, arg1: Literal[42, "no"]):
+    """Literal with multiple types."""
+    return arg1
+
+
+def func_sample_37(*, arg1: Literal[b"no"]):
+    """Literal with an unsupported type."""
     return arg1
 
 
@@ -309,6 +343,7 @@ def test_from_parameter__compatibility(handler, expected):
         func_sample_09,
         func_sample_11,
         func_sample_12,
+        func_sample_12_sequence_of_enums,
         func_sample_13,
         func_sample_14,
         func_sample_15,
@@ -322,6 +357,7 @@ def test_from_parameter__compatibility(handler, expected):
         func_sample_23,
         func_sample_24,
         func_sample_25,
+        func_sample_26,
         func_sample_35,
     ),
 )
@@ -381,6 +417,28 @@ def test_from_parameter__only_optional_unions():
         CommandProxy(func_sample_33, mock_parser)
 
 
+def test_from_parameter__multiple_value_types_in_literal():
+    """
+    Given a literal with multiple value types in list, ensure correct exception is raised
+    """
+    mock_parser = mock.Mock()
+
+    with pytest.raises(TypeError, match="All literal values must be the same type"):
+        CommandProxy(func_sample_34, mock_parser)
+
+
+def test_from_parameter__unsupported_literal_value_type():
+    """
+    Given a literal with and unsupported value type, ensure correct exception is raised
+    """
+    mock_parser = mock.Mock()
+
+    with pytest.raises(
+        TypeError, match=r"Only str and int Literal types are supported"
+    ):
+        CommandProxy(func_sample_37, mock_parser)
+
+
 @pytest.mark.parametrize(
     "handler",
     (
@@ -392,6 +450,7 @@ def test_from_parameter__only_optional_unions():
         func_sample_08,
         func_sample_09,
         func_sample_11,
+        func_sample_12_sequence_of_enums,
         func_sample_14,
         func_sample_18,
         func_sample_19,

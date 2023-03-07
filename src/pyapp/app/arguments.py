@@ -25,8 +25,8 @@ from typing import Union
 from pyapp.compatability import async_run
 from pyapp.utils import cached_property
 
+from .argument_actions import AppendEnumName
 from .argument_actions import EnumName
-from .argument_actions import EnumNameList
 from .argument_actions import KeyValueAction
 from .argument_actions import TYPE_ACTIONS
 
@@ -233,13 +233,25 @@ class Argument:
                     "Only Optional[TYPE] or Union[TYPE, None] are supported"
                 )
 
+        elif name == "typing.Literal":
+            choices = type_.__args__
+            choice_type = type(choices[0])
+            if choice_type not in (str, int):
+                raise TypeError("Only str and int Literal types are supported")
+            # Ensure only a single type is supplied
+            if not all(isinstance(choice, choice_type) for choice in choices):
+                raise TypeError("All literal values must be the same type")
+
+            kwargs["choices"] = type_.__args__
+            return choice_type
+
         elif issubclass(origin, Tuple):
             kwargs["nargs"] = len(type_.__args__)
 
         elif issubclass(origin, Sequence):
             args = type_.__args__
             if len(args) == 1 and issubclass(args[0], Enum):
-                kwargs["action"] = EnumNameList
+                kwargs["action"] = AppendEnumName
             elif positional:
                 kwargs["nargs"] = "+"
             else:
@@ -339,7 +351,7 @@ class Argument:
     def __init__(
         self,
         *name_or_flags,
-        action: str = None,
+        action: Union[str, Type[argparse.Action]] = None,
         nargs: Union[int, str] = None,
         const: Any = None,
         default: Any = EMPTY,

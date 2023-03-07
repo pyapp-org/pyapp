@@ -14,6 +14,10 @@ Enum types
 
 .. autoclass:: EnumName
 
+.. autoclass:: AppendEnumValue
+
+.. autoclass:: AppendEnumName
+
 
 Date and Time types
 ~~~~~~~~~~~~~~~~~~~
@@ -46,6 +50,8 @@ __all__ = (
     "EnumValue",
     "EnumName",
     "EnumNameList",
+    "AppendEnumValue",
+    "AppendEnumName",
     "DateAction",
     "TimeAction",
     "DateTimeAction",
@@ -60,13 +66,13 @@ class KeyValueAction(Action):
     Example of use::
 
         @app.command
+        def my_command(options: Mapping[str, str]):
+            print(options)
+
+        @app.command
         @argument("--option", action=KeyValueAction)
         def my_command(args: Namespace):
             print(args.option)
-
-        @app.command
-        def my_command(options: Mapping[str, str]):
-            print(options)
 
     From CLI::
 
@@ -159,7 +165,7 @@ class _EnumAction(Action):
 class EnumValue(_EnumAction):
     """
     Action to use an Enum as the type of an argument. In this mode the Enum is
-    reference by value.
+    referenced by value.
 
     The choices are automatically generated for help.
 
@@ -194,7 +200,7 @@ class EnumValue(_EnumAction):
 class EnumName(_EnumAction):
     """
     Action to use an Enum as the type of an argument. In this mode the Enum is
-    reference by name.
+    referenced by name.
 
     The choices are automatically generated for help.
 
@@ -226,10 +232,53 @@ class EnumName(_EnumAction):
         return self._enum[value]
 
 
-class EnumNameList(EnumName):
+def _copy_items(items):
     """
-    Action to use an Enum as the type of an argument. In this mode the Enum is
-    reference by name and appended to a list.
+    Extracted from argparse
+    """
+    if items is None:
+        return []
+
+    # The copy module is used only in the 'append' and 'append_const'
+    # actions, and it is needed only when the default value isn't a list.
+    # Delay its import for speeding up the common case.
+    if isinstance(items, list):
+        return items[:]
+
+    import copy  # pylint: disable=import-outside-toplevel
+
+    return copy.copy(items)
+
+
+class _AppendEnumActionMixin(_EnumAction):
+    """
+    Mixin to support appending enum items
+    """
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        items = getattr(namespace, self.dest, None)
+        items = _copy_items(items)
+        enum = self.to_enum(values)
+        items.append(enum)
+        setattr(namespace, self.dest, items)
+
+    def get_choices(self, choices: Union[Enum, Sequence[Enum]]):
+        """
+        Get choices from the enum
+        """
+        raise NotImplementedError  # pragma: no cover
+
+    def to_enum(self, value):
+        """
+        Get enum from the supplied value.
+        """
+        raise NotImplementedError  # pragma: no cover
+
+
+class AppendEnumValue(EnumValue, _AppendEnumActionMixin):
+    """
+    Action to use an Enum as the type of an argument and to accept multiple
+    enum values. In this mode the Enum is referenced by value.
 
     The choices are automatically generated for help.
 
@@ -241,28 +290,56 @@ class EnumNameList(EnumName):
             Blue = "blue"
 
         @app.command
-        @argument("--colour", type=Colour, action=EnumNameList)
+        @argument("--colours", type=Colour, action=AppendEnumValue)
         def my_command(args: Namespace):
             print(args.colour)
 
+        # Or using typing definition
+
         @app.command
-        def my_command(*, colour: Sequence[Colour]):
+        def my_command(*, colours: Sequence[Colour]):
+            print(colours)
+
+    From CLI::
+
+        > my_app m_command --colour red --colour blue
+        [Colour.Red, Colour.Blue]
+
+    .. versionadded:: 4.9
+
+    """
+
+
+class AppendEnumName(EnumName, _AppendEnumActionMixin):
+    """
+    Action to use an Enum as the type of an argument and to accept multiple
+    enum values. In this mode the Enum is referenced by name.
+
+    The choices are automatically generated for help.
+
+    Example of use::
+
+        class Colour(Enum):
+            Red = "red"
+            Green = "green"
+            Blue = "blue"
+
+        @app.command
+        @argument("--colours", type=Colour, action=AppendEnumName)
+        def my_command(args: Namespace):
             print(args.colour)
 
     From CLI::
 
-        > my_app m_command --colour Red --colour Green
-        [Colour.Red, Colour.Green]
+        > my_app m_command --colour Red --colour Blue
+        [Colour.Red, Colour.Blue]
 
-    .. versionadded:: 4.8.2
+    .. versionadded:: 4.9
 
     """
 
-    def __call__(self, parser, namespace, values, option_string=None):
-        enum = self.to_enum(values)
-        items = getattr(namespace, self.dest, None) or []
-        items.append(enum)
-        setattr(namespace, self.dest, items)
+
+EnumNameList = AppendEnumName
 
 
 class _DateTimeAction(Action):

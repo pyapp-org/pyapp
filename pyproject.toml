@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyapp"
-version = "4.11.0"
+version = "4.12.0"
 description = "A Python application framework - Let us handle the boring stuff!"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
@@ -37,6 +37,7 @@ python = "^3.8"
 argcomplete = "*"
 colorama = "*"
 yarl = "*"
+importlib_metadata = {version = "*", python = "<=3.9"}
 
 pyyaml = {version = "*", optional = true }
 toml = {version = "*", optional = true }

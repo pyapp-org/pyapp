@@ -89,6 +89,12 @@ HttpLoader
 
 .. autoclass:: HttpLoader
 
+Default settings
+================
+
+.. automodule:: pyapp.conf.base_settings
+    :members:
+
 """
 import logging
 import os
