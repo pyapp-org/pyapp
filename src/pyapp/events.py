@@ -64,6 +64,53 @@ _CT = TypeVar("_CT")
 _F = TypeVar("_F", bound=Callable[..., Any])
 
 
+class _ListenerDescriptor:
+    """Common base descriptor class."""
+
+    __slots__ = ("name",)
+
+    set_type: type
+    name: Optional[str]
+
+    def __init__(self):
+        """Initialise descriptor."""
+        self.name = None
+
+    def __set_name__(self, owner: type, name: str):
+        """Assign a name to the instance."""
+        if self.name is None:
+            self.name = name
+        elif name != self.name:
+            raise TypeError(
+                "Cannot assign the same event to two different names "
+                f"{self.name!r} and {name!r}"
+            )
+
+    def get_listeners(self, instance):
+        """Get listeners from instance."""
+        if self.name is None:
+            raise TypeError(
+                f"Cannot use {type(self).__name__!r} instance without "
+                f"calling __set_name__ on it."
+            )
+        try:
+            return instance.__dict__[self.name]
+        except AttributeError:
+            msg = (
+                f"No '__dict__' attribute on {type(instance).__name__!r} "
+                f"instance to store {self.name!r} events."
+            )
+            raise TypeError(msg) from None
+        except KeyError:
+            return None
+
+    def set_listeners(self, instance, listeners):
+        """Store listeners on instance."""
+        # Called by subclasses, all access checks are performed in the get method
+        instance.__dict__[self.name] = listeners
+        return listeners
+
+
 class ListenerContext(Generic[_CT]):
     """Context manager to manage temporary listeners.
 
@@ -131,28 +178,19 @@ class ListenerSet(BaseListenerSet[_CT]):
             callback(*args, **kwargs)
 
 
-class Event(Generic[_CT]):
+class Event(Generic[_CT], _ListenerDescriptor):
     """Event publisher descriptor.
 
     Used to gain access to the listener list.
 
     """
 
-    __slots__ = ("name",)
+    __slots__ = ()
 
     def __get__(self, instance, owner) -> ListenerSet[_CT]:
-        try:
-            return instance.__dict__[self.name]
-        except KeyError:
-            instance.__dict__[self.name] = listeners = ListenerSet()
+        if listeners := self.get_listeners(instance):
             return listeners
-
-    def __set_name__(self, owner, name):
-        if hasattr(owner, "__slots__"):
-            raise UnsupportedObject(
-                "An Event cannot be used on an object with __slots__ defined."
-            )
-        self.name = name  # pylint: disable=attribute-defined-outside-init
+        return self.set_listeners(instance, ListenerSet())
 
 
 _ACT = TypeVar("_ACT", bound=Union[Callable[..., Coroutine], "AsyncListenerList"])
@@ -172,24 +210,19 @@ class AsyncListenerSet(BaseListenerSet[_ACT]):
             await asyncio.wait(awaitables, return_when=asyncio.ALL_COMPLETED)
 
 
-class AsyncEvent(Generic[_ACT]):
+class AsyncEvent(Generic[_ACT], _ListenerDescriptor):
     """Async event publisher descriptor.
 
     Used to gain access to the listener list.
 
     """
 
-    __slots__ = ("name",)
+    __slots__ = ()
 
     def __get__(self, instance, owner) -> ListenerSet[_ACT]:
-        try:
-            return instance.__dict__[self.name]
-        except KeyError:
-            instance.__dict__[self.name] = listeners = AsyncListenerSet()
+        if listeners := self.get_listeners(instance):
             return listeners
-
-    def __set_name__(self, owner, name):
-        self.name = name  # pylint: disable=attribute-defined-outside-init
+        return self.set_listeners(instance, AsyncListenerSet())
 
 
 def listen_to(event: ListenerSet[_F]) -> Callable[[_F], _F]:
@@ -230,31 +263,22 @@ class CallbackBinding(CallbackBindingBase[_ACT]):
 
     def __call__(self, *args, **kwargs):
         if self._callback:
-            self._callback(*args, **kwargs)
+            return self._callback(*args, **kwargs)
 
 
-class Callback(Generic[_CT]):
+class Callback(Generic[_CT], _ListenerDescriptor):
     """Callback descriptor.
 
     Used to attach a single callback.
 
     """
 
-    __slots__ = ("name",)
+    __slots__ = ()
 
     def __get__(self, instance, owner) -> CallbackBinding[_CT]:
-        try:
-            return instance.__dict__[self.name]
-        except KeyError:
-            instance.__dict__[self.name] = wrapper = CallbackBinding[_CT]()
-            return wrapper
-
-    def __set_name__(self, owner, name):
-        if hasattr(owner, "__slots__"):
-            raise UnsupportedObject(
-                "A Callback cannot be used on an object with __slots__ defined."
-            )
-        self.name = name  # pylint: disable=attribute-defined-outside-init
+        if listeners := self.get_listeners(instance):
+            return listeners
+        return self.set_listeners(instance, CallbackBinding())
 
 
 class AsyncCallbackBinding(CallbackBindingBase[_ACT]):
@@ -267,24 +291,19 @@ class AsyncCallbackBinding(CallbackBindingBase[_ACT]):
             return await self._callback(*args, **kwargs)
 
 
-class AsyncCallback(Generic[_ACT]):
+class AsyncCallback(Generic[_ACT], _ListenerDescriptor):
     """Async callback descriptor.
 
     Use to attach a single async callback
 
     """
 
-    __slots__ = ("name",)
+    __slots__ = ()
 
     def __get__(self, instance, owner) -> AsyncCallbackBinding[_ACT]:
-        try:
-            return instance.__dict__[self.name]
-        except KeyError:
-            instance.__dict__[self.name] = wrapper = AsyncCallbackBinding[_ACT]()
-            return wrapper
-
-    def __set_name__(self, owner, name):
-        self.name = name  # pylint: disable=attribute-defined-outside-init
+        if listeners := self.get_listeners(instance):
+            return listeners
+        return self.set_listeners(instance, AsyncCallbackBinding())
 
 
 def bind_to(callback: CallbackBinding[_F]) -> Callable[[_F], _F]:
