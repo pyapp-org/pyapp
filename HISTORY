@@ -12,6 +12,9 @@ Changes
 
 - Migrate from pkg_resources to the standardised builtin importlib.metadata.
 
+- Fix for handling events/callbacks on classes where the parent has __slots__ defined.
+
+
 4.11.0
 ======
 
