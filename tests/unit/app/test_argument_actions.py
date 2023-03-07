@@ -118,6 +118,36 @@ class TestEnumActions:
         assert namespace.colour == Colour.Blue
 
 
+class TestAppendEnumActions:
+    @pytest.fixture
+    def name_target(self):
+        return argument_actions.AppendEnumName(
+            option_strings="--colours", dest="colours", type=Colour
+        )
+
+    @pytest.fixture
+    def value_target(self):
+        return argument_actions.AppendEnumValue(
+            option_strings="--colours", dest="colours", type=Colour
+        )
+
+    def test_call__name_choices(self, name_target):
+        parser = ArgumentParser()
+        namespace = Namespace()
+        name_target(parser, namespace, "Green")
+        name_target(parser, namespace, "Red")
+
+        assert namespace.colours == [Colour.Green, Colour.Red]
+
+    def test_call__value_choices(self, value_target):
+        parser = ArgumentParser()
+        namespace = Namespace()
+        value_target(parser, namespace, "red")
+        value_target(parser, namespace, "blue")
+
+        assert namespace.colours == [Colour.Red, Colour.Blue]
+
+
 class TestDateTimeActions:
     @pytest.mark.parametrize(
         "value, action, expected",

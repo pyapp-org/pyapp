@@ -103,12 +103,13 @@ class TestEvent:
         assert len(instance.target) == 1
 
     def test__when_object_has_slots(self):
-        with pytest.raises(RuntimeError):
+        class MyObject:
+            __slots__ = ("foo",)
 
-            class MyObject:
-                __slots__ = ("foo",)
+            target = events.Event[Callable[[], None]]()
 
-                target = events.Event[Callable[[], None]]()
+        with pytest.raises(TypeError):
+            str(MyObject().target)
 
 
 class TestAsyncListenerSet:
@@ -205,13 +206,28 @@ class TestCallback:
         target = instance.target
         assert target._callback is on_target
 
+    def test_call(self):
+        class MyObject:
+            target = events.Callback[Callable[[], str]]()
+
+        instance = MyObject()
+
+        @events.bind_to(instance.target)
+        def on_target():
+            return "foo"
+
+        actual = instance.target()
+
+        assert actual == "foo"
+
     def test__when_object_has_slots(self):
-        with pytest.raises(RuntimeError):
+        class MyObject:
+            __slots__ = ("foo",)
 
-            class MyObject:
-                __slots__ = ("foo",)
+            target = events.Callback[Callable[[], None]]()
 
-                target = events.Callback[Callable[[], None]]()
+        with pytest.raises(TypeError):
+            str(MyObject().target)
 
 
 class TestAsyncCallbackBinding:

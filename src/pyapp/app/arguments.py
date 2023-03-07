@@ -27,7 +27,7 @@ from typing import (
 from pyapp.compatability import async_run
 from pyapp.utils import cached_property
 
-from .argument_actions import TYPE_ACTIONS, EnumName, EnumNameList, KeyValueAction
+from .argument_actions import TYPE_ACTIONS, EnumName, AppendEnumName, KeyValueAction
 
 __all__ = ("Handler", "argument", "CommandGroup", "Arg", "ArgumentType")
 
@@ -250,7 +250,7 @@ class Argument:
         elif issubclass(origin, Sequence):
             args = type_.__args__
             if len(args) == 1 and issubclass(args[0], Enum):
-                kwargs["action"] = EnumNameList
+                kwargs["action"] = AppendEnumName
             elif positional:
                 kwargs["nargs"] = "+"
             else:
