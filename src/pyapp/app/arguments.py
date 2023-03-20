@@ -27,7 +27,7 @@ from typing import (
 from pyapp.compatability import async_run
 from pyapp.utils import cached_property
 
-from .argument_actions import TYPE_ACTIONS, EnumName, AppendEnumName, KeyValueAction
+from .argument_actions import TYPE_ACTIONS, AppendEnumName, EnumName, KeyValueAction
 
 __all__ = ("Handler", "argument", "CommandGroup", "Arg", "ArgumentType")
 
@@ -354,9 +354,9 @@ class Argument:
         nargs: Union[int, str] = None,
         const: Any = None,
         default: Any = EMPTY,
-        type_: Union[
+        type: Union[  # pylint: disable=redefined-builtin
             Type[Any], Callable[[str], Any]
-        ] = None,  # pylint: disable=redefined-builtin
+        ] = None,
         choices: Sequence[Any] = None,
         required: bool = None,
         help_text: str = None,
@@ -370,7 +370,7 @@ class Argument:
             ("action", action),
             ("nargs", nargs),
             ("const", const),
-            ("type", type_),
+            ("type", type),
             ("choices", choices),
             ("required", required),
             ("help", help_text),

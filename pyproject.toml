@@ -58,3 +58,6 @@ toml = ["toml"]
 
 [tool.poetry.plugins."pytest11"]
 "pyapp-pytest" = "pyapp.testing.pytest_plugin"
+
+[tool.isort]
+profile = "black"
