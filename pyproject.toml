@@ -34,20 +34,13 @@ include = ["HISTORY"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-argcomplete = "*"
-colorama = "*"
+argcomplete = "^3.0"
+rich = "^13.3.2"
 yarl = "*"
 importlib_metadata = {version = "*", python = "<=3.9"}
 
 pyyaml = {version = "*", optional = true }
 toml = {version = "*", optional = true }
-
-[tool.poetry.dev-dependencies]
-pytest = "^7.2"
-pytest-cov = "^4.0"
-pytest-asyncio = "^0.20"
-nox = "*"
-sphinx = "^6.0"
 
 [tool.poetry.extras]
 yaml = ["pyyaml"]
@@ -58,6 +51,15 @@ toml = ["toml"]
 
 [tool.poetry.plugins."pytest11"]
 "pyapp-pytest" = "pyapp.testing.pytest_plugin"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2"
+pytest-cov = "^4.0"
+pytest-asyncio = "^0.21"
+nox = "*"
+sphinx = "^6.0"
+pytest-sugar = "^0.9.6"
 
 [tool.isort]
 profile = "black"
