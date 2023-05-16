@@ -8,6 +8,11 @@ Changes
 
 - Allow ext_allow_list and ext_block_list to include glob patterns.
 
+Pending Deprecations
+--------------------
+
+- Deprecated the use of ``ext_white_list`` in favour of ``ext_allow_list``.
+
 
 4.12
 ====
