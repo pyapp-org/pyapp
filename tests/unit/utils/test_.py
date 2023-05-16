@@ -53,3 +53,35 @@ def test_text_to_bool(value, expected):
     actual = utils.text_to_bool(value)
 
     assert actual == expected
+
+
+class TestAllowBlockFilter:
+    @pytest.mark.parametrize(
+        "allow_list, block_list, value, expected",
+        (
+            # Allow all
+            (None, None, "foo", True),
+            # Allow/Block specific
+            (["foo"], None, "foo", True),
+            (["foo"], None, "bar", False),
+            (None, ["foo"], "foo", False),
+            (None, ["foo"], "bar", True),
+            # Allow/Block glob
+            (["foo*"], None, "foo", True),
+            (["foo*"], None, "foobar", True),
+            (["foo*"], None, "bar", False),
+            (None, ["foo*"], "foo", False),
+            (None, ["foo*"], "foobar", False),
+            (None, ["foo*"], "bar", True),
+            # Combined
+            (["foo*"], ["bar*"], "foo", True),
+            (["foo*"], ["bar*"], "foobar", True),
+            (["foo*"], ["bar*"], "bar", False),
+            (["foo*"], ["bar*"], "barfoo", False),
+            (["foo*"], ["bar*"], "eek", False),
+        ),
+    )
+    def test_filtering(self, allow_list, block_list, value, expected):
+        target = utils.AllowBlockFilter(allow_list=allow_list, block_list=block_list)
+
+        assert target(value) is expected
