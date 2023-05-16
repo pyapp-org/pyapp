@@ -5,8 +5,8 @@ Getting Started
 In this section we will run through the processes of building an application with
 ``pyApp``.
 
-App Layout
-==========
+Application Layout
+==================
 
 We'll start with a simple application that accepts input from the command line
 and combines it with a value from configuration.
@@ -45,8 +45,10 @@ uses this file to find information for the application.
 
 ``__version__``
     The version number of the application, it is recommended that this be a
-    semantic version. ``pyApp`` also provides tools for this to be fetched from
+    `semantic version`_. ``pyApp`` also provides tools for this to be fetched from
     the installed package list.
+
+.. _semantic version: https://semver.org/
 
 
 ``__main__.py``

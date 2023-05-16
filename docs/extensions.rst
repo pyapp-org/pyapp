@@ -2,6 +2,9 @@
 Extensions
 ##########
 
+Extensions are features that are not part of the core pyApp framework but extend
+it's functionality.
+
 
 Available Extensions
 ====================
