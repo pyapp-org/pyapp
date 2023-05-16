@@ -14,9 +14,7 @@ Example:
 
     @app.command
     def adduser(username: str, *, email: str = None, is_admin: bool = False):
-        """
-        Add a user
-        """
+        """Add a user"""
         ...
 
     if __name__ == "__main__":

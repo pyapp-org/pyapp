@@ -28,12 +28,12 @@ Project Structure
 
 The basic structure of a ``pyApp`` application package consists of the following::
 
-    - myapp
-      |- __init__.py          Python package initialisation
-      |- __main__.py          Python main entry point
-      |- cli.py               The CLI (referenced from __main__)
-      |- default_settings.py  Definition of default runtime configuration
-      |- checks.py            Application specific checks
+    📁 myapp
+     ├📄 __init__.py          Python package initialisation
+     ├📄 __main__.py          Python main entry point
+     ├📄 cli.py               The CLI (referenced from __main__)
+     ├📄 default_settings.py  Definition of default runtime configuration
+     └📄 checks.py            Application specific checks
 
 
 ``__init__.py``
