@@ -8,9 +8,10 @@ Utils for managing deprecation of methods and tools
 import functools
 import inspect
 import warnings
+from typing import Type
 
 
-def deprecated(message: str, category: Warning = DeprecationWarning):
+def deprecated(message: str, category: Type[Warning] = DeprecationWarning):
     """
     Decorator for marking classes/functions as being deprecated and are to be removed in the future.
 
