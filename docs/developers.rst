@@ -1,5 +1,5 @@
-Developers
-==========
+Contribution Guide
+==================
 
 We welcome contributions to the pyApp project (and sub projects).
 
@@ -16,8 +16,8 @@ met:
 
 - Update the docs with the details if required.
 
-- The API matters, ensure any features provide a nice API for end users.
-
+- The API matters, ensure any features provide a nice API for both developers and
+  end-users.
 
 The core pyApp package is intended to be light and mainly made up of plumbing
 code. If you want to add support for a particular service or server an extension

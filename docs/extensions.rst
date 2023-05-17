@@ -2,6 +2,9 @@
 Extensions
 ##########
 
+Extensions are features that are not part of the core pyApp framework but extend
+it's functionality.
+
 
 Available Extensions
 ====================
@@ -75,12 +78,11 @@ A Basic Project
 
 An extensions consists of a standard Python project structure eg::
 
-    ├┬ my_extension
-    │└ __init__.py
-    ├ README.rst
-    ├ pyproject.toml
-    ├ setup.cfg
-    └ setup.py
+    ├📁 src
+    │ └📁 my_extension
+    │   └📄 __init__.py
+    ├📄 README.md
+    └📄 pyproject.toml
 
 
 
@@ -93,24 +95,18 @@ The contents of which are:
     .. code-block:: python
 
         class Extension:
-            """
-            My pyApp Extension
-            """
+            """My pyApp Extension."""
 
             default_settings = ".default_settings"
             checks = ".checks"
 
             @staticmethod
             def register_commands(root):
-                """
-                Register custom commands with pyApp.
-                """
+                """Register custom commands with pyApp."""
 
             @staticmethod
             def ready():
-                """
-                Method called once pyApp has configured environment
-                """
+                """Method called once pyApp has configured environment."""
 
 
 .. tip::
@@ -118,21 +114,23 @@ The contents of which are:
     this is the reason for the ``ready`` event on the Extension class. Once ready
     has been called settings are setup and ready for use.
 
-``README.rst``
+``README.md``
     While not strictly necessary a README document is *highly recommended* and is
     included in the package as the long description.
 
-    .. code-block:: rst
+    .. code-block:: md
 
-        ##################
-        My pyApp Extension
-        ##################
+        # My pyApp Extension
 
         Information about my extension
 
 
-Using Setuptools
-~~~~~~~~~~~~~~~~
+Using Setuptools with ``pyproject.toml``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Using Setuptools with ``setup.cfg``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``setup.cfg``
     Defines the metadata and configuration used to build a package, this is also

@@ -98,6 +98,7 @@ Default settings
 """
 import logging
 import os
+import pickle
 import warnings
 from typing import Any
 from typing import Dict
@@ -393,9 +394,7 @@ settings = Settings()  # pylint: disable=invalid-name
 
 
 class Serialiser(Protocol):
-    """
-    Protocol a serialiser must meet
-    """
+    """Protocol a serialiser must meet."""
 
     def dump(self, obj: Dict[str, Any], file: IO):
         """
@@ -408,27 +407,21 @@ class Serialiser(Protocol):
         """
 
 
-def export_settings(file: IO, *, serialiser: Serialiser = None):
+def export_settings(file: IO, *, serialiser: Serialiser = pickle):
     """
     Export settings into specified file(like) object using specified serialiser.
 
     The default serialiser is pickle
     """
-    if serialiser is None:
-        import pickle as serialiser  # pylint: disable=import-outside-toplevel
-
     state = settings.__getstate__()
     serialiser.dump(state, file)
 
 
-def restore_settings(file: IO, *, serialiser: Serialiser = None):
+def restore_settings(file: IO, *, serialiser: Serialiser = pickle):
     """
     Restore settings from specified file(like) object using specified serialiser.
 
     The default serialiser is pickle
     """
-    if serialiser is None:
-        import pickle as serialiser  # pylint: disable=import-outside-toplevel
-
     state = serialiser.load(file)
     settings.__setstate__(state)

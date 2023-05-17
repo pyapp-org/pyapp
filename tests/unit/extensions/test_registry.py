@@ -87,6 +87,7 @@ class TestExtensionEntryPoints:
 
         mock_entry_points = mock.Mock(return_value=entry_points)
         monkeypatch.setattr(metadata, "entry_points", mock_entry_points)
+        return entry_points
 
     @pytest.fixture
     def target(self, patchentrypoints):
@@ -97,8 +98,15 @@ class TestExtensionEntryPoints:
 
         assert actual == ["foo-extension", "bar-extension"]
 
-    def test_entry_points__with_white_list(self, patchentrypoints):
+    def test_entry_points__with_allow_list(self, patchentrypoints):
         target = ExtensionEntryPoints(allow_list=("bar-extension",))
+
+        actual = [ep.name for ep in target._entry_points()]
+
+        assert actual == ["bar-extension"]
+
+    def test_entry_points__with_block_list(self, patchentrypoints):
+        target = ExtensionEntryPoints(block_list=("foo*",))
 
         actual = [ep.name for ep in target._entry_points()]
 

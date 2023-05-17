@@ -1,3 +1,19 @@
+4.13
+====
+
+Changes
+-------
+
+- Added ext_block_list to allow for blocking of extensions to CliApplication.
+
+- Allow ext_allow_list and ext_block_list to include glob patterns.
+
+Pending Deprecations
+--------------------
+
+- Deprecated the use of ``ext_white_list`` in favour of ``ext_allow_list``.
+
+
 4.12
 ====
 

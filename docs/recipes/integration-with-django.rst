@@ -24,4 +24,4 @@ Add to the ``ready`` method of your *App* class:
             pyapp_settings.load(ObjectLoader(django_settings))
 
 ``ObjectLoader`` is a special loader that reads configuration variable from an
-existing object or in this case a Django settings object.
+existing object; in this case the Django settings object.

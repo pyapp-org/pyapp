@@ -157,6 +157,7 @@ import io
 import logging.config
 import os
 import sys
+import warnings
 from argparse import ArgumentParser
 from argparse import Namespace as CommandOptions
 from typing import Callable
@@ -182,7 +183,7 @@ logger = logging.getLogger(__name__)
 
 
 def _key_help(key: str) -> str:
-    """Helper method that formats a key value from the environment vars."""
+    """Formats a key value from environment vars."""
     if key in os.environ:
         return f"{key} [{os.environ[key]}]"
     return key
@@ -192,13 +193,20 @@ def _key_help(key: str) -> str:
 class CliApplication(CommandGroup):
     """Application interface that provides a CLI interface.
 
-    :param root_module: The root module for this application (used for discovery of other modules)
+    :param root_module: The root module for this application (used for discovery of
+        other modules)
     :param prog: Name of your application; defaults to `sys.argv[0]`
     :param description: A description of your application for `--help`.
-    :param version: Specify a specific version; defaults to `getattr(root_module, '__version__')`
-    :param ext_white_list: Sequence if extensions that are white listed; default is `None` or all extensions.
-    :param application_settings: The default settings for this application; defaults to `root_module.default_settings`
-    :param application_checks: Location of application checks file; defaults to `root_module.checks` if it exists.
+    :param version: Specify a specific version; defaults to
+        `getattr(root_module, '__version__')`
+    :param ext_allow_list: Sequence of extension names or globs that are allowed;
+        default is `None` or all extensions.
+    :param ext_block_list: Sequence of extension names or globs that are blocked;
+        default is `None` or no blocking.
+    :param application_settings: The default settings for this application;
+        defaults to `root_module.default_settings`
+    :param application_checks: Location of application checks file; defaults to
+        `root_module.checks` if it exists.
     :param env_settings_key: Key used to define settings file in environment.
     :param env_loglevel_key: Key used to define log level in environment
 
@@ -248,6 +256,7 @@ class CliApplication(CommandGroup):
         version: str = None,
         ext_white_list: Sequence[str] = None,
         ext_allow_list: Sequence[str] = None,
+        ext_block_list: Sequence[str] = None,
         application_settings: str = None,
         application_checks: str = None,
         env_settings_key: str = None,
@@ -259,7 +268,13 @@ class CliApplication(CommandGroup):
         self.application_version = version or getattr(
             root_module, "__version__", "Unknown"
         )
-        self.ext_allow_list = ext_allow_list or ext_white_list
+        self.ext_allow_list = ext_allow_list
+        if ext_white_list:
+            warnings.warn(
+                "ext_white_list is deprecated, use ext_allow_list", DeprecationWarning
+            )
+            self.ext_allow_list = ext_white_list
+        self.ext_block_list = ext_block_list
 
         # Determine application settings (disable for standalone scripts)
         if application_settings is None and root_module.__name__ != "__main__":
@@ -419,7 +434,9 @@ class CliApplication(CommandGroup):
 
     def load_extensions(self):
         """Load/Configure extensions."""
-        entry_points = extensions.ExtensionEntryPoints(self.ext_allow_list)
+        entry_points = extensions.ExtensionEntryPoints(
+            self.ext_allow_list, self.ext_block_list
+        )
         extensions.registry.load_from(entry_points.extensions())
         extensions.registry.register_commands(self)
 
