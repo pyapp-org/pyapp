@@ -44,8 +44,9 @@ def import_root_module(stack_offset: int = 2):
             root_package = find_root_folder(Path(frame_globals.get("__file__"))).name
         except ValueError as ex:
             # If the module name is __main__ this is a standalone script.
-            if frame_globals.get("__name__") == "__main__":
-                root_package = "__main__"
+            name = frame_globals.get("__name__")
+            if name in ("__main__", "__mp_main__"):
+                root_package = name
             else:
                 raise RuntimeError(f"Unable to determine root module: {ex}") from ex
 
