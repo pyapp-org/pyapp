@@ -1,3 +1,13 @@
+4.13.1
+======
+
+Fixes
+-----
+
+- Update utils.inspect.import_root_module to handle ``__mp_main__`` module
+  correctly.
+
+
 4.13
 ====
 
