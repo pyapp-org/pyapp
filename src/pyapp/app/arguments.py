@@ -22,6 +22,7 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
+from argcomplete.completers import BaseCompleter
 from pyapp.compatability import async_run
 from pyapp.utils import cached_property
 
@@ -51,7 +52,7 @@ class ParserBase:
     def __init__(self, parser: argparse.ArgumentParser):
         self.parser = parser
 
-    def argument(self, *name_or_flags, **kwargs):
+    def argument(self, *name_or_flags, **kwargs) -> argparse.Action:
         """
         Add argument to proxy
         """
@@ -185,7 +186,7 @@ class Argument:
 
     """
 
-    __slots__ = ("kwargs", "name_or_flags")
+    __slots__ = ("kwargs", "name_or_flags", "completer")
 
     @classmethod
     def arg(
@@ -195,6 +196,7 @@ class Argument:
         choices: Sequence[Any] = None,
         help: str = None,  # pylint: disable=redefined-builtin
         metavar: str = None,
+        completer: Optional[BaseCompleter] = None,
     ) -> "Argument":
         """
         Aliased to become the inline definition for an argument
@@ -204,10 +206,16 @@ class Argument:
         :param choices: A container of the allowable values for the argument.
         :param help: A brief description of what the argument does.
         :param metavar: A name for the argument in usage messages.
+        :param completer: Optional completer for argcomplete to provide a richer CLI.
 
         """
         return cls(
-            *flags, default=default, choices=choices, help_text=help, metavar=metavar
+            *flags,
+            default=default,
+            choices=choices,
+            help_text=help,
+            metavar=metavar,
+            completer=completer,
         )
 
     @staticmethod
@@ -361,8 +369,10 @@ class Argument:
         help_text: str = None,
         metavar: str = None,
         dest: str = None,
+        completer: BaseCompleter = None,
     ):
         self.name_or_flags = name_or_flags
+        self.completer = completer
 
         # Filter out None values
         kwargs = (
@@ -394,11 +404,14 @@ class Argument:
 
         return func
 
-    def register_with_proxy(self, proxy: CommandProxy):
+    def register_with_proxy(self, proxy: CommandProxy) -> argparse.Action:
         """
         Register self with a command proxy
         """
-        return proxy.argument(*self.name_or_flags, **self.kwargs)
+        action = proxy.argument(*self.name_or_flags, **self.kwargs)
+        if self.completer:
+            action.completer = self.completer
+        return action
 
 
 Arg = Argument.arg  # pylint: disable=invalid-name
