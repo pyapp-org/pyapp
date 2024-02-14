@@ -10,8 +10,8 @@ from yarl import URL
     (
         ("http://myhost/path/to/my/file.json", "application/json"),
         ("http://myhost/path/to/my/file?type=application/json", "application/json"),
-        ("http://myhost/path/to/my/file.yaml", "application/x-yaml"),
-        ("file:///path/to/my/file.yml", "application/x-yaml"),
+        ("http://myhost/path/to/my/file.yaml", "application/yaml"),
+        ("file:///path/to/my/file.yml", "application/yaml"),
         ("file:///path/to/my/file.txt", "text/plain"),
     ),
 )
