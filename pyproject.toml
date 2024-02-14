@@ -61,14 +61,15 @@ toml = ["toml"]
 
 [tool.ruff]
 # Same as Black.
-line-length = 88
+line-length = 117
 indent-width = 4
 
 # Assume Python 3.8
 target-version = "py38"
 
 [tool.ruff.lint]
-select = ["N", "F", "I", "UP", "PL", "A", "G", "S"]
+select = ["N", "F", "I", "UP", "PL", "A", "G", "S", "E", "SIM", "B"]
+
 ignore = [
     "N818",  # Exception name should be named with an Error suffix
 ]

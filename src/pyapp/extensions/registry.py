@@ -6,6 +6,7 @@ Central location for registering and obtaining information about registered
 extensions.
 
 """
+
 try:
     import importlib_metadata as metadata
 except ImportError:
@@ -64,18 +65,14 @@ class ExtensionDetail(NamedTuple):
 class ExtensionEntryPoints:
     """Identifies and loads extensions."""
 
-    def __init__(
-        self, allow_list: Sequence[str] = None, block_list: Sequence[str] = None
-    ):
+    def __init__(self, allow_list: Sequence[str] = None, block_list: Sequence[str] = None):
         """Initialise extension entry points."""
         self.filter = AllowBlockFilter(allow_list, block_list)
 
     def _entry_points(self) -> Iterator[metadata.EntryPoint]:
         """Iterator of filtered extension entry points"""
         entry_points = metadata.entry_points(group=ENTRY_POINTS)
-        yield from (
-            entry_point for entry_point in entry_points if self.filter(entry_point.name)
-        )
+        yield from (entry_point for entry_point in entry_points if self.filter(entry_point.name))
 
     def extensions(self, load: bool = True) -> Iterator[object]:
         """Iterator of loaded extensions."""
@@ -88,8 +85,6 @@ class ExtensionEntryPoints:
             )
 
 
-# TODO: Remove when pylint handles typing.List correctly  pylint: disable=fixme
-# pylint: disable=not-an-iterable,no-member
 class ExtensionRegistry(List[ExtensionDetail]):
     """Registry for tracking install PyApp extensions."""
 
@@ -111,9 +106,7 @@ class ExtensionRegistry(List[ExtensionDetail]):
     @property
     def default_settings(self) -> Sequence[str]:
         """Return a list of module loaders for extensions that specify default settings."""
-        return tuple(
-            module.default_settings for module in self if module.default_settings
-        )
+        return tuple(module.default_settings for module in self if module.default_settings)
 
     @property
     def check_locations(self) -> Sequence[str]:

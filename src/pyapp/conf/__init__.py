@@ -169,7 +169,7 @@ class ModifySettingsContext:
     def __setattr__(self, key, value):
         items = self._container.__dict__
 
-        if key in items:
+        if key in items:  # noqa: SIM108
             # Prepare an action that puts the current value back
             action = items.__setitem__, (key, items.get(key))
         else:
@@ -248,9 +248,7 @@ class Settings:
         base_settings_ = base_settings_ or base_settings
 
         # Copy values from base settings file.
-        self.__dict__.update(
-            (k, getattr(base_settings_, k)) for k in dir(base_settings_) if k.upper()
-        )
+        self.__dict__.update((k, getattr(base_settings_, k)) for k in dir(base_settings_) if k.upper())
         self.__dict__["SETTINGS_SOURCES"] = []  # pylint: disable=invalid-name
 
     @property
@@ -287,7 +285,9 @@ class Settings:
         loader_key = str(loader)
         if loader_key in self.SETTINGS_SOURCES:
             warnings.warn(
-                f"Settings already loaded: {loader_key}", category=ImportWarning
+                f"Settings already loaded: {loader_key}",
+                category=ImportWarning,
+                stacklevel=2,
             )
             logger.warning("Settings already loaded: %s", loader_key)
             return  # Prevent circular loading
