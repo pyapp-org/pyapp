@@ -124,22 +124,23 @@ class SettingsExtractor:
             self._generate_setting()
 
 
-def flatten_type_annotation(annotation: ast.AST) -> Optional[str]:
+def flatten_type_annotation(annotation) -> Optional[str]:
     """Flatten a type annotation to a string."""
     if isinstance(annotation, ast.Name):
         return annotation.id
 
     if isinstance(annotation, ast.Subscript):
         if isinstance(annotation.value, ast.Name) and annotation.value.id == "Union":
-            return " | ".join(flatten_type_annotation(v) for v in annotation.slice.elts)
+            # Compatibility with Python 3.8
+            slice_value = annotation.slice.value if isinstance(annotation.slice, ast.Index) else annotation.slice
+            if isinstance(slice_value, ast.Tuple):
+                return " | ".join(flatten_type_annotation(v) for v in slice_value.elts)
         return f"{flatten_type_annotation(annotation.value)}"
 
     return None
 
 
-def flatten_default_value(
-    value: ast.AST,
-) -> Union[str, int, float, bool, list, dict, None]:
+def flatten_default_value(value) -> Union[str, int, float, bool, list, dict, None]:
     """Flatten a default value to a string."""
 
     if isinstance(value, ast.Constant):
@@ -157,7 +158,7 @@ def flatten_default_value(
     return None
 
 
-class SettingsDocumenter(SettingsExtractor):
+class SettingsDocumentor(SettingsExtractor):
     """Collect settings from a settings module."""
 
     def __init__(
