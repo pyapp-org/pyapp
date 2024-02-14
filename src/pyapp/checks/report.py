@@ -6,6 +6,7 @@ Generates and execute a report after executing checks.
 
 """
 
+import contextlib
 import csv
 import io
 import logging
@@ -307,10 +308,8 @@ def execute_report(  # noqa: PLR0913
 
     """
     # Import default application checks
-    try:
+    with contextlib.suppress(ImportError):
         __import__(application_checks)
-    except ImportError:
-        pass
 
     # Import additional checks defined in settings.
     import_checks()

@@ -1,6 +1,7 @@
 """
 Messages
 """
+
 from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING, getLevelName
 from traceback import format_exc
 from typing import Any
@@ -66,10 +67,7 @@ class CheckMessage:
         return not self == other
 
     def __str__(self) -> str:
-        if self.obj is None:
-            obj = "?"
-        else:
-            obj = str(self.obj)
+        obj = "?" if self.obj is None else str(self.obj)
         hint = f"\n\tHINT: {self.hint}" if self.hint else ""
         return f"{obj}: {self.msg}{hint}"
 

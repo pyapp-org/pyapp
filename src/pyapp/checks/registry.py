@@ -15,9 +15,7 @@ from pyapp.conf import Settings, settings
 
 
 class Tags:
-    """
-    Built-in tags used by pyApp.
-    """
+    """Built-in tags used by pyApp."""
 
     security = "security"
 
@@ -27,28 +25,21 @@ _C = TypeVar("_C", bound=Callable[[Check], Check])
 
 
 class CheckResult(NamedTuple):
-    """
-    Result of a check execution.
-    """
+    """Result of a check execution."""
 
     check: Check
     messages: Sequence[CheckMessage]
 
 
-# TODO: Remove when pylint handles typing.List correctly  pylint: disable=fixme
-# pylint: disable=not-an-iterable,no-member,unsupported-membership-test
 class CheckRegistry(List[Check]):
-    """
-    Registry list for checks.
-    """
+    """Registry list for checks."""
 
-    def register(  # pylint: disable=keyword-arg-before-vararg
+    def register(
         self,
         check: Union[Check, str] = None,
         *tags: str,
     ) -> Union[_C, Callable[[_C], _C]]:
-        """
-        Can be used as a function or a decorator. Register given function
+        """Can be used as a function or a decorator. Register given function
         `func` labeled with given `tags`. The function should receive **kwargs
         and return a list of Messages.
 
@@ -57,7 +48,7 @@ class CheckRegistry(List[Check]):
         """
 
         def inner(func):
-            setattr(func, "_check__tags", tags)
+            func._check__tags = tags
             if func not in self:
                 self.append(func)
             return func
@@ -70,9 +61,7 @@ class CheckRegistry(List[Check]):
         return inner
 
     def checks_by_tags(self, tags: Iterable[str] = None):
-        """
-        Return an iterator of checks that relate to a specific tag (or tags)
-        """
+        """Return an iterator of checks that relate to a specific tag (or tags)"""
         if tags:
             tags = set(tags)
             return (
@@ -83,8 +72,7 @@ class CheckRegistry(List[Check]):
         return iter(self)
 
     def run_checks_iter(self, tags: Iterable[str] = None, pre_callback=None):
-        """
-        Iterate through all registered checks and run each to return messages.
+        """Iterate through all registered checks and run each to return messages.
 
         :param tags: Iterable of tags to filter checks by.
         :param pre_callback: Callback triggered before each check is executed.

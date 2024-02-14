@@ -46,10 +46,11 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
         if "Content-Length" in headers:
             size = int(headers["Content-Length"])
 
-        if "Content-Type" in headers:
-            content_type = headers["Content-Type"]
-        else:
-            content_type = content_type_from_url(url)
+        content_type = (
+            headers["Content-Type"]
+            if "Content-Type" in headers
+            else content_type_from_url(url)
+        )
 
         tfp = tempfile.TemporaryFile()
         while True:

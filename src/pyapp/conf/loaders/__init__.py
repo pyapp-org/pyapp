@@ -47,15 +47,11 @@ class ModuleLoader(Loader):
 
     @classmethod
     def from_url(cls, url: URL) -> Loader:
-        """
-        Create an instance of :class:`ModuleLoader` from :class:`urllib.parse.ParseResult`.
-        """
+        """Create an instance of :class:`ModuleLoader` from :class:`urllib.parse.ParseResult`."""
         return cls(url.path)
 
     def __init__(self, module: str):
-        """
-        :param module: Fully qualify python module path.
-        """
+        """:param module: Fully qualify python module path."""
         self.module = module
 
     def __iter__(self) -> Iterator[Tuple[str, Any]]:
@@ -103,21 +99,16 @@ class ObjectLoader(Loader):
 LoaderType = Type[Loader]
 
 
-# TODO: Remove when pylint handles typing.Dict correctly  pylint: disable=fixme
-# pylint: disable=no-member,unsubscriptable-object,unsupported-assignment-operation
 class SettingsLoaderRegistry(Dict[str, LoaderType]):
-    """
-    Registry of settings loaders
-    """
+    """Registry of settings loaders"""
 
     def register(self, loader: LoaderType) -> LoaderType:
-        """
-        Register a new loader, this method can be used as decorator
+        """Register a new loader, this method can be used as decorator
 
         :param loader: Loader to register
 
         """
-        loader_schemes = getattr(loader, "scheme")
+        loader_schemes = loader.scheme
         if isinstance(loader_schemes, str):
             loader_schemes = (loader_schemes,)
 
@@ -127,8 +118,7 @@ class SettingsLoaderRegistry(Dict[str, LoaderType]):
         return loader
 
     def factory(self, settings_url: Union[str, URL]) -> Loader:
-        """
-        Factory method that returns a factory suitable for opening the settings uri reference.
+        """Factory method that returns a factory suitable for opening the settings uri reference.
 
         The URI scheme (identifier prior to the first `:`) is used to determine the correct loader.
 
