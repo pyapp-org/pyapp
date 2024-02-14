@@ -1,13 +1,11 @@
-"""
-Logger used in the initial setup.
-"""
+"""Logger used in the initial setup."""
+
 import logging
 from typing import List
 
 
 class InitHandler(logging.Handler):
-    """
-    Handler that provides initial logging and captures logging up to a certain
+    """Handler that provides initial logging and captures logging up to a certain
     level, it is then replayed once logging has been initialised.
     """
 
@@ -18,26 +16,20 @@ class InitHandler(logging.Handler):
         self._store: List[logging.LogRecord] = []
 
     def handle(self, record: logging.LogRecord) -> None:
-        """
-        Handle record
-        """
+        """Handle record"""
         self._store.append(record)
         if record.levelno >= self.pass_through_level:
             super().handle(record)
 
     def replay(self):
-        """
-        Replay stored log records
-        """
+        """Replay stored log records"""
 
         for record in self._store:
             logging.getLogger(record.name).handle(record)
         self._store.clear()
 
     def emit(self, record: logging.LogRecord) -> None:
-        """
-        Emit the record
-        """
+        """Emit the record"""
 
         # Pass to initial handler
         self.handler.emit(record)

@@ -5,20 +5,13 @@ Checks Registry
 Location for registering and listing checks.
 
 """
+
 from itertools import chain
-from typing import Callable
-from typing import Iterable
-from typing import List
-from typing import NamedTuple
-from typing import Sequence
-from typing import TypeVar
-from typing import Union
+from typing import Callable, Iterable, List, NamedTuple, Sequence, TypeVar, Union
 
 from pyapp import extensions
-from pyapp.checks.messages import CheckMessage
-from pyapp.checks.messages import UnhandledException
-from pyapp.conf import Settings
-from pyapp.conf import settings
+from pyapp.checks.messages import CheckMessage, UnhandledException
+from pyapp.conf import Settings, settings
 
 
 class Tags:
@@ -107,7 +100,7 @@ class CheckRegistry(List[Check]):
             check_func = check.checks if hasattr(check, "checks") else check
             try:
                 messages = check_func(**check_kwargs)
-            except Exception:  # pylint: disable=broad-except
+            except Exception:  # noqa:
                 messages = UnhandledException("Unhandled Exception")
 
             if isinstance(messages, CheckMessage):
@@ -137,7 +130,7 @@ run_checks = registry.run_checks  # pylint: disable=invalid-name
 
 def import_checks():
     """
-    Import all of the modules defined in the setting `CHECK_LOCATIONS` and any checks
+    Import all the modules defined in the setting `CHECK_LOCATIONS` and any checks
     defined by extensions.
 
     By importing the modules this ensures that checks are registered.

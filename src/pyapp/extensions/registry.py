@@ -10,11 +10,7 @@ try:
     import importlib_metadata as metadata
 except ImportError:
     from importlib import metadata
-from typing import Iterator, Iterable
-from typing import List
-from typing import NamedTuple
-from typing import Optional
-from typing import Sequence
+from typing import Iterable, Iterator, List, NamedTuple, Optional, Sequence
 
 from pyapp.app.arguments import CommandGroup
 from pyapp.utils import AllowBlockFilter

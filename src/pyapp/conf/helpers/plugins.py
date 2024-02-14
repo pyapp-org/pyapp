@@ -26,24 +26,27 @@ factory::
     >>> bar = get_bar_instance.create('iron')
 
 """
+
 import threading
 from abc import ABCMeta
-from typing import Type
-from typing import TypeVar
+from typing import Type, TypeVar
 
 from pyapp import checks
 from pyapp.conf import settings
-from pyapp.conf.helpers.bases import DefaultCache
-from pyapp.conf.helpers.bases import FactoryMixin
-from pyapp.conf.helpers.bases import SingletonFactoryMixin
-from pyapp.conf.helpers.bases import ThreadLocalSingletonFactoryMixin
-from pyapp.exceptions import BadAlias
-from pyapp.exceptions import CannotImport
-from pyapp.exceptions import InvalidSubType
-from pyapp.exceptions import NotFound
-from pyapp.exceptions import NotProvided
-from pyapp.utils import cached_property
-from pyapp.utils import import_type
+from pyapp.conf.helpers.bases import (
+    DefaultCache,
+    FactoryMixin,
+    SingletonFactoryMixin,
+    ThreadLocalSingletonFactoryMixin,
+)
+from pyapp.exceptions import (
+    BadAlias,
+    CannotImport,
+    InvalidSubType,
+    NotFound,
+    NotProvided,
+)
+from pyapp.utils import cached_property, import_type
 
 __all__ = (
     "NamedPluginFactory",
@@ -53,15 +56,13 @@ __all__ = (
 )
 
 
-PT = TypeVar("PT", covariant=True)
+PT_co = TypeVar("PT_co", covariant=True)
 
 
 NoDefault = "__NoDefault__"  # pylint: disable=invalid-name
 
 
-# TODO: Remove when pylint handles typing.Dict correctly  pylint: disable=fixme
-# pylint: disable=unsubscriptable-object
-class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
+class NamedPluginFactory(FactoryMixin[PT_co], metaclass=ABCMeta):
     """
     Factory object that generates a named instance from a definition in
     settings. Can optionally verify an instance type against a specified ABC
@@ -83,7 +84,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
     """
 
     def __init__(
-        self, setting: str, *, abc: Type[PT] = None, default_name: str = "default"
+        self, setting: str, *, abc: Type[PT_co] = None, default_name: str = "default"
     ):
         """
         Initialise a named factory.
@@ -165,7 +166,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
 
         return type_, kwargs
 
-    def create(self, name: str = None) -> PT:
+    def create(self, name: str = None) -> PT_co:
         """
         Get a named instance.
 
@@ -262,7 +263,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
                 obj=f"settings.{self.setting}[{name}]",
             )
 
-        if len(definition) != 2:
+        if len(definition) != 2:  # noqa: PLR2004
             return checks.Critical(
                 "Instance definition is not a type name, kwarg (dict) pair.",
                 hint="Change definition to be a list/tuple (type_name, kwargs) in settings.",
@@ -325,7 +326,7 @@ class NamedPluginFactory(FactoryMixin[PT], metaclass=ABCMeta):
         return messages
 
 
-class NamedSingletonPluginFactory(SingletonFactoryMixin, NamedPluginFactory[PT]):
+class NamedSingletonPluginFactory(SingletonFactoryMixin, NamedPluginFactory[PT_co]):
     """
     :py:class:`NamedPluginFactory` that provides a single instance of an object.
 
@@ -339,7 +340,7 @@ class NamedSingletonPluginFactory(SingletonFactoryMixin, NamedPluginFactory[PT])
 
 
 class ThreadLocalNamedSingletonPluginFactory(
-    ThreadLocalSingletonFactoryMixin, NamedPluginFactory[PT]
+    ThreadLocalSingletonFactoryMixin, NamedPluginFactory[PT_co]
 ):
     """
     :py:class:`NamedPluginFactory` that provides a single instance of a plugin per

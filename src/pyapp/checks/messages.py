@@ -1,12 +1,7 @@
 """
 Messages
 """
-from logging import CRITICAL
-from logging import DEBUG
-from logging import ERROR
-from logging import getLevelName
-from logging import INFO
-from logging import WARNING
+from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING, getLevelName
 from traceback import format_exc
 from typing import Any
 
@@ -34,7 +29,11 @@ class CheckMessage:
     __slots__ = ("level", "msg", "hint", "obj")
 
     def __init__(
-        self, level: int, msg: str, hint: str = None, obj: Any = None,
+        self,
+        level: int,
+        msg: str,
+        hint: str = None,
+        obj: Any = None,
     ):
         """
         Messages returned from check functions.
@@ -104,7 +103,10 @@ class Debug(CheckMessage):
     __slots__ = ()
 
     def __init__(
-        self, msg: str, hint: str = None, obj: Any = None,
+        self,
+        msg: str,
+        hint: str = None,
+        obj: Any = None,
     ):
         super().__init__(DEBUG, msg, hint, obj)
 
@@ -117,7 +119,10 @@ class Info(CheckMessage):
     __slots__ = ()
 
     def __init__(
-        self, msg: str, hint: str = None, obj: Any = None,
+        self,
+        msg: str,
+        hint: str = None,
+        obj: Any = None,
     ):
         super().__init__(INFO, msg, hint, obj)
 
@@ -130,7 +135,10 @@ class Warn(CheckMessage):
     __slots__ = ()
 
     def __init__(
-        self, msg: str, hint: str = None, obj: Any = None,
+        self,
+        msg: str,
+        hint: str = None,
+        obj: Any = None,
     ):
         super().__init__(WARNING, msg, hint, obj)
 
@@ -143,7 +151,10 @@ class Error(CheckMessage):
     __slots__ = ()
 
     def __init__(
-        self, msg: str, hint: str = None, obj: Any = None,
+        self,
+        msg: str,
+        hint: str = None,
+        obj: Any = None,
     ):
         super().__init__(ERROR, msg, hint, obj)
 
@@ -156,7 +167,10 @@ class Critical(CheckMessage):
     __slots__ = ()
 
     def __init__(
-        self, msg: str, hint: str = None, obj: Any = None,
+        self,
+        msg: str,
+        hint: str = None,
+        obj: Any = None,
     ):
         super().__init__(CRITICAL, msg, hint, obj)
 
@@ -167,6 +181,9 @@ class UnhandledException(CheckMessage):
     """
 
     def __init__(
-        self, msg: str = None, hint: str = None, obj: Any = None,
+        self,
+        msg: str = None,
+        hint: str = None,
+        obj: Any = None,
     ):
         super().__init__(ERROR, msg or "Unhandled Exception", hint or format_exc(), obj)

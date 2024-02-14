@@ -9,8 +9,8 @@ import pprint
 import sys
 from typing import TextIO
 
-from colorama import Fore
-from colorama import Style
+from colorama import Fore, Style
+
 from pyapp import conf
 from pyapp.utils import wrap_text
 

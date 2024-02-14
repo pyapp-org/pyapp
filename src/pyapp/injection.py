@@ -24,12 +24,7 @@ import abc
 import functools
 import inspect
 from types import FunctionType
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import Optional
-from typing import TypeVar
-from typing import Union
+from typing import Any, Callable, Dict, Optional, TypeVar, Union
 
 __all__ = (
     "Args",

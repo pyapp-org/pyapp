@@ -96,23 +96,16 @@ Default settings
     :members:
 
 """
+
 import logging
 import os
 import pickle
 import warnings
-from typing import Any
-from typing import Dict
-from typing import Iterable
-from typing import List
-from typing import Protocol
-from typing import Sequence
-from typing import Tuple
-from typing import Union
+from typing import Any, Dict, Iterable, List, Protocol, Sequence, Tuple, Union
 from typing.io import IO
 
 from pyapp.conf import base_settings
-from pyapp.conf.loaders import Loader
-from pyapp.conf.loaders import ModuleLoader
+from pyapp.conf.loaders import Loader, ModuleLoader
 
 from . import loaders
 
@@ -233,7 +226,7 @@ class Settings:
         self._populate_base_settings(base_settings_)
 
     def __getattr__(self, item):
-        raise AttributeError("Setting not defined {!r}".format(item))
+        raise AttributeError(f"Setting not defined {item!r}")
 
     def __setattr__(self, key, value):
         raise AttributeError("Readonly object")

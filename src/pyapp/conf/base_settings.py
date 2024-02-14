@@ -1,7 +1,5 @@
 """Base settings used to initialise settings object."""
-from typing import Any
-from typing import Dict
-from typing import Sequence
+from typing import Any, Dict, Sequence
 
 DEBUG: bool = False
 """

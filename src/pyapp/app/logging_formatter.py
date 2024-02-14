@@ -5,6 +5,7 @@ App Logger Formatter
 Custom formatter for logging messages.
 
 """
+
 import logging
 
 import colorama
@@ -35,7 +36,7 @@ class ColourFormatter(logging.Formatter):
         logging.NOTSET: colorama.Fore.WHITE,
     }
 
-    def formatMessage(self, record: logging.LogRecord):
+    def formatMessage(self, record: logging.LogRecord):  # noqa: N802
         color = self.COLOURS[record.levelno]
         record.clevelname = f"{color}{record.levelname}{RESET_ALL}"
         record.clevelno = f"{color}{record.levelno}{RESET_ALL}"

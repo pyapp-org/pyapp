@@ -6,30 +6,31 @@ process of accepting and validating input/flags for commands.
 .. autofunction:: argument
 
 """
+
 import abc
 import argparse
 import asyncio
 import inspect
 from enum import Enum
-from typing import Any
-from typing import Awaitable
-from typing import Callable
-from typing import Dict
-from typing import Mapping
-from typing import Optional
-from typing import Sequence
-from typing import Tuple
-from typing import Type
-from typing import Union
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+)
 
 from argcomplete.completers import BaseCompleter
+
 from pyapp.compatability import async_run
 from pyapp.utils import cached_property
 
-from .argument_actions import AppendEnumName
-from .argument_actions import EnumName
-from .argument_actions import KeyValueAction
-from .argument_actions import TYPE_ACTIONS
+from .argument_actions import TYPE_ACTIONS, AppendEnumName, EnumName, KeyValueAction
 
 __all__ = ("Handler", "argument", "CommandGroup", "Arg", "ArgumentType")
 
@@ -189,12 +190,12 @@ class Argument:
     __slots__ = ("kwargs", "name_or_flags", "completer")
 
     @classmethod
-    def arg(
+    def arg(  # noqa: PLR0913
         cls,
         *flags: str,
         default: Any = EMPTY,
         choices: Sequence[Any] = None,
-        help: str = None,  # pylint: disable=redefined-builtin
+        help: str = None,  # noqa: A002
         metavar: str = None,
         completer: Optional[BaseCompleter] = None,
     ) -> "Argument":
@@ -219,7 +220,7 @@ class Argument:
         )
 
     @staticmethod
-    def _handle_generics(  # pylint: disable=too-many-branches
+    def _handle_generics(  # noqa: PLR0912
         origin, type_, positional: bool, kwargs: Dict[str, Any]
     ) -> type:
         """
@@ -228,9 +229,8 @@ class Argument:
         name = str(origin)
         if name == "typing.Union":
             if (
-                len(type_.__args__) == 2
-                and type(None)  # pylint: disable=unidiomatic-typecheck
-                in type_.__args__
+                len(type_.__args__) == 2  # noqa: PLR2004
+                and type(None) in type_.__args__
             ):
                 if positional:
                     kwargs["nargs"] = "?"
@@ -356,14 +356,14 @@ class Argument:
 
         return instance
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         *name_or_flags,
         action: Union[str, Type[argparse.Action]] = None,
         nargs: Union[int, str] = None,
         const: Any = None,
         default: Any = EMPTY,
-        type: Type[Any] = None,  # pylint: disable=redefined-builtin
+        type: Optional[Type[Any]] = None,  # noqa
         choices: Sequence[Any] = None,
         required: bool = None,
         help_text: str = None,
@@ -395,12 +395,10 @@ class Argument:
     ) -> Union[Handler, CommandProxy]:
         if isinstance(func, CommandProxy):
             self.register_with_proxy(func)
+        elif hasattr(func, "arguments__"):
+            func.arguments__.insert(0, self)
         else:
-            # Add the argument to a list that will be consumed by CommandProxy.
-            if hasattr(func, "arguments__"):
-                func.arguments__.insert(0, self)
-            else:
-                func.arguments__ = [self]
+            func.arguments__ = [self]
 
         return func
 

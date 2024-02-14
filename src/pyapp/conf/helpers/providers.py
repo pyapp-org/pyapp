@@ -56,25 +56,15 @@ Example::CheckMessage
 
 
 """
-from abc import ABCMeta
-from abc import abstractmethod
-from collections import namedtuple
-from collections import OrderedDict
-from typing import Any
-from typing import Dict
-from typing import Generic
-from typing import Optional
-from typing import Sequence
-from typing import Tuple
-from typing import Type
-from typing import TypeVar
-from typing import Union
+
+from abc import ABCMeta, abstractmethod
+from collections import OrderedDict, namedtuple
+from typing import Any, Dict, Generic, Optional, Sequence, Tuple, Type, TypeVar, Union
 
 from pyapp import checks
 from pyapp.conf import settings
 from pyapp.exceptions import ProviderNotFound
-from pyapp.utils import cached_property
-from pyapp.utils import import_type
+from pyapp.utils import cached_property, import_type
 
 __all__ = ("ProviderSummary", "ProviderFactoryBase")
 
@@ -82,21 +72,21 @@ __all__ = ("ProviderSummary", "ProviderFactoryBase")
 ProviderSummary = namedtuple("ProviderSummary", ("code", "name", "description"))
 
 
-PT = TypeVar("PT", covariant=True)
+PT_co = TypeVar("PT_co", covariant=True)
 
 
-class ProviderFactoryBase(Generic[PT], metaclass=ABCMeta):
+class ProviderFactoryBase(Generic[PT_co], metaclass=ABCMeta):
     """
     Factory to instantiate and configure a provider.
     """
 
-    def __init__(self, setting: str, abc: Type[PT] = None):
+    def __init__(self, setting: str, abc: Type[PT_co] = None):
         self.setting = setting
         self.abc = abc
 
         self._register_checks()
 
-    def create(self, *args, **kwargs) -> PT:
+    def create(self, *args, **kwargs) -> PT_co:
         """
         Create a provider instance
         """
@@ -134,7 +124,7 @@ class ProviderFactoryBase(Generic[PT], metaclass=ABCMeta):
             for code, provider in self.providers.items()  # pylint: disable=no-member
         )
 
-    def get_provider(self, provider_code: str) -> PT:
+    def get_provider(self, provider_code: str) -> PT_co:
         """
         Get provider type from the supplied config.
         """

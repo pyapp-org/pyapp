@@ -5,25 +5,23 @@ HTTP Loader
 Loads settings from an HTTP endpoint (HTTPS is recommended)
 
 """
+
 import contextlib
 import ssl
 import tempfile
-from typing import TextIO
-from typing import Tuple
+from typing import TextIO, Tuple
 from urllib.error import ContentTooShortError
 from urllib.request import urlopen
 
 from yarl import URL
 
 from pyapp.conf.loaders.base import Loader
-from pyapp.conf.loaders.content_types import content_type_from_url
-from pyapp.conf.loaders.content_types import registry
+from pyapp.conf.loaders.content_types import content_type_from_url, registry
 from pyapp.exceptions import InvalidConfiguration
 
 
 def retrieve_file(url: URL) -> Tuple[TextIO, str]:
-    """
-    Fetch a file from a URL (handling SSL).
+    """Fetch a file from a URL (handling SSL).
 
     This is based off `urllib.request.urlretrieve`.
 
@@ -38,7 +36,7 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
     )
 
     with contextlib.closing(
-        urlopen(url, context=context)  # nosec - There is a check above for SSL
+        urlopen(url, context=context)  # noqa: S310 - Completed above
     ) as response:
         block_size = 1024 * 8
         size = -1
@@ -89,9 +87,7 @@ class HttpLoader(Loader):
 
     @classmethod
     def from_url(cls, url: URL) -> Loader:
-        """
-        Create an instance of :class:`HttpLoader` from :class:`urllib.parse.ParseResult`.
-        """
+        """Create an instance of :class:`HttpLoader` from :class:`urllib.parse.ParseResult`."""
         return HttpLoader(url)
 
     def __init__(self, url: URL):
@@ -105,7 +101,7 @@ class HttpLoader(Loader):
     def __iter__(self):
         try:
             self._fp, self.content_type = retrieve_file(self.url)
-        except IOError as ex:
+        except OSError as ex:
             raise InvalidConfiguration(f"Unable to load settings: {self}\n{ex}") from ex
 
         try:

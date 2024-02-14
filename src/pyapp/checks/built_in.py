@@ -4,9 +4,7 @@ Builtin Checks
 
 """
 from .messages import Warn
-from .registry import register
-from .registry import Tags
-
+from .registry import Tags, register
 
 W001 = Warn(
     "You should not have DEBUG set to True in deployment.",
