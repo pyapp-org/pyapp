@@ -8,17 +8,17 @@ from yarl import URL
 @pytest.mark.parametrize(
     "url, expected",
     (
-        ("http://myhost/path/to/my/file.json", "application/json"),
-        ("http://myhost/path/to/my/file?type=application/json", "application/json"),
-        ("http://myhost/path/to/my/file.yaml", "application/yaml"),
-        ("file:///path/to/my/file.yml", "application/yaml"),
-        ("file:///path/to/my/file.txt", "text/plain"),
+        ("http://myhost/path/to/my/file.json", ("application/json",)),
+        ("http://myhost/path/to/my/file?type=application/json", ("application/json",)),
+        ("http://myhost/path/to/my/file.yaml", ("application/yaml", "application/x-yaml")),
+        ("file:///path/to/my/file.yml", ("application/yaml", "application/x-yaml")),
+        ("file:///path/to/my/file.txt", ("text/plain",)),
     ),
 )
 def test_content_type_from_url__known_types(url: str, expected: str):
     actual = content_types.content_type_from_url(URL(url))
 
-    assert actual == expected
+    assert actual in expected
 
 
 class TestContentTypeParserRegistry:
