@@ -3,7 +3,7 @@ from pyapp.documentation import settings
 
 class TestSettingsDocumenter:
     def test_document(self, fixture_path):
-        target = settings.SettingsDocumenter(
+        target = settings.SettingsDocumentor(
             fixture_path / "settings" / "default_settings.py"
         )
 
