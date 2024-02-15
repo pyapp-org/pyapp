@@ -211,7 +211,9 @@ class CliApplication(CommandGroup):  # noqa: F405
     default_log_handler = logging.StreamHandler(sys.stderr)
     """Log handler applied by default to root logger."""
 
-    default_log_formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+    default_log_formatter = logging.Formatter(
+        "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+    )
     """Log formatter applied by default to root logger handler."""
 
     default_color_log_formatter = ColourFormatter(
@@ -259,7 +261,9 @@ class CliApplication(CommandGroup):  # noqa: F405
         root_module = root_module or import_root_module()
         self.root_module = root_module
         super().__init__(ArgumentParser(prog, description=description, epilog=epilog))
-        self.application_version = version or getattr(root_module, "__version__", "Unknown")
+        self.application_version = version or getattr(
+            root_module, "__version__", "Unknown"
+        )
         self.ext_allow_list = ext_allow_list
         if ext_white_list:
             warnings.warn(
@@ -333,7 +337,9 @@ class CliApplication(CommandGroup):  # noqa: F405
         )
 
         # Log configuration
-        arg_group = self.argument_group(title="logging arguments", description="Customise log output")
+        arg_group = self.argument_group(
+            title="logging arguments", description="Customise log output"
+        )
         arg_group.add_argument(
             "--log-level",
             default=os.environ.get(self.env_loglevel_key, "INFO"),
@@ -363,12 +369,15 @@ class CliApplication(CommandGroup):  # noqa: F405
         )
 
         # Global check values
-        arg_group = self.argument_group(title="check arguments", description="Enable and configure run-time checks")
+        arg_group = self.argument_group(
+            title="check arguments", description="Enable and configure run-time checks"
+        )
         arg_group.add_argument(
             "--checks",
             dest="checks_on_startup",
             action="store_true",
-            help="Run checks on startup, any serious error will result " "in the application terminating.",
+            help="Run checks on startup, any serious error will result "
+            "in the application terminating.",
         )
         arg_group.add_argument(
             "--checks-level",
@@ -379,7 +388,9 @@ class CliApplication(CommandGroup):  # noqa: F405
         )
 
         # Feature flags
-        arg_group = self.argument_group(title="feature flags", description="Enable/Disable feature flags")
+        arg_group = self.argument_group(
+            title="feature flags", description="Enable/Disable feature flags"
+        )
         arg_group.add_argument(
             "--enable-flag",
             dest="enable_feature_flags",
@@ -421,7 +432,9 @@ class CliApplication(CommandGroup):  # noqa: F405
 
     def load_extensions(self):
         """Load/Configure extensions."""
-        entry_points = extensions.ExtensionEntryPoints(self.ext_allow_list, self.ext_block_list)
+        entry_points = extensions.ExtensionEntryPoints(
+            self.ext_allow_list, self.ext_block_list
+        )
         extensions.registry.load_from(entry_points.extensions())
         extensions.registry.register_commands(self)
 
@@ -431,7 +444,9 @@ class CliApplication(CommandGroup):  # noqa: F405
         if self.application_settings:
             application_settings.append(self.application_settings)
 
-        conf.settings.configure(application_settings, opts.settings, env_settings_key=self.env_settings_key)
+        conf.settings.configure(
+            application_settings, opts.settings, env_settings_key=self.env_settings_key
+        )
 
     @staticmethod
     def configure_feature_flags(opts: CommandOptions):

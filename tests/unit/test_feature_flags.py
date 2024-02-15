@@ -157,4 +157,4 @@ class TestFeatureFlags:
         def foo():
             """Sample"""
 
-        assert "Sample" == foo.__doc__
+        assert foo.__doc__ == "Sample"

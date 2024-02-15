@@ -4,8 +4,7 @@ from urllib.error import ContentTooShortError
 
 import pytest
 from pyapp.conf.loaders import http_loader
-from pyapp.exceptions import InvalidConfiguration
-from pyapp.exceptions import UnsupportedContentType
+from pyapp.exceptions import InvalidConfiguration, UnsupportedContentType
 from yarl import URL
 
 from tests.unit.mock import ANY_INSTANCE_OF

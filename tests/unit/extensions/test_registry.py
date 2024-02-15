@@ -1,11 +1,13 @@
 from unittest import mock
 
 import pytest
-from pyapp.extensions.registry import ENTRY_POINTS
-from pyapp.extensions.registry import ExtensionDetail
-from pyapp.extensions.registry import ExtensionEntryPoints
-from pyapp.extensions.registry import ExtensionRegistry
-from pyapp.extensions.registry import metadata
+from pyapp.extensions.registry import (
+    ENTRY_POINTS,
+    ExtensionDetail,
+    ExtensionEntryPoints,
+    ExtensionRegistry,
+    metadata,
+)
 
 from tests.unit.sample_ext import SampleExtension
 from tests.unit.sample_ext_simple import SampleSimpleExtension

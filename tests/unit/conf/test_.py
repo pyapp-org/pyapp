@@ -1,6 +1,5 @@
 import json
-from io import BytesIO
-from io import StringIO
+from io import BytesIO, StringIO
 from unittest.mock import patch
 
 import pyapp.conf
@@ -165,15 +164,15 @@ class TestSettings:
             assert all(
                 not hasattr(target, key) for key in known_keys
             ), "Custom keys still exist"
-            assert target.SETTINGS_SOURCES == [], "Sources have not been cleared"
+            assert [] == target.SETTINGS_SOURCES, "Sources have not been cleared"
             assert not target.is_configured, "Is still listed as configured"
             assert isinstance(target.LOGGING, dict), "Base settings missing"
 
         # Check items have been restored
         assert initial_keys == target.keys, "All settings not restored"
-        assert target.SETTINGS_SOURCES == [
+        assert [
             "python:tests.settings"
-        ], "Sources not restored"
+        ] == target.SETTINGS_SOURCES, "Sources not restored"
 
     def test_getitem(self, target: pyapp.conf.Settings):
         actual = target["UPPER_VALUE"]

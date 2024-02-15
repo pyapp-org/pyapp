@@ -248,7 +248,9 @@ class Settings:
         base_settings_ = base_settings_ or base_settings
 
         # Copy values from base settings file.
-        self.__dict__.update((k, getattr(base_settings_, k)) for k in dir(base_settings_) if k.upper())
+        self.__dict__.update(
+            (k, getattr(base_settings_, k)) for k in dir(base_settings_) if k.upper()
+        )
         self.__dict__["SETTINGS_SOURCES"] = []  # pylint: disable=invalid-name
 
     @property

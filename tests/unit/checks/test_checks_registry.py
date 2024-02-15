@@ -1,5 +1,4 @@
-from pyapp.checks import messages
-from pyapp.checks import registry
+from pyapp.checks import messages, registry
 
 
 class TestCheckRegistry:
@@ -138,7 +137,7 @@ class TestCheckRegistry:
     def test_run_checks__attached_checks(self):
         target = registry.CheckRegistry()
 
-        class MyClass(object):
+        class MyClass:
             def checks(self, settings, **kwargs):
                 return messages.Info("Message1"), messages.Info("Message2")
 

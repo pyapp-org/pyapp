@@ -1,9 +1,7 @@
 # Test only upper values are included
 from typing import Sequence
 
-from pyapp.typed_settings import NamedConfig
-from pyapp.typed_settings import NamedPluginConfig
-from pyapp.typed_settings import SettingsDef
+from pyapp.typed_settings import NamedConfig, NamedPluginConfig, SettingsDef
 
 
 class MySettings(SettingsDef):
