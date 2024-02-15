@@ -1,5 +1,5 @@
 """Base settings used to initialise settings object."""
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, List
 
 DEBUG: bool = False
 """Enable debug mode"""
@@ -86,7 +86,7 @@ The following configuration is applied by default::
 ###############################################################################
 # Checks
 
-CHECK_LOCATIONS: Sequence[str] = []
+CHECK_LOCATIONS: List[str] = []
 """
 Locations to import to ensure checks are registered.
 """
