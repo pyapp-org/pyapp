@@ -132,7 +132,11 @@ def flatten_type_annotation(annotation) -> Optional[str]:
     if isinstance(annotation, ast.Subscript):
         if isinstance(annotation.value, ast.Name) and annotation.value.id == "Union":
             # Compatibility with Python 3.8
-            slice_value = annotation.slice.value if isinstance(annotation.slice, ast.Index) else annotation.slice
+            slice_value = (
+                annotation.slice.value
+                if isinstance(annotation.slice, ast.Index)
+                else annotation.slice
+            )
             if isinstance(slice_value, ast.Tuple):
                 return " | ".join(flatten_type_annotation(v) for v in slice_value.elts)
         return f"{flatten_type_annotation(annotation.value)}"

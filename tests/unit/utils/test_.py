@@ -2,7 +2,7 @@ import pytest
 from pyapp import utils
 
 
-class IteratorTest(object):
+class IteratorTest:
     def __iter__(self):
         yield 1
 
@@ -15,7 +15,7 @@ def test_is_iterable(instance, is_iterable):
     assert utils.is_iterable(instance) == is_iterable
 
 
-class CachedPropertyTest(object):
+class CachedPropertyTest:
     def __init__(self, a, b):
         self.backing_a = a
 

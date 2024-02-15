@@ -157,7 +157,9 @@ class NamedConfiguration:
         if default_name is not None:
             self.default_name = default_name
 
-        self._args = set(itertools.chain(self.required_keys, self.optional_keys, self.defaults))
+        self._args = set(
+            itertools.chain(self.required_keys, self.optional_keys, self.defaults)
+        )
 
     @cached_property
     def _config_definitions(self) -> Dict[str, Any]:
@@ -236,7 +238,9 @@ class NamedConfiguration:
 
     checks.check_name = "{obj.setting}.check_configuration"
 
-    def check_definition(self, config_definitions: Dict[str, Dict[str, Any]], name: str, **_):
+    def check_definition(
+        self, config_definitions: Dict[str, Dict[str, Any]], name: str, **_
+    ):
         """
         Checks for individual definitions.
         """
@@ -280,7 +284,9 @@ class NamedFactory(FactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta):
     """
 
 
-class NamedSingletonFactory(SingletonFactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta):
+class NamedSingletonFactory(
+    SingletonFactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta
+):
     """ "
     :py:class:`NamedFactory` that provides a single instance of an object.
 
@@ -292,7 +298,9 @@ class NamedSingletonFactory(SingletonFactoryMixin[FT], NamedConfiguration, metac
     """
 
 
-class ThreadLocalNamedSingletonFactory(ThreadLocalSingletonFactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta):
+class ThreadLocalNamedSingletonFactory(
+    ThreadLocalSingletonFactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta
+):
     """
     :py:class:`NamedFactory` that provides a single instance of an object per
     thread.

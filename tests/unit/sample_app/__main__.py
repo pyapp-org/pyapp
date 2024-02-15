@@ -1,5 +1,4 @@
-from pyapp import checks
-from pyapp import feature_flags
+from pyapp import checks, feature_flags
 from pyapp.app import CliApplication
 
 import tests.unit.sample_app

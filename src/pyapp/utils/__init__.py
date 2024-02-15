@@ -46,7 +46,9 @@ def import_type(type_name: str) -> type:
     return getattr(mod, type_name)
 
 
-def wrap_text(text: str, width: int, *, indent: int = 0, padding: int = 1, line_sep: str = "\n") -> str:
+def wrap_text(
+    text: str, width: int, *, indent: int = 0, padding: int = 1, line_sep: str = "\n"
+) -> str:
     """Perform word wrapping on text
 
     :param text: Text to wrap.
@@ -57,7 +59,9 @@ def wrap_text(text: str, width: int, *, indent: int = 0, padding: int = 1, line_
 
     """
     indent = " " * indent
-    lines = textwrap.wrap(text, width - (padding * 2), initial_indent=indent, subsequent_indent=indent)
+    lines = textwrap.wrap(
+        text, width - (padding * 2), initial_indent=indent, subsequent_indent=indent
+    )
     return line_sep.join(f"{line}{' ' * (width - len(line))}" for line in lines)
 
 
@@ -90,7 +94,9 @@ class AllowBlockFilter:
         """Check if a value is allowed"""
         allow_list, block_list = self.allow_list, self.block_list
 
-        if block_list is not None and any(fnmatch(value, pattern) for pattern in block_list):
+        if block_list is not None and any(
+            fnmatch(value, pattern) for pattern in block_list
+        ):
             return False
 
         if allow_list is not None:
