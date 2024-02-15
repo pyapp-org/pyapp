@@ -18,7 +18,12 @@ sys.path.insert(0, HERE.parent.as_posix())
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.todo", "sphinx.ext.viewcode"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
+    "pyapp.documentation.sphinx",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -36,7 +41,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "pyApp"
-copyright = "2017, Tim Savage"
+copyright = "2024, Tim Savage"  # noqa: A001
 author = "Tim Savage"
 
 # The version info for the project you're documenting, acts as replacement for

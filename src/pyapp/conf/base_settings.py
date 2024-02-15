@@ -2,9 +2,7 @@
 from typing import Any, Dict, Sequence
 
 DEBUG: bool = False
-"""
-Enable debug mode
-"""
+"""Enable debug mode"""
 
 
 ###############################################################################
