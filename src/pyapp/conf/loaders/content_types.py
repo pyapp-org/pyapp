@@ -8,12 +8,7 @@ Used by File and HTTP loaders to handle both JSON and YAML content.
 import mimetypes
 from json import load as json_load
 from pathlib import Path
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import Sequence
-from typing import TextIO
-from typing import Union
+from typing import Any, Callable, Dict, Sequence, TextIO, Union
 
 from yarl import URL
 

@@ -5,14 +5,15 @@ File Loader
 Loads settings from a file
 
 """
+
 from pathlib import Path
 from typing import Union
 
-from pyapp.conf.loaders.base import Loader
-from pyapp.conf.loaders.content_types import content_type_from_url
-from pyapp.conf.loaders.content_types import registry
-from pyapp.exceptions import InvalidConfiguration
 from yarl import URL
+
+from pyapp.conf.loaders.base import Loader
+from pyapp.conf.loaders.content_types import content_type_from_url, registry
+from pyapp.exceptions import InvalidConfiguration
 
 
 class FileLoader(Loader):
@@ -54,7 +55,10 @@ class FileLoader(Loader):
             with self.path.open(encoding=self.encoding) as fp:
                 data = registry.parse_file(fp, self.content_type)
 
-        except IOError as ex:
+        except FileNotFoundError as ex:
+            raise InvalidConfiguration(f"Settings file not found: {self}\n{ex}") from ex
+
+        except OSError as ex:
             raise InvalidConfiguration(f"Unable to load settings: {self}\n{ex}") from ex
 
         except ValueError as ex:

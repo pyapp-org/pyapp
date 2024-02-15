@@ -33,10 +33,8 @@ the benefits of auto-completion and typing.
     print(MyAppSettings.MY_CONFIG_VALUE)
 
 """
-from typing import Any
-from typing import Dict
-from typing import Mapping
-from typing import Tuple
+
+from typing import Any, Dict, Mapping, Tuple
 
 
 class SettingDescriptor:
@@ -48,7 +46,7 @@ class SettingDescriptor:
         self.setting = setting
 
     def __get__(self, instance, owner):
-        from pyapp.conf import settings  # pylint: disable=import-outside-toplevel
+        from pyapp.conf import settings
 
         if settings.is_configured:
             return getattr(settings, self.setting)
@@ -58,8 +56,11 @@ class SettingDescriptor:
 class SettingsDefType(type):
     """Typed Settings definition type."""
 
-    def __new__(cls, name: str, bases, dct: Dict[str, Any]):
+    def __new__(cls, name: str, bases, dct: Dict[str, Any], *, prefix: str = ""):
         """Generate new type."""
+
+        if prefix and not prefix.isupper():
+            raise ValueError("Prefix must be upper snake case.")
 
         values = []
         descriptors = {}
@@ -67,7 +68,7 @@ class SettingsDefType(type):
             # Settings must be upper case (or constant style)
             if key.isupper():
                 values.append((key, value))
-                descriptors[key] = SettingDescriptor(key)
+                descriptors[key] = SettingDescriptor(f"{prefix}{key}")
 
         # Update original dict.
         dct.update(descriptors)

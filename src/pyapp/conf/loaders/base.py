@@ -6,11 +6,7 @@ ABC for loader implementations.
 
 """
 import abc
-from typing import Any
-from typing import Iterable
-from typing import Sequence
-from typing import Tuple
-from typing import Union
+from typing import Any, Iterable, Sequence, Tuple, Union
 
 from yarl import URL
 

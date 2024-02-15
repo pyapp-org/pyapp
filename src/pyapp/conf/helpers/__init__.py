@@ -63,24 +63,25 @@ configuration where configuration is obtained from data storage eg a database.
 .. autoclass:: ProviderFactoryBase
 
 """
+
 import itertools
 from abc import ABCMeta
-from typing import Any
-from typing import Dict
-from typing import Sequence
+from typing import Any, Dict, Sequence
 
 from pyapp import checks
 from pyapp.conf import settings
-from pyapp.conf.helpers.bases import DefaultCache
-from pyapp.conf.helpers.bases import FactoryMixin
-from pyapp.conf.helpers.bases import FT
-from pyapp.conf.helpers.bases import SingletonFactoryMixin
-from pyapp.conf.helpers.bases import ThreadLocalSingletonFactoryMixin
-from pyapp.conf.helpers.plugins import *
-from pyapp.conf.helpers.providers import *
+from pyapp.conf.helpers.bases import (
+    FT,
+    DefaultCache,
+    FactoryMixin,
+    SingletonFactoryMixin,
+    ThreadLocalSingletonFactoryMixin,
+)
+from pyapp.conf.helpers.plugins import *  # noqa: F403
+from pyapp.conf.helpers.providers import *  # noqa: F403
 from pyapp.utils import cached_property
 
-__all__ = (
+__all__ = (  # noqa: F405
     "NamedConfiguration",
     "DefaultCache",
     "NamedFactory",
@@ -114,7 +115,7 @@ class NamedConfiguration:
     optional_keys = []
     default_name = "default"
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         setting: str,
         *,
@@ -156,9 +157,7 @@ class NamedConfiguration:
         if default_name is not None:
             self.default_name = default_name
 
-        self._args = set(
-            itertools.chain(self.required_keys, self.optional_keys, self.defaults)
-        )
+        self._args = set(itertools.chain(self.required_keys, self.optional_keys, self.defaults))
 
     @cached_property
     def _config_definitions(self) -> Dict[str, Any]:
@@ -166,9 +165,7 @@ class NamedConfiguration:
 
     def _get_config_definition(self, name: str) -> Dict[str, Any]:
         try:
-            kwargs = self._config_definitions[  # pylint: disable=unsubscriptable-object
-                name
-            ]
+            kwargs = self._config_definitions[name]  # pylint: disable=unsubscriptable-object
         except KeyError:
             raise KeyError(f"Setting definition `{name}` not found") from None
 
@@ -239,9 +236,7 @@ class NamedConfiguration:
 
     checks.check_name = "{obj.setting}.check_configuration"
 
-    def check_definition(
-        self, config_definitions: Dict[str, Dict[str, Any]], name: str, **_
-    ):
+    def check_definition(self, config_definitions: Dict[str, Dict[str, Any]], name: str, **_):
         """
         Checks for individual definitions.
         """
@@ -279,17 +274,13 @@ class NamedConfiguration:
         return messages
 
 
-# TODO: Remove when pylint handles typing.Dict correctly  pylint: disable=fixme
-# pylint: disable=unsubscriptable-object
 class NamedFactory(FactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta):
     """
     Factory for creating instances from a named configuration.
     """
 
 
-class NamedSingletonFactory(
-    SingletonFactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta
-):
+class NamedSingletonFactory(SingletonFactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta):
     """ "
     :py:class:`NamedFactory` that provides a single instance of an object.
 
@@ -301,9 +292,7 @@ class NamedSingletonFactory(
     """
 
 
-class ThreadLocalNamedSingletonFactory(
-    ThreadLocalSingletonFactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta
-):
+class ThreadLocalNamedSingletonFactory(ThreadLocalSingletonFactoryMixin[FT], NamedConfiguration, metaclass=ABCMeta):
     """
     :py:class:`NamedFactory` that provides a single instance of an object per
     thread.

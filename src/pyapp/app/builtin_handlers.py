@@ -10,8 +10,7 @@ import sys
 from argparse import FileType
 from typing import Optional
 
-from pyapp.app.arguments import argument
-from pyapp.app.arguments import CommandGroup
+from pyapp.app.arguments import CommandGroup, argument
 
 
 def checks(app):
