@@ -4,7 +4,7 @@ from collections import defaultdict
 from functools import singledispatchmethod
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 
 class SettingsExtractor:
@@ -157,7 +157,7 @@ def flatten_default_value(
     return None
 
 
-class SettingsDocumenter(SettingsExtractor):
+class SettingsDocumentor(SettingsExtractor):
     """Collect settings from a settings module."""
 
     def __init__(
@@ -169,7 +169,9 @@ class SettingsDocumenter(SettingsExtractor):
         super().__init__(module_or_file)
 
         self.exclude_keys = exclude_keys
-        self.discovered_settings = defaultdict(list)
+        self.discovered_settings: Dict[
+            Optional[str], List[str, Optional[str], Any, Optional[str]]
+        ] = defaultdict(list)
         self.current_setting_def = None
 
     def setting(
