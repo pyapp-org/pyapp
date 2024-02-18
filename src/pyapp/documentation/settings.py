@@ -15,7 +15,7 @@ from typing import (
 )
 
 
-class SettingsExtractor:
+class _SettingsExtractor:
     """Used to extract documentation from a default settings modules."""
 
     def __init__(self, module_or_file: Union[ModuleType, Path, str]):
@@ -31,6 +31,8 @@ class SettingsExtractor:
         content = self._file.read_text(encoding="UTF-8")
         mod = ast.parse(content, self._file)
         self._process_node(mod)
+
+        return self
 
     def setting(
         self,
@@ -192,7 +194,7 @@ class SettingDefGroup(NamedTuple):
         return sorted(self.settings, key=lambda s: s.key)
 
 
-class SettingsDocumentor(SettingsExtractor):
+class SettingsCollection(_SettingsExtractor):
     """Collect settings from a settings module."""
 
     def __init__(

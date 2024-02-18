@@ -5,7 +5,7 @@ from sphinx.application import Sphinx
 from sphinx.ext.autodoc import ModuleDocumenter, bool_option
 from sphinx.util.typing import OptionSpec
 
-from .settings import SettingDef, SettingDefGroup, SettingsDocumentor
+from .settings import SettingDef, SettingDefGroup, SettingsCollection
 
 
 class SettingsDocumenter(ModuleDocumenter):
@@ -86,8 +86,7 @@ class SettingsDocumenter(ModuleDocumenter):
 
     def document_members(self, all_members=False):
         """Update the document members section to include settings."""
-        settings = SettingsDocumentor(self.object)
-        settings.process()
+        collection = SettingsCollection(self.object).process()
 
         # Define a code highlight role
         self.add_line(".. role:: python(code)", "<autodoc>")
@@ -96,10 +95,12 @@ class SettingsDocumenter(ModuleDocumenter):
         self.add_line("", "<autodoc>")
 
         if self.options.get("nogroups", False):
-            self.document_group_settings(settings.all_settings)
+            self.document_group_settings(collection.all_settings)
         else:
-            self.document_group_settings(settings.settings[None])
-            for group in settings.settings.values():
+            # Do un-grouped first
+            self.document_group_settings(collection.settings[None])
+
+            for group in collection.settings.values():
                 if group.name is not None:
                     self.document_group(group)
 
