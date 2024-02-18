@@ -18,3 +18,4 @@ Contents:
    feature-flags
    multiprocessing
    extensions
+   documentation/sphinx

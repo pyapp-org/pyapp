@@ -16,7 +16,7 @@ class SettingsDocumenter(ModuleDocumenter):
 
     option_spec: OptionSpec = {
         "noindex": bool_option,
-        "nogroups": bool_option,
+        "grouped": bool_option,
         "sorted": bool_option,
     }
 
@@ -94,15 +94,15 @@ class SettingsDocumenter(ModuleDocumenter):
         self.add_line("  :class: highlight", "<autodoc>")
         self.add_line("", "<autodoc>")
 
-        if self.options.get("nogroups", False):
-            self.document_group_settings(collection.all_settings)
-        else:
+        if self.options.get("grouped", False):
             # Do un-grouped first
             self.document_group_settings(collection.settings[None])
 
             for group in collection.settings.values():
                 if group.name is not None:
                     self.document_group(group)
+        else:
+            self.document_group_settings(collection.all_settings)
 
 
 def setup(app: Sphinx):
