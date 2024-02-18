@@ -47,16 +47,7 @@ Example::
 
 """
 import asyncio
-from typing import Any
-from typing import Callable
-from typing import Coroutine
-from typing import Generic
-from typing import Optional
-from typing import Set
-from typing import TypeVar
-from typing import Union
-
-from pyapp.exceptions import UnsupportedObject
+from typing import Any, Callable, Coroutine, Generic, Optional, Set, TypeVar, Union
 
 __all__ = ("Event", "AsyncEvent", "listen_to", "Callback", "AsyncCallback", "bind_to")
 
@@ -193,7 +184,7 @@ class Event(Generic[_CT], _ListenerDescriptor):
         return self.set_listeners(instance, ListenerSet())
 
 
-_ACT = TypeVar("_ACT", bound=Union[Callable[..., Coroutine], "AsyncListenerList"])
+_ACT = TypeVar("_ACT", bound=Union[Callable[..., Coroutine], "AsyncListenerSet"])
 
 
 class AsyncListenerSet(BaseListenerSet[_ACT]):
@@ -205,7 +196,7 @@ class AsyncListenerSet(BaseListenerSet[_ACT]):
         """
         Trigger event and call listeners.
         """
-        awaitables = [c(*args, **kwargs) for c in self]
+        awaitables = [asyncio.create_task(c(*args, **kwargs)) for c in self]
         if awaitables:
             await asyncio.wait(awaitables, return_when=asyncio.ALL_COMPLETED)
 
@@ -264,6 +255,7 @@ class CallbackBinding(CallbackBindingBase[_ACT]):
     def __call__(self, *args, **kwargs):
         if self._callback:
             return self._callback(*args, **kwargs)
+        return None
 
 
 class Callback(Generic[_CT], _ListenerDescriptor):

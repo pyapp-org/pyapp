@@ -36,7 +36,8 @@ A good example of using checks is to ensure services defined in your settings fi
 are enabled and are accessible.
 
 """
-from . import built_in  # NOQA
-from .messages import *  # NOQA
-from .registry import register
-from .registry import Tags
+
+from . import built_in  # noqa
+from .messages import *  # noqa
+from .registry import Tags  # noqa
+from .registry import register  # noqa

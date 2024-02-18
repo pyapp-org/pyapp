@@ -7,10 +7,9 @@ Generates the report of the currently loaded/available extensions.
 """
 import sys
 
-from colorama import Fore
-from colorama import Style
-from pyapp.extensions.registry import ExtensionDetail
-from pyapp.extensions.registry import registry
+from colorama import Fore, Style
+
+from pyapp.extensions.registry import ExtensionDetail, registry
 
 
 class ExtensionReport:

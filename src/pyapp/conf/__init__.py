@@ -96,23 +96,16 @@ Default settings
     :members:
 
 """
+
 import logging
 import os
 import pickle
 import warnings
-from typing import Any
-from typing import Dict
-from typing import Iterable
-from typing import List
-from typing import Protocol
-from typing import Sequence
-from typing import Tuple
-from typing import Union
+from typing import Any, Dict, Iterable, List, Protocol, Sequence, Tuple, Union
 from typing.io import IO
 
 from pyapp.conf import base_settings
-from pyapp.conf.loaders import Loader
-from pyapp.conf.loaders import ModuleLoader
+from pyapp.conf.loaders import Loader, ModuleLoader
 
 from . import loaders
 
@@ -176,7 +169,7 @@ class ModifySettingsContext:
     def __setattr__(self, key, value):
         items = self._container.__dict__
 
-        if key in items:
+        if key in items:  # noqa: SIM108
             # Prepare an action that puts the current value back
             action = items.__setitem__, (key, items.get(key))
         else:
@@ -233,7 +226,7 @@ class Settings:
         self._populate_base_settings(base_settings_)
 
     def __getattr__(self, item):
-        raise AttributeError("Setting not defined {!r}".format(item))
+        raise AttributeError(f"Setting not defined {item!r}")
 
     def __setattr__(self, key, value):
         raise AttributeError("Readonly object")
@@ -294,7 +287,9 @@ class Settings:
         loader_key = str(loader)
         if loader_key in self.SETTINGS_SOURCES:
             warnings.warn(
-                f"Settings already loaded: {loader_key}", category=ImportWarning
+                f"Settings already loaded: {loader_key}",
+                category=ImportWarning,
+                stacklevel=2,
             )
             logger.warning("Settings already loaded: %s", loader_key)
             return  # Prevent circular loading

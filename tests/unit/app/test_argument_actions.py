@@ -1,7 +1,5 @@
 import datetime
-from argparse import ArgumentError
-from argparse import ArgumentParser
-from argparse import Namespace
+from argparse import ArgumentError, ArgumentParser, Namespace
 from enum import Enum
 
 import pytest

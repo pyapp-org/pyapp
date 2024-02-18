@@ -5,23 +5,24 @@ Checks Report
 Generates and execute a report after executing checks.
 
 """
+
+import contextlib
 import csv
 import io
 import logging
 import sys
 from io import StringIO
-from typing import Any
-from typing import Optional
-from typing import Sequence
+from typing import Any, Optional, Sequence
 
-from colorama import Back
-from colorama import Fore
-from colorama import Style
-from pyapp.checks.registry import Check
-from pyapp.checks.registry import CheckMessage
-from pyapp.checks.registry import CheckRegistry
-from pyapp.checks.registry import import_checks
-from pyapp.checks.registry import registry
+from colorama import Back, Fore, Style
+
+from pyapp.checks.registry import (
+    Check,
+    CheckMessage,
+    CheckRegistry,
+    import_checks,
+    registry,
+)
 from pyapp.utils import wrap_text
 
 COLOURS = {
@@ -129,7 +130,7 @@ class CheckReport(BaseReport):
 
     width = 80
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         verbose: bool = False,
         no_color: bool = False,
@@ -273,7 +274,7 @@ class TabularCheckReport(BaseReport):
         Initialise report
         """
         super().__init__(f_out, check_registry)
-        self.writer = csv.writer(self.f_out, delimiter=str("\t"))
+        self.writer = csv.writer(self.f_out, delimiter="\t")
 
     def render_result(self, check: Check, message: Optional[CheckMessage]):
         name = get_check_name(check)
@@ -283,7 +284,7 @@ class TabularCheckReport(BaseReport):
             self.writer.writerow([name, "OK", ""])
 
 
-def execute_report(
+def execute_report(  # noqa: PLR0913
     output: io.StringIO,
     application_checks: str,
     message_level: str = "INFO",
@@ -307,10 +308,8 @@ def execute_report(
 
     """
     # Import default application checks
-    try:
+    with contextlib.suppress(ImportError):
         __import__(application_checks)
-    except ImportError:
-        pass
 
     # Import additional checks defined in settings.
     import_checks()

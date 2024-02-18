@@ -29,21 +29,11 @@ Date and Time types
 .. autoclass:: DateTimeAction
 
 """
-from argparse import Action
-from argparse import ArgumentError
-from argparse import ArgumentParser
-from argparse import Namespace
-from datetime import date
-from datetime import datetime
-from datetime import time
+
+from argparse import Action, ArgumentError, ArgumentParser, Namespace
+from datetime import date, datetime, time
 from enum import Enum
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import Sequence
-from typing import Tuple
-from typing import Type
-from typing import Union
+from typing import Any, Callable, Dict, Sequence, Tuple, Type, Union
 
 __all__ = (
     "KeyValueAction",
@@ -87,13 +77,11 @@ class KeyValueAction(Action):
         super().__init__(**kwargs)
 
     def parse_value(self, value: str) -> Tuple[str, str]:
-        """
-        Parse a argument into a key/value pair
-        """
-        values = value.split("=", 1)
-        if len(values) != 2:
+        """Parse an argument into a key/value pair"""
+        key, part, value = value.partition("=")
+        if not part:
             raise ArgumentError(self, "Expected in the form KEY=VALUE")
-        return tuple(values)
+        return key, value
 
     def __call__(
         self,

@@ -12,8 +12,10 @@ Contents:
    conf
    conf/typed-settings
    conf/helpers
+   conf/base-settings
    events
    injection
    feature-flags
    multiprocessing
    extensions
+   documentation/sphinx

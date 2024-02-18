@@ -5,11 +5,13 @@ from pyapp import checks
 from pyapp.conf import settings
 from pyapp.conf.helpers import NoDefault
 from pyapp.conf.helpers import plugins as conf_factory
-from pyapp.exceptions import BadAlias
-from pyapp.exceptions import CannotImport
-from pyapp.exceptions import InvalidSubType
-from pyapp.exceptions import NotFound
-from pyapp.exceptions import NotProvided
+from pyapp.exceptions import (
+    BadAlias,
+    CannotImport,
+    InvalidSubType,
+    NotFound,
+    NotProvided,
+)
 
 from tests.unit import factory
 
@@ -340,7 +342,7 @@ class TestNamedSingletonPluginFactory:
         mock_import.assert_called_once_with("tests.unit.factory.Bar")
 
 
-class TestThreadLocalNamedSingletonPluginFactory(object):
+class TestThreadLocalNamedSingletonPluginFactory:
     def test_get_default(self):
         target = conf_factory.ThreadLocalNamedSingletonPluginFactory(
             "TEST_NAMED_FACTORY"

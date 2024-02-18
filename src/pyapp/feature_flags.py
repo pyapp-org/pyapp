@@ -52,12 +52,7 @@ Or from the command line::
 import logging
 from functools import wraps
 from os import getenv
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import Optional
-from typing import TypeVar
-from typing import Union
+from typing import Any, Callable, Dict, Optional, TypeVar, Union
 
 from pyapp.conf import settings
 from pyapp.utils import text_to_bool

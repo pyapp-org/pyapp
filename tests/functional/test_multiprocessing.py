@@ -1,6 +1,4 @@
 import pyapp.multiprocessing
-import pytest
-
 
 _DATA = []
 
@@ -24,7 +22,6 @@ class TestPool:
         assert actual == ["1-2-foo-", "3-4-foo-"]
 
     def test_call_pool_and_with_custom_initializer(self):
-
         pool = pyapp.multiprocessing.Pool(
             processes=2, initializer=sample_initializer, initargs=("a", "b")
         )

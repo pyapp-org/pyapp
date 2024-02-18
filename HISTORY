@@ -1,3 +1,19 @@
+4.14
+====
+
+Features
+--------
+
+- Add tooling for generating documentation of settings by inspecting the
+  default_settings file.
+
+
+Project Changes
+---------------
+
+- All linting and formatting is now handled by pre-commit using ruff.
+
+
 4.13.1
 ======
 

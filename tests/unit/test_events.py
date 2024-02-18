@@ -1,9 +1,7 @@
-from typing import Awaitable
-from typing import Callable
+from typing import Awaitable, Callable
 
 import pytest
 from pyapp import events
-from pyapp.exceptions import UnsupportedObject
 
 
 class TestListenerSet:
@@ -113,7 +111,8 @@ class TestEvent:
 
 
 class TestAsyncListenerSet:
-    def test_call(self, event_loop):
+    @pytest.mark.asyncio
+    async def test_call(self):
         actual = []
         target = events.AsyncListenerSet()
 
@@ -121,15 +120,16 @@ class TestAsyncListenerSet:
         async def on_target(value):
             actual.append(value)
 
-        event_loop.run_until_complete(target("foo"))
-        event_loop.run_until_complete(target("bar"))
+        await target("foo")
+        await target("bar")
 
         assert actual == ["foo", "bar"]
 
-    def test_call__no_listeners(self, event_loop):
+    @pytest.mark.asyncio
+    async def test_call__no_listeners(self):
         target = events.AsyncListenerSet()
 
-        event_loop.run_until_complete(target("foo"))
+        await target("foo")
 
 
 class TestAsyncEvent:

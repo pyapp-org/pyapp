@@ -152,6 +152,7 @@ Argument Actions
 .. automodule:: pyapp.app.argument_actions
 
 """
+
 import argparse
 import io
 import logging.config
@@ -160,23 +161,19 @@ import sys
 import warnings
 from argparse import ArgumentParser
 from argparse import Namespace as CommandOptions
-from typing import Callable
-from typing import Optional
-from typing import Sequence
+from typing import Callable, Optional, Sequence
 
 import argcomplete
 import colorama
 
-from . import init_logger
-from .. import conf
-from .. import extensions
-from .. import feature_flags
+from .. import conf, extensions, feature_flags
 from ..app import builtin_handlers
 from ..events import Event
 from ..injection import register_factory
 from ..utils.inspect import import_root_module
-from .argument_actions import *
-from .arguments import *
+from . import init_logger
+from .argument_actions import *  # noqa
+from .arguments import *  # noqa
 from .logging_formatter import ColourFormatter
 
 logger = logging.getLogger(__name__)
@@ -189,8 +186,7 @@ def _key_help(key: str) -> str:
     return key
 
 
-# pylint: disable=too-many-instance-attributes
-class CliApplication(CommandGroup):
+class CliApplication(CommandGroup):  # noqa: F405
     """Application interface that provides a CLI interface.
 
     :param root_module: The root module for this application (used for discovery of
@@ -246,7 +242,7 @@ class CliApplication(CommandGroup):
     post_dispatch = Event[Callable[[Optional[int], argparse.Namespace], None]]()
     dispatch_error = Event[Callable[[Exception, argparse.Namespace], None]]()
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         root_module=None,
         *,
@@ -271,7 +267,9 @@ class CliApplication(CommandGroup):
         self.ext_allow_list = ext_allow_list
         if ext_white_list:
             warnings.warn(
-                "ext_white_list is deprecated, use ext_allow_list", DeprecationWarning
+                "ext_white_list is deprecated, use ext_allow_list",
+                DeprecationWarning,
+                stacklevel=2,
             )
             self.ext_allow_list = ext_white_list
         self.ext_block_list = ext_block_list
@@ -596,7 +594,7 @@ CURRENT_APP: Optional[CliApplication] = None
 
 
 def _set_running_application(app: CliApplication):
-    global CURRENT_APP  # pylint: disable=global-statement
+    global CURRENT_APP  # noqa: PLW0603
     CURRENT_APP = app
 
 

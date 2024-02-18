@@ -107,4 +107,5 @@ An example extension class::
         def ready():
             pass
 """
-from pyapp.extensions.registry import *
+
+from pyapp.extensions.registry import *  # noqa: F403

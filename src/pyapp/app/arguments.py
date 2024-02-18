@@ -6,29 +6,31 @@ process of accepting and validating input/flags for commands.
 .. autofunction:: argument
 
 """
+
 import abc
 import argparse
 import asyncio
 import inspect
 from enum import Enum
-from typing import Any
-from typing import Awaitable
-from typing import Callable
-from typing import Dict
-from typing import Mapping
-from typing import Optional
-from typing import Sequence
-from typing import Tuple
-from typing import Type
-from typing import Union
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+)
+
+from argcomplete.completers import BaseCompleter
 
 from pyapp.compatability import async_run
 from pyapp.utils import cached_property
 
-from .argument_actions import AppendEnumName
-from .argument_actions import EnumName
-from .argument_actions import KeyValueAction
-from .argument_actions import TYPE_ACTIONS
+from .argument_actions import TYPE_ACTIONS, AppendEnumName, EnumName, KeyValueAction
 
 __all__ = ("Handler", "argument", "CommandGroup", "Arg", "ArgumentType")
 
@@ -51,7 +53,7 @@ class ParserBase:
     def __init__(self, parser: argparse.ArgumentParser):
         self.parser = parser
 
-    def argument(self, *name_or_flags, **kwargs):
+    def argument(self, *name_or_flags, **kwargs) -> argparse.Action:
         """
         Add argument to proxy
         """
@@ -185,16 +187,17 @@ class Argument:
 
     """
 
-    __slots__ = ("kwargs", "name_or_flags")
+    __slots__ = ("kwargs", "name_or_flags", "completer")
 
     @classmethod
-    def arg(
+    def arg(  # noqa: PLR0913
         cls,
         *flags: str,
         default: Any = EMPTY,
         choices: Sequence[Any] = None,
-        help: str = None,  # pylint: disable=redefined-builtin
+        help: str = None,  # noqa: A002
         metavar: str = None,
+        completer: Optional[BaseCompleter] = None,
     ) -> "Argument":
         """
         Aliased to become the inline definition for an argument
@@ -204,14 +207,20 @@ class Argument:
         :param choices: A container of the allowable values for the argument.
         :param help: A brief description of what the argument does.
         :param metavar: A name for the argument in usage messages.
+        :param completer: Optional completer for argcomplete to provide a richer CLI.
 
         """
         return cls(
-            *flags, default=default, choices=choices, help_text=help, metavar=metavar
+            *flags,
+            default=default,
+            choices=choices,
+            help_text=help,
+            metavar=metavar,
+            completer=completer,
         )
 
     @staticmethod
-    def _handle_generics(  # pylint: disable=too-many-branches
+    def _handle_generics(  # noqa: PLR0912
         origin, type_, positional: bool, kwargs: Dict[str, Any]
     ) -> type:
         """
@@ -220,9 +229,8 @@ class Argument:
         name = str(origin)
         if name == "typing.Union":
             if (
-                len(type_.__args__) == 2
-                and type(None)  # pylint: disable=unidiomatic-typecheck
-                in type_.__args__
+                len(type_.__args__) == 2  # noqa: PLR2004
+                and type(None) in type_.__args__
             ):
                 if positional:
                     kwargs["nargs"] = "?"
@@ -348,21 +356,23 @@ class Argument:
 
         return instance
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         *name_or_flags,
         action: Union[str, Type[argparse.Action]] = None,
         nargs: Union[int, str] = None,
         const: Any = None,
         default: Any = EMPTY,
-        type: Type[Any] = None,  # pylint: disable=redefined-builtin
+        type: Optional[Type[Any]] = None,  # noqa
         choices: Sequence[Any] = None,
         required: bool = None,
         help_text: str = None,
         metavar: str = None,
         dest: str = None,
+        completer: BaseCompleter = None,
     ):
         self.name_or_flags = name_or_flags
+        self.completer = completer
 
         # Filter out None values
         kwargs = (
@@ -385,20 +395,21 @@ class Argument:
     ) -> Union[Handler, CommandProxy]:
         if isinstance(func, CommandProxy):
             self.register_with_proxy(func)
+        elif hasattr(func, "arguments__"):
+            func.arguments__.insert(0, self)
         else:
-            # Add the argument to a list that will be consumed by CommandProxy.
-            if hasattr(func, "arguments__"):
-                func.arguments__.insert(0, self)
-            else:
-                func.arguments__ = [self]
+            func.arguments__ = [self]
 
         return func
 
-    def register_with_proxy(self, proxy: CommandProxy):
+    def register_with_proxy(self, proxy: CommandProxy) -> argparse.Action:
         """
         Register self with a command proxy
         """
-        return proxy.argument(*self.name_or_flags, **self.kwargs)
+        action = proxy.argument(*self.name_or_flags, **self.kwargs)
+        if self.completer:
+            action.completer = self.completer
+        return action
 
 
 Arg = Argument.arg  # pylint: disable=invalid-name

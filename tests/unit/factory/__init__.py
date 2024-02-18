@@ -23,6 +23,6 @@ class IronBar(Bar):
         return "Iron Bar"
 
 
-class SteelBeam(object):
+class SteelBeam:
     def __str__(self):
         return "Steel Beam"

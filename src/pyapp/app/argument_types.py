@@ -4,10 +4,11 @@ Additional "types" to handle common CLI situations.
 .. autoclass:: RegexType
 
 """
+
 import argparse
 import re
 
-from pyapp.app.arguments import ArgumentType
+from .arguments import ArgumentType
 
 
 class RegexType(ArgumentType):
