@@ -1,11 +1,14 @@
 """Sphinx plugin to document elements of PyApp."""
-from typing import Any
+from typing import Any, Final
 
 from sphinx.application import Sphinx
 from sphinx.ext.autodoc import ModuleDocumenter, bool_option
 from sphinx.util.typing import OptionSpec
 
 from .settings import SettingDef, SettingDefGroup, SettingsCollection
+
+
+DOC_SOURCE: Final[str] = "<autodoc-pyapp>"
 
 
 class SettingsDocumenter(ModuleDocumenter):
@@ -31,27 +34,27 @@ class SettingsDocumenter(ModuleDocumenter):
         """Add a multi-line block of text to the output."""
 
         for line in lines.strip().splitlines():
-            self.add_line(line, "<autodoc>")
-        self.add_line("", "<autodoc>")
+            self.add_line(line, DOC_SOURCE)
+        self.add_line("", DOC_SOURCE)
 
     def document_setting(self, setting: SettingDef):
         """Document a setting definition."""
 
-        self.add_line(f"``{setting.key}``", "<autodoc>")
+        self.add_line(f"``{setting.key}``", DOC_SOURCE)
 
         old_indent = self.indent
         self.indent += self._extra_indent
 
         if setting.type_name is not None:
-            self.add_line(f"**Type**: :python:`{setting.type_name}`", "<autodoc>")
-            self.add_line("", "<autodoc>")
-        self.add_line(f"**Default**: :python:`{setting.default}`", "<autodoc>")
-        self.add_line("", "<autodoc>")
+            self.add_line(f"**Type**: :python:`{setting.type_name}`", DOC_SOURCE)
+            self.add_line("", DOC_SOURCE)
+        self.add_line(f"**Default**: :python:`{setting.default}`", DOC_SOURCE)
+        self.add_line("", DOC_SOURCE)
 
         if setting.doc is not None:
             self.add_block(setting.doc)
         else:
-            self.add_line("", "<autodoc>")
+            self.add_line("", DOC_SOURCE)
 
         self.indent = old_indent
 
@@ -69,8 +72,8 @@ class SettingsDocumenter(ModuleDocumenter):
     def document_group(self, group: SettingDefGroup):
         """Document a group of settings."""
 
-        self.add_line(f".. class:: {group.name}", "<autodoc>")
-        self.add_line("", "<autodoc>")
+        self.add_line(f".. class:: {group.name}", DOC_SOURCE)
+        self.add_line("", DOC_SOURCE)
 
         old_indent = self.indent
         self.indent += self._extra_indent
@@ -78,7 +81,7 @@ class SettingsDocumenter(ModuleDocumenter):
         if group.doc is not None:
             self.add_block(group.doc)
         else:
-            self.add_line("", "<autodoc>")
+            self.add_line("", DOC_SOURCE)
 
         self.document_group_settings(group)
 
@@ -89,10 +92,10 @@ class SettingsDocumenter(ModuleDocumenter):
         collection = SettingsCollection(self.object).process()
 
         # Define a code highlight role
-        self.add_line(".. role:: python(code)", "<autodoc>")
-        self.add_line("  :language: python", "<autodoc>")
-        self.add_line("  :class: highlight", "<autodoc>")
-        self.add_line("", "<autodoc>")
+        self.add_line(".. role:: python(code)", DOC_SOURCE)
+        self.add_line("  :language: python", DOC_SOURCE)
+        self.add_line("  :class: highlight", DOC_SOURCE)
+        self.add_line("", DOC_SOURCE)
 
         if self.options.get("grouped", False):
             # Do un-grouped first
