@@ -2,9 +2,10 @@
 from typing import Any
 
 from sphinx.application import Sphinx
-from sphinx.ext.autodoc import ModuleDocumenter
+from sphinx.ext.autodoc import ModuleDocumenter, bool_option
+from sphinx.util.typing import OptionSpec
 
-from .settings import SettingsDocumentor
+from .settings import SettingDef, SettingDefGroup, SettingsDocumentor
 
 
 class SettingsDocumenter(ModuleDocumenter):
@@ -12,6 +13,12 @@ class SettingsDocumenter(ModuleDocumenter):
 
     objtype = "pyapp-settings"
     directivetype = "module"
+
+    option_spec: OptionSpec = {
+        "noindex": bool_option,
+        "nogroups": bool_option,
+        "sorted": bool_option,
+    }
 
     @classmethod
     def can_document_member(
@@ -27,39 +34,74 @@ class SettingsDocumenter(ModuleDocumenter):
             self.add_line(line, "<autodoc>")
         self.add_line("", "<autodoc>")
 
+    def document_setting(self, setting: SettingDef):
+        """Document a setting definition."""
+
+        self.add_line(f"``{setting.key}``", "<autodoc>")
+
+        old_indent = self.indent
+        self.indent += self._extra_indent
+
+        if setting.type_name is not None:
+            self.add_line(f"**Type**: :python:`{setting.type_name}`", "<autodoc>")
+            self.add_line("", "<autodoc>")
+        self.add_line(f"**Default**: :python:`{setting.default}`", "<autodoc>")
+        self.add_line("", "<autodoc>")
+
+        if setting.doc is not None:
+            self.add_block(setting.doc)
+        else:
+            self.add_line("", "<autodoc>")
+
+        self.indent = old_indent
+
+    def document_group_settings(self, group: SettingDefGroup):
+        """Document a group of settings."""
+
+        settings = (
+            group.sorted_settings
+            if self.options.get("sorted", False)
+            else group.settings
+        )
+        for setting in settings:
+            self.document_setting(setting)
+
+    def document_group(self, group: SettingDefGroup):
+        """Document a group of settings."""
+
+        self.add_line(f".. class:: {group.name}", "<autodoc>")
+        self.add_line("", "<autodoc>")
+
+        old_indent = self.indent
+        self.indent += self._extra_indent
+
+        if group.doc is not None:
+            self.add_block(group.doc)
+        else:
+            self.add_line("", "<autodoc>")
+
+        self.document_group_settings(group)
+
+        self.indent = old_indent
+
     def document_members(self, all_members=False):
         """Update the document members section to include settings."""
         settings = SettingsDocumentor(self.object)
         settings.process()
 
-        for group, settings_group in settings.discovered_settings.items():
-            if group:
-                self.add_line(f"{group}", "<autodoc>")
-                self.add_line("=" * len(group), "<autodoc>")
+        # Define a code highlight role
+        self.add_line(".. role:: python(code)", "<autodoc>")
+        self.add_line("  :language: python", "<autodoc>")
+        self.add_line("  :class: highlight", "<autodoc>")
+        self.add_line("", "<autodoc>")
 
-            self.add_line(".. role:: python(code)", "<autodoc>")
-            self.add_line("  :language: python", "<autodoc>")
-            self.add_line("  :class: highlight", "<autodoc>")
-            self.add_line("", "<autodoc>")
-
-            for setting_key, type_name, default, doc in settings_group:
-                self.add_line(f"``{setting_key}``", "<autodoc>")
-
-                old_indent = self.indent
-                self.indent += self._extra_indent
-
-                if type_name is not None:
-                    self.add_line(f"**Type**: :python:`{type_name}`", "<autodoc>")
-                    self.add_line("", "<autodoc>")
-                self.add_line(f"**Default**: :python:`{default}`", "<autodoc>")
-                self.add_line("", "<autodoc>")
-
-                if doc is not None:
-                    self.add_block(doc)
-                else:
-                    self.add_line("", "<autodoc>")
-
-                self.indent = old_indent
+        if self.options.get("nogroups", False):
+            self.document_group_settings(settings.all_settings)
+        else:
+            self.document_group_settings(settings.settings[None])
+            for group in settings.settings.values():
+                if group.name is not None:
+                    self.document_group(group)
 
 
 def setup(app: Sphinx):

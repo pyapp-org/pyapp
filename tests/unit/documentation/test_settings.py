@@ -8,55 +8,123 @@ class TestSettingsDocumentor:
         )
 
         target.process()
-        actual = dict(target.discovered_settings)
 
-        assert actual == {
-            None: [
-                (
+        assert target.settings == {
+            None: settings.SettingDefGroup(
+                None,
+                [
+                    settings.SettingDef(
+                        "TOP_LEVEL_SETTING",
+                        "bool",
+                        False,
+                        "This is a top level setting",
+                    ),
+                    settings.SettingDef(
+                        "TOP_LEVEL_WITH_NO_COMMENT",
+                        "int",
+                        42,
+                        None,
+                    ),
+                    settings.SettingDef(
+                        "PATH_TO_SOME_FILE",
+                        "str | Path",
+                        "/path/to/some/file",
+                        "Path to some file",
+                    ),
+                    settings.SettingDef(
+                        "ENSURE_LAST_SETTING_DEFINED",
+                        None,
+                        False,
+                        None,
+                    ),
+                ],
+                None,
+            ),
+            "FooSettings": settings.SettingDefGroup(
+                "FooSettings",
+                [
+                    settings.SettingDef(
+                        "FOO_SETTING",
+                        "str",
+                        "foo",
+                        "A setting for Foo",
+                    ),
+                    settings.SettingDef(
+                        "BAR_SETTING",
+                        "int",
+                        13,
+                        "Another setting for Foo",
+                    ),
+                    settings.SettingDef(
+                        "BAZ_SETTING",
+                        "NamedConfig",
+                        {"default": {"value": 1}},
+                        None,
+                    ),
+                    settings.SettingDef(
+                        "PLUGIN_SETTING",
+                        "NamedPluginConfig",
+                        {
+                            "default": ["myapp.plugins.default", {}],
+                        },
+                        "Settings for plugin configuration.",
+                    ),
+                    settings.SettingDef(
+                        "ENSURE_LAST_SETTING",
+                        "bool",
+                        True,
+                        None,
+                    ),
+                ],
+                "Settings for Foo",
+            ),
+        }
+        assert target.all_settings == settings.SettingDefGroup(
+            None,
+            [
+                settings.SettingDef(
                     "TOP_LEVEL_SETTING",
                     "bool",
                     False,
                     "This is a top level setting",
                 ),
-                (
+                settings.SettingDef(
                     "TOP_LEVEL_WITH_NO_COMMENT",
                     "int",
                     42,
                     None,
                 ),
-                (
+                settings.SettingDef(
                     "PATH_TO_SOME_FILE",
                     "str | Path",
                     "/path/to/some/file",
                     "Path to some file",
                 ),
-                (
+                settings.SettingDef(
                     "ENSURE_LAST_SETTING_DEFINED",
                     None,
                     False,
                     None,
                 ),
-            ],
-            "FooSettings": [
-                (
+                settings.SettingDef(
                     "FOO_SETTING",
                     "str",
                     "foo",
                     "A setting for Foo",
                 ),
-                (
+                settings.SettingDef(
                     "BAR_SETTING",
                     "int",
                     13,
                     "Another setting for Foo",
                 ),
-                (
+                settings.SettingDef(
                     "BAZ_SETTING",
                     "NamedConfig",
                     {"default": {"value": 1}},
                     None,
                 ),
-                (
+                settings.SettingDef(
                     "PLUGIN_SETTING",
                     "NamedPluginConfig",
                     {
@@ -64,11 +132,12 @@ class TestSettingsDocumentor:
                     },
                     "Settings for plugin configuration.",
                 ),
-                (
+                settings.SettingDef(
                     "ENSURE_LAST_SETTING",
                     "bool",
                     True,
                     None,
                 ),
             ],
-        }
+            None,
+        )

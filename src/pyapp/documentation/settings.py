@@ -1,10 +1,18 @@
 """Automated settings documentation."""
 import ast
-from collections import defaultdict
 from functools import singledispatchmethod
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import (
+    Any,
+    Dict,
+    List,
+    NamedTuple,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+)
 
 
 class SettingsExtractor:
@@ -15,7 +23,7 @@ class SettingsExtractor:
             module_or_file = module_or_file.__file__
         self._file = Path(module_or_file)
 
-        self._current_setting: Optional[Tuple[str, str, str, Any]] = None
+        self._current_setting: Optional[Tuple[str, Optional[str], Optional[str]]] = None
 
     def process(self):
         """Process the settings module or file."""
@@ -162,6 +170,28 @@ def flatten_default_value(value) -> Union[str, int, float, bool, list, dict, Non
     return None
 
 
+class SettingDef(NamedTuple):
+    """A setting definition."""
+
+    key: str
+    type_name: Optional[str]
+    default: Any
+    doc: Optional[str]
+
+
+class SettingDefGroup(NamedTuple):
+    """A group of setting definitions."""
+
+    name: Optional[str]
+    settings: List[SettingDef]
+    doc: Optional[str]
+
+    @property
+    def sorted_settings(self) -> List[SettingDef]:
+        """Sort settings by key."""
+        return sorted(self.settings, key=lambda s: s.key)
+
+
 class SettingsDocumentor(SettingsExtractor):
     """Collect settings from a settings module."""
 
@@ -172,12 +202,21 @@ class SettingsDocumentor(SettingsExtractor):
         exclude_keys: Sequence[str] = ("INCLUDE_SETTINGS",),
     ):
         super().__init__(module_or_file)
-
         self.exclude_keys = exclude_keys
-        self.discovered_settings: Dict[
-            Optional[str], List[str, Optional[str], Any, Optional[str]]
-        ] = defaultdict(list)
-        self.current_setting_def = None
+
+        self.current_group: SettingDefGroup = SettingDefGroup(None, [], None)
+        self.settings: Dict[Optional[str], SettingDefGroup] = {
+            None: self.current_group,
+        }
+
+    @property
+    def all_settings(self) -> SettingDefGroup:
+        """Return all settings ignoring groups."""
+        return SettingDefGroup(
+            None,
+            [setting for group in self.settings.values() for setting in group.settings],
+            None,
+        )
 
     def setting(
         self,
@@ -194,8 +233,8 @@ class SettingsDocumentor(SettingsExtractor):
         :param doc: Optional doc string for setting.
         """
         if setting_key not in self.exclude_keys:
-            self.discovered_settings[self.current_setting_def].append(
-                (setting_key, type_name, default, doc)
+            self.current_group.settings.append(
+                SettingDef(setting_key, type_name, default, doc)
             )
 
     def start_settings_def(self, name: str, doc: Optional[str] = None):
@@ -204,8 +243,9 @@ class SettingsDocumentor(SettingsExtractor):
         :param name: Name of the settings definition group.
         :param doc: Optional doc string for the settings definition.
         """
-        self.current_setting_def = name
+        self.current_group = _current_group = SettingDefGroup(name, [], doc)
+        self.settings[name] = _current_group
 
     def end_settings_def(self):
         """End of settings definition."""
-        self.current_setting_def = None
+        self.current_group = self.settings[None]
