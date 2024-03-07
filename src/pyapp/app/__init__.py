@@ -169,6 +169,7 @@ import colorama
 from .. import conf, extensions, feature_flags
 from ..app import builtin_handlers
 from ..events import Event
+from ..exceptions import ApplicationExit
 from ..injection import register_factory
 from ..utils.inspect import import_root_module
 from . import init_logger
@@ -576,9 +577,14 @@ class CliApplication(CommandGroup):  # noqa: F405
             if not self.exception_report(ex, opts):
                 raise
 
+        except ApplicationExit as ex:
+            if ex.message:
+                print(f"\n\n{ex.message}", file=sys.stderr)
+            raise
+
         except KeyboardInterrupt:
             print("\n\nInterrupted.", file=sys.stderr)
-            sys.exit(-2)
+            sys.exit(2)
 
         else:
             # Provide exit code.
