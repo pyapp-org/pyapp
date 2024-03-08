@@ -25,7 +25,9 @@ class InitHandler(logging.Handler):
         """Replay stored log records"""
 
         for record in self._store:
-            logging.getLogger(record.name).handle(record)
+            logger = logging.getLogger(record.name)
+            if logger.isEnabledFor(record.levelno):
+                logger.handle(record)
         self._store.clear()
 
     def emit(self, record: logging.LogRecord) -> None:

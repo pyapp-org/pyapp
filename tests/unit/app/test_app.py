@@ -62,7 +62,7 @@ class TestCliApplication:
         with pytest.raises(SystemExit) as ex:
             target.dispatch(args=("cheeky",))
 
-        assert ex.value.code == -2
+        assert ex.value.code == 2
 
     def test_dispatch__return_status(self):
         target = tests.unit.sample_app.__main__.app

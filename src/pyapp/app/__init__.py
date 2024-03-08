@@ -169,6 +169,7 @@ import colorama
 from .. import conf, extensions, feature_flags
 from ..app import builtin_handlers
 from ..events import Event
+from ..exceptions import ApplicationExit
 from ..injection import register_factory
 from ..utils.inspect import import_root_module
 from . import init_logger
@@ -342,7 +343,7 @@ class CliApplication(CommandGroup):  # noqa: F405
         )
         arg_group.add_argument(
             "--log-level",
-            default=os.environ.get(self.env_loglevel_key, "INFO"),
+            default=os.environ.get(self.env_loglevel_key, "DEFAULT"),
             choices=("DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"),
             help="Specify the log level to be used. "
             f"Defaults to env variable: {_key_help(self.env_loglevel_key)}",
@@ -497,7 +498,11 @@ class CliApplication(CommandGroup):  # noqa: F405
                 logging.config.dictConfig(dict_config)
 
             # Configure root log level
-            logging.root.setLevel(opts.log_level)
+            loglevel = opts.log_level
+            if loglevel == "DEFAULT":
+                handler = self.resolve_handler(opts)
+                loglevel = handler.loglevel
+            logging.root.setLevel(loglevel)
 
             # Replay initial entries and remove
             self._init_logger.replay()
@@ -540,6 +545,8 @@ class CliApplication(CommandGroup):  # noqa: F405
 
     def dispatch(self, args: Sequence[str] = None) -> None:
         """Dispatch command to registered handler."""
+        logger.info("Starting %s", self.application_summary)
+
         # Initialisation phase
         _set_running_application(self)
         self.register_factories()
@@ -548,10 +555,6 @@ class CliApplication(CommandGroup):  # noqa: F405
         # Parse arguments phase
         argcomplete.autocomplete(self.parser)
         opts = self.parser.parse_args(args)
-
-        # Set log level from opts
-        logging.root.setLevel(opts.log_level)
-        logger.info("Starting %s", self.application_summary)
 
         # Load settings and configure logger
         self.configure_settings(opts)
@@ -576,9 +579,14 @@ class CliApplication(CommandGroup):  # noqa: F405
             if not self.exception_report(ex, opts):
                 raise
 
+        except ApplicationExit as ex:
+            if ex.message:
+                print(f"\n\n{ex.message}", file=sys.stderr)
+            raise
+
         except KeyboardInterrupt:
             print("\n\nInterrupted.", file=sys.stderr)
-            sys.exit(-2)
+            sys.exit(2)
 
         else:
             # Provide exit code.
