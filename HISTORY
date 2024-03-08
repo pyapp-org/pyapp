@@ -1,3 +1,12 @@
+4.15.1
+======
+
+Bugfix
+------
+
+- Fix for certain edge cases where loglevel is not supplied.
+
+
 4.15
 ====
 
