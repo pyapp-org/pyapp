@@ -11,6 +11,7 @@ import abc
 import argparse
 import asyncio
 import inspect
+import logging
 from enum import Enum
 from typing import (
     Any,
@@ -46,9 +47,7 @@ EMPTY = inspect.Parameter.empty
 
 
 class ParserBase:
-    """
-    Base class for handling parsers.
-    """
+    """Base class for handling parsers."""
 
     def __init__(self, parser: argparse.ArgumentParser):
         self.parser = parser
@@ -60,8 +59,7 @@ class ParserBase:
         return self.parser.add_argument(*name_or_flags, **kwargs)
 
     def argument_group(self, *, title: str = None, description: str = None):
-        """
-        Add an argument group to proxy
+        """Add an argument group to proxy.
 
         See: https://docs.python.org/3.6/library/argparse.html#argument-groups
 
@@ -70,8 +68,7 @@ class ParserBase:
 
 
 class CommandProxy(ParserBase):
-    """
-    Proxy object that wraps a handler.
+    """Proxy object that wraps a handler.
 
     .. versionupdated:: 4.4
         Determine arguments from handler signature.
@@ -80,15 +77,14 @@ class CommandProxy(ParserBase):
 
     __slots__ = ("__name__", "handler", "_args", "_require_namespace")
 
-    def __init__(self, handler: Handler, parser: argparse.ArgumentParser):
-        """
-        Initialise proxy
+    def __init__(self, handler: Handler, parser: argparse.ArgumentParser, loglevel: int = logging.INFO):
+        """Initialise proxy.
 
         :param handler: Callable object that accepts a single argument.
-
         """
         super().__init__(parser)
         self.handler = handler
+        self.loglevel = loglevel
 
         # Copy details
         self.__doc__ = handler.__doc__
@@ -108,9 +104,7 @@ class CommandProxy(ParserBase):
         self._extract_args(handler)
 
     def _extract_args(self, func):
-        """
-        Extract args from signature and turn into command line args
-        """
+        """Extract args from signature and turn into command line args."""
         sig = inspect.signature(func)
 
         # Backwards compatibility
@@ -144,10 +138,9 @@ class CommandProxy(ParserBase):
 
 
 class AsyncCommandProxy(CommandProxy):
-    """
-    Proxy object that wraps an async handler.
+    """Proxy object that wraps an async handler.
 
-    Will handle starting a event loop.
+    Will handle starting an event loop.
     """
 
     def __call__(self, opts: argparse.Namespace):
@@ -155,15 +148,11 @@ class AsyncCommandProxy(CommandProxy):
 
 
 class ArgumentType(abc.ABC):
-    """
-    Custom argument type
-    """
+    """Custom argument type."""
 
     @abc.abstractmethod
     def __call__(self, value: str) -> Any:
-        """
-        Construct a value from type
-        """
+        """Construct a value from type."""
 
 
 class Argument:
@@ -417,9 +406,7 @@ argument = Argument  # pylint: disable=invalid-name
 
 
 class CommandGroup(ParserBase):
-    """
-    Group of commands.
-    """
+    """Group of commands."""
 
     def __init__(
         self,
@@ -436,9 +423,7 @@ class CommandGroup(ParserBase):
 
     @cached_property
     def handler_dest(self) -> str:
-        """
-        Destination of handler
-        """
+        """Destination of handler."""
         return f":handler:{self._prefix or ''}"
 
     def _add_handler(self, handler, name, aliases):
@@ -454,8 +439,7 @@ class CommandGroup(ParserBase):
     def create_command_group(
         self, name: str, *, aliases: Sequence[str] = (), help_text: str = None
     ) -> "CommandGroup":
-        """
-        Create a command group
+        """Create a command group.
 
         :param name: Name of the command group
         :param aliases: A sequence a name aliases for this command group.
@@ -481,18 +465,22 @@ class CommandGroup(ParserBase):
         name: str = None,
         aliases: Sequence[str] = (),
         help_text: str = None,
+        loglevel: int = logging.INFO
     ) -> CommandProxy:
-        """
-        Decorator for registering handlers.
+        """Decorator for registering handlers.
 
         :param handler: Handler function
         :param name: Optional name to use for CLI; defaults to the function name.
         :param aliases: A sequence a name aliases for this command.
         :param help_text: Information provided to the user if help is invoked;
             default is taken from the handlers doc string.
+        :param loglevel: The default log-level when using this command.
 
         .. versionchanged:: 4.3
             Async handlers supported.
+
+        .. versionchanged:: 4.15
+            Add loglevel option to allow per-command log levels to be set.
 
         """
 
@@ -520,8 +508,7 @@ class CommandGroup(ParserBase):
         return inner(handler) if handler else inner
 
     def default(self, handler: Handler):
-        """
-        Decorator for registering a default handler.
+        """Decorator for registering a default handler.
 
         .. versionchanged:: 4.3
             Async handlers supported.
@@ -534,21 +521,19 @@ class CommandGroup(ParserBase):
         return handler
 
     def default_handler(self, _: argparse.Namespace) -> int:
-        """
-        Handler called if no handler is specified
-        """
+        """Handler called if no handler is specified."""
         print("No command specified!")
         self.parser.print_usage()
         return 1
 
-    def dispatch_handler(self, opts: argparse.Namespace) -> int:
-        """
-        Resolve the correct handler and call it with supplied options namespace.
-        """
+    def resolve_handler(self, opts: argparse.Namespace) -> Handler:
+        """Resolve a command handler."""
         handler_name = getattr(opts, self.handler_dest, None)
-
         if self._prefix:
             handler_name = f"{self._prefix}:{handler_name}"
-        handler = self._handlers.get(handler_name, self._default_handler)
+        return self._handlers.get(handler_name, self._default_handler)
 
+    def dispatch_handler(self, opts: argparse.Namespace) -> int:
+        """Resolve the correct handler and call it with supplied options namespace."""
+        handler = self.resolve_handler(opts)
         return handler(opts)
