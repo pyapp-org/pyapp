@@ -1,3 +1,18 @@
+4.15
+====
+
+Features
+--------
+
+- Command decorators can now be supplied with an alternate loglevel to
+  allow certain commands to use a different level.
+
+Bugfix
+------
+
+- Fix initial log replay so the specified log-level is correctly applied.
+
+
 4.14
 ====
 
