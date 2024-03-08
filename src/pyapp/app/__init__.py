@@ -501,7 +501,7 @@ class CliApplication(CommandGroup):  # noqa: F405
             loglevel = opts.log_level
             if loglevel == "DEFAULT":
                 handler = self.resolve_handler(opts)
-                loglevel = handler.loglevel
+                loglevel = getattr(handler, "loglevel", logging.INFO)
             logging.root.setLevel(loglevel)
 
             # Replay initial entries and remove
