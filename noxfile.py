@@ -4,7 +4,7 @@ import nox
 from nox.sessions import Session
 
 
-@nox.session(python=("3.8", "3.9", "3.10"), reuse_venv=True)
+@nox.session(python=("3.10", "3.11", "3.12", "3.13"), reuse_venv=True)
 def tests(session: Session):
     with TemporaryDirectory() as tmpdir:
         session.install("poetry")
