@@ -12,10 +12,10 @@ HERE = Path(__file__).parent
 )
 def tests(session: Session):
     print(f"🪄 Creating poetry environment for {session.python}")
-    session.run("poetry", "env", "use", session.python)
+    session.run("poetry", "env", "use", session.python, external=True)
 
     print("📦 Install dependencies...")
-    session.run("poetry", "install", "--with=dev")
+    session.run("poetry", "install", "--with=dev", external=True)
 
     print("▶️ Run tests")
-    session.run("poetry", "run", "pytest")
+    session.run("poetry", "run", "pytest", "--config-file=pytest.ini", external=True)

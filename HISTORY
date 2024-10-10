@@ -6,6 +6,8 @@ Features
 
 - Feature flags now has a modify context manager that allows for patching flags
   that are reverted when the context manager exits (similar to settings).
+- Add PyTest fixture `patch_feature_flags` that returns modify context for feature
+  flags.
 - Fully implement split logging configuration. Settings now contains `LOG_HANDLERS`
   and `LOG_LOGGERS` that are merged into the logging configuration before it is
   applied.
