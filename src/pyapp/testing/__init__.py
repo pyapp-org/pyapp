@@ -4,13 +4,14 @@ Includes a plugin for Pytest.
 """
 
 from types import ModuleType
+from collections.abc import Sequence
 
 from ..conf.loaders import settings_iterator
 
 
 def settings_in_module(
     *modules: ModuleType,
-    exclude: list[str] = ("INCLUDE",),
+    exclude: Sequence[str] = ("INCLUDE_SETTINGS",),
 ):
     """Generate a list of settings defined in a module (or modules).
 
