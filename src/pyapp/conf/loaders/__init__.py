@@ -8,8 +8,10 @@ Loaders are used to load settings from an external source, eg a Python module
 A loader provides key/value pairs to the settings container to merge into the
 application settings.
 """
+
 import importlib
-from typing import Any, Dict, Iterator, Tuple, Type, Union
+from collections.abc import Iterator
+from typing import Any
 
 from yarl import URL
 
@@ -20,7 +22,7 @@ from pyapp.exceptions import InvalidConfiguration
 from pyapp.typed_settings import SettingsDefType
 
 
-def _settings_iterator(obj):
+def settings_iterator(obj):
     """Iterate settings from an object"""
     for key in dir(obj):
         value = getattr(obj, key)
@@ -54,13 +56,13 @@ class ModuleLoader(Loader):
         """:param module: Fully qualify python module path."""
         self.module = module
 
-    def __iter__(self) -> Iterator[Tuple[str, Any]]:
+    def __iter__(self) -> Iterator[tuple[str, Any]]:
         try:
             mod = importlib.import_module(self.module)
         except ImportError as ex:
             raise InvalidConfiguration(f"Unable to load module: {self}\n{ex}") from ex
 
-        return _settings_iterator(mod)
+        return settings_iterator(mod)
 
     def __str__(self):
         return f"{self.scheme}:{self.module}"  # pylint: disable=no-member
@@ -91,15 +93,14 @@ class ObjectLoader(Loader):
     def __init__(self, obj: object):
         self.obj = obj
 
-    def __iter__(self) -> Iterator[Tuple[str, Any]]:
-        obj = self.obj
-        return ((k, getattr(obj, k)) for k in dir(obj) if k.isupper())
+    def __iter__(self) -> Iterator[tuple[str, Any]]:
+        return settings_iterator(self.obj)
 
 
-LoaderType = Type[Loader]
+LoaderType = type[Loader]
 
 
-class SettingsLoaderRegistry(Dict[str, LoaderType]):
+class SettingsLoaderRegistry(dict[str, LoaderType]):
     """Registry of settings loaders"""
 
     def register(self, loader: LoaderType) -> LoaderType:
@@ -117,7 +118,7 @@ class SettingsLoaderRegistry(Dict[str, LoaderType]):
 
         return loader
 
-    def factory(self, settings_url: Union[str, URL]) -> Loader:
+    def factory(self, settings_url: str | URL) -> Loader:
         """Factory method that returns a factory suitable for opening the settings uri reference.
 
         The URI scheme (identifier prior to the first `:`) is used to determine the correct loader.
