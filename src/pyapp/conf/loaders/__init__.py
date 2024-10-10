@@ -22,8 +22,9 @@ from pyapp.exceptions import InvalidConfiguration
 from pyapp.typed_settings import SettingsDefType
 
 
-def settings_iterator(obj):
+def settings_iterator(obj: object):
     """Iterate settings from an object"""
+
     for key in dir(obj):
         value = getattr(obj, key)
         if isinstance(value, SettingsDefType):
