@@ -34,7 +34,8 @@ the benefits of auto-completion and typing.
 
 """
 
-from typing import Any, Dict, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 
 class SettingDescriptor:
@@ -56,7 +57,7 @@ class SettingDescriptor:
 class SettingsDefType(type):
     """Typed Settings definition type."""
 
-    def __new__(cls, name: str, bases, dct: Dict[str, Any], *, prefix: str = ""):
+    def __new__(cls, name: str, bases, dct: dict[str, Any], *, prefix: str = ""):
         """Generate new type."""
 
         if prefix and not prefix.isupper():
@@ -83,4 +84,4 @@ class SettingsDef(metaclass=SettingsDefType):
 
 
 NamedConfig = Mapping[str, Mapping[str, Any]]
-NamedPluginConfig = Mapping[str, Tuple[str, Mapping[str, Any]]]
+NamedPluginConfig = Mapping[str, tuple[str, Mapping[str, Any]]]
