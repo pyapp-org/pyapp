@@ -161,13 +161,14 @@ import sys
 import warnings
 from argparse import ArgumentParser
 from argparse import Namespace as CommandOptions
-from typing import Callable, Optional, Sequence
+from collections.abc import Callable, Sequence
 
 import argcomplete
 import colorama
 
 from .. import conf, extensions, feature_flags
 from ..app import builtin_handlers
+from ..conf.base_settings import LoggingSettings
 from ..events import Event
 from ..exceptions import ApplicationExit
 from ..injection import register_factory
@@ -210,12 +211,12 @@ class CliApplication(CommandGroup):  # noqa: F405
     """
 
     default_log_handler = logging.StreamHandler(sys.stderr)
-    """Log handler applied by default to root logger."""
+    """Log handler applied by default to the root logger."""
 
     default_log_formatter = logging.Formatter(
         "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
     )
-    """Log formatter applied by default to root logger handler."""
+    """Log formatter applied by default to the root logger handler."""
 
     default_color_log_formatter = ColourFormatter(
         f"{colorama.Fore.YELLOW}%(asctime)s{colorama.Fore.RESET} "
@@ -223,10 +224,10 @@ class CliApplication(CommandGroup):  # noqa: F405
         f"{colorama.Fore.LIGHTBLUE_EX}%(name)s{colorama.Fore.RESET} "
         f"%(message)s"
     )
-    """Log formatter applied by default to root logger handler."""
+    """Log formatter with colour applied by default to the root logger handler."""
 
     env_settings_key = conf.DEFAULT_ENV_KEY
-    """Key used to define settings file in environment."""
+    """Key used to define settings reference in environment."""
 
     env_loglevel_key = "PYAPP_LOGLEVEL"
     """Key used to define log level in environment."""
@@ -240,7 +241,7 @@ class CliApplication(CommandGroup):  # noqa: F405
 
     # Events
     pre_dispatch = Event[Callable[[argparse.Namespace], None]]()
-    post_dispatch = Event[Callable[[Optional[int], argparse.Namespace], None]]()
+    post_dispatch = Event[Callable[[int | None, argparse.Namespace], None]]()
     dispatch_error = Event[Callable[[Exception, argparse.Namespace], None]]()
 
     def __init__(  # noqa: PLR0913
@@ -478,24 +479,33 @@ class CliApplication(CommandGroup):  # noqa: F405
 
         return self.default_log_formatter
 
+    @staticmethod
+    def _apply_logging_settings():
+        """Build dict-config from settings and apply to logging."""
+
+        dict_config = LoggingSettings.LOGGING.copy() or {}
+
+        # Merge in other settings
+        if LoggingSettings.LOG_HANDLERS:
+            dict_config.setdefault("handlers", {}).update(LoggingSettings.LOG_HANDLERS)
+        if LoggingSettings.LOG_LOGGERS:
+            dict_config.setdefault("loggers", {}).update(LoggingSettings.LOG_LOGGERS)
+
+        # Only apply config if we have something to apply
+        if dict_config:
+            dict_config.setdefault("version", 1)
+            logging.config.dictConfig(dict_config)
+
     def configure_logging(self, opts: CommandOptions):
         """Configure the logging framework."""
         # Prevent duplicate runs
         if hasattr(self, "_init_logger"):
             self.default_log_handler.formatter = self.get_log_formatter(opts.log_color)
 
-            if conf.settings.LOGGING:
-                logger.info("Applying logging configuration.")
-
             # Replace root handler with the default handler
             logging.root.handlers.pop(0)
             logging.root.handlers.append(self.default_log_handler)
-
-            if conf.settings.LOGGING:
-                # Set a default version if not supplied by settings
-                dict_config = conf.settings.LOGGING.copy()
-                dict_config.setdefault("version", 1)
-                logging.config.dictConfig(dict_config)
+            self._apply_logging_settings()
 
             # Configure root log level
             loglevel = opts.log_level
@@ -598,7 +608,7 @@ class CliApplication(CommandGroup):  # noqa: F405
             self.logging_shutdown()
 
 
-CURRENT_APP: Optional[CliApplication] = None
+CURRENT_APP: CliApplication | None = None
 
 
 def _set_running_application(app: CliApplication):
