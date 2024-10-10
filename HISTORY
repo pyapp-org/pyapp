@@ -9,6 +9,8 @@ Features
 - Fully implement split logging configuration. Settings now contains `LOG_HANDLERS`
   and `LOG_LOGGERS` that are merged into the logging configuration before it is
   applied.
+- Add a function `settings_in_module` in the testing package to fetch a list of
+  setting names from a settings module.
 
 
 4.15.1
