@@ -1,3 +1,16 @@
+4.16
+====
+
+Features
+--------
+
+- Feature flags now has a modify context manager that allows for patching flags
+  that are reverted when the context manager exits (similar to settings).
+- Fully implement split logging configuration. Settings now contains `LOG_HANDLERS`
+  and `LOG_LOGGERS` that are merged into the logging configuration before it is
+  applied.
+
+
 4.15.1
 ======
 
