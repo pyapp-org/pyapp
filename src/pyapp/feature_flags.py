@@ -89,6 +89,8 @@ class ModifyFeatureFlagsContext:
 
     """
 
+    __slots__ = ("__flags", "__rollback")
+
     def __init__(self, feature_flags: dict[str, bool]):
         self.__flags = feature_flags
         self.__rollback = []

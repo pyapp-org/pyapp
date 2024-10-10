@@ -1,10 +1,27 @@
-def test_settings_fixture(pytester):
+from pyapp import feature_flags
+
+
+def test_settings_fixture(settings, patch_settings):
+    patch_settings.FOO = "bar"
+
+    assert settings.FOO == "bar"
+
+
+def test_feature_flags_fixture(patch_feature_flags):
+    patch_feature_flags["foo"] = True
+
+    assert feature_flags.get("foo") is True
+
+
+def test_check_registry(pytester):
     pytester.makepyfile(
         """
-        def test_sample(patch_settings):
-            assert patch_settings.FOO == "bar"
-    """
+        from pyapp import checks
+          
+        def test_sample(check_registry):
+            assert checks.registry is check_registry
+        """
     )
 
     result = pytester.runpytest()
-    assert result.ret == 1
+    result.assert_outcomes(passed=1)
