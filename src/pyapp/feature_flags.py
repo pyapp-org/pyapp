@@ -56,6 +56,8 @@ from functools import wraps
 from os import getenv
 from typing import Any, TypeVar
 
+from typing_extensions import Self
+
 from pyapp.conf import settings
 from pyapp.utils import text_to_bool
 
@@ -95,7 +97,7 @@ class ModifyFeatureFlagsContext:
         self.__flags = feature_flags
         self.__rollback = []
 
-    def __enter__(self) -> "ModifyFeatureFlagsContext":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -104,6 +106,10 @@ class ModifyFeatureFlagsContext:
             action(*args)
 
     def __setitem__(self, flag: str, value: bool):
+        """Replace a flag state."""
+
+        assert isinstance(flag, str), "Expected a `str` key."  # noqa: S101 - Assertions used in testing
+
         if flag in self.__flags:
             # Prepare an action that puts the current value back
             action = self.__flags.__setitem__, (flag, self.__flags[flag])
