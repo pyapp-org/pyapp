@@ -1,6 +1,6 @@
 import datetime
 from argparse import ArgumentError, ArgumentParser, Namespace
-from enum import Enum
+from enum import Enum, IntEnum, auto
 
 import pytest
 from pyapp.app import argument_actions
@@ -52,6 +52,12 @@ class Colour(Enum):
     Red = "red"
     Green = "green"
     Blue = "blue"
+
+
+class IntColour(IntEnum):
+    Red = auto()
+    Green = auto()
+    Blue = auto()
 
 
 class TestEnumActions:
@@ -115,6 +121,17 @@ class TestEnumActions:
         value_target(parser, namespace, "blue")
 
         assert namespace.colour == Colour.Blue
+
+    def test_call__with_int_enum(self):
+        target = argument_actions.EnumName(
+            option_strings="--colour", dest="colour", type=IntColour
+        )
+        parser = ArgumentParser()
+        namespace = Namespace()
+
+        target(parser, namespace, "Blue")
+
+        assert namespace.colour == IntColour.Blue
 
 
 class TestAppendEnumActions:
