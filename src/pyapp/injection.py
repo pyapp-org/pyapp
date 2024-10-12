@@ -26,7 +26,9 @@ import functools
 import inspect
 from collections.abc import Callable
 from types import FunctionType
-from typing import Any, TypeVar
+from typing import Any, Protocol, TypeVar
+
+from typing_extensions import Self
 
 __all__ = (
     "Args",
@@ -39,11 +41,12 @@ __all__ = (
     "ModifyFactoryRegistryContext",
 )
 
-from typing_extensions import Self
-
-# pylint: disable=invalid-name
 AT_co = TypeVar("AT_co", bound=abc.ABC, covariant=True)
-FactoryFunc = Callable[..., AT_co]
+
+
+class FactoryFunc(Protocol[AT_co]):
+    def __call__(self, *args, **kwargs) -> AT_co:
+        ...
 
 
 class InjectionError(Exception):
@@ -80,7 +83,7 @@ class ModifyFactoryRegistryContext:
         for action, args in reversed(self.__rollback):
             action(*args)
 
-    def __setitem__(self, abstract_type: type[AT_co], factory: FactoryFunc):
+    def __setitem__(self, abstract_type: type[AT_co], factory: FactoryFunc[AT_co]):
         """Replace a factory for an abstract type."""
 
         assert issubclass(abstract_type, abc.ABC), "Expected an `abstract type` key"  # noqa: S101 - Assertions used in testing
