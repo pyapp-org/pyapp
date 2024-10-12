@@ -49,9 +49,7 @@ class SettingDescriptor:
     def __get__(self, instance, owner):
         from pyapp.conf import settings
 
-        if settings.is_configured:
-            return getattr(settings, self.setting)
-        return None
+        return getattr(settings, self.setting, None)
 
 
 class SettingsDefType(type):
