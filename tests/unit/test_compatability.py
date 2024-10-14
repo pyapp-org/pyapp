@@ -10,5 +10,5 @@ def test_async_run__not_a_coroutine():
     def example():
         pass
 
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, TypeError)):
         compatability.async_run(example)

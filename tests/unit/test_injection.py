@@ -4,7 +4,7 @@ import pytest
 from pyapp import injection
 
 
-class ThingBase(metaclass=abc.ABCMeta):
+class ThingBase(abc.ABC):
     @abc.abstractmethod
     def do_stuff(self, item: str):
         pass
@@ -22,7 +22,7 @@ class BThing(ThingBase):
 
 class CThing(ThingBase):
     def __init__(self):
-        raise hell
+        raise hell  # noqa: F821
 
     def do_stuff(self, item: str):
         pass
@@ -52,6 +52,14 @@ class TestFactoryRegistry:
         actual = local_registry.resolve(abstract_type)
 
         assert actual is expected
+
+    def test_modify(self):
+        with local_registry.modify() as patch:
+            mock = patch.mock_type(ThingBase)
+
+            assert local_registry.resolve(ThingBase)() is mock
+
+        assert local_registry.resolve(ThingBase)() is not mock
 
 
 def test_inject():
@@ -97,7 +105,7 @@ def test_inject__with_args():
     actual = None
 
     @injection.inject(from_registry=local_registry)
-    def get_value(*, value: ThingBase = injection.Args("b")):
+    def get_value(*, value: ThingBase = injection.Args("b")):  # noqa: B008
         nonlocal actual
         actual = value
 
@@ -110,7 +118,7 @@ def test_inject__with_factory_args_and_not_kwarg():
     with pytest.raises(injection.InjectionSetupError):
 
         @injection.inject()
-        def get_value(value: ThingBase = injection.Args("*")):
+        def get_value(value: ThingBase = injection.Args("*")):  # noqa: B008
             pass
 
 
@@ -118,7 +126,7 @@ def test_inject__with_factory_args_and_no_type_annotation():
     with pytest.raises(injection.InjectionSetupError):
 
         @injection.inject()
-        def get_value(*, value=injection.Args("*")):
+        def get_value(*, value=injection.Args("*")):  # noqa: B008
             pass
 
 
@@ -128,7 +136,7 @@ def test_inject__factory_raises_error():
     """
 
     @injection.inject(from_registry=local_registry)
-    def get_value(*, value: ThingBase = injection.Args("c")):
+    def get_value(*, value: ThingBase = injection.Args("c")):  # noqa: B008
         pass
 
     with pytest.raises(injection.InjectionError):

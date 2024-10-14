@@ -49,10 +49,14 @@ Or from the command line::
     my_app --enable-flag MY-FLAG --disable-flag OTHER-FLAG
 
 """
+
 import logging
+from collections.abc import Callable
 from functools import wraps
 from os import getenv
-from typing import Any, Callable, Dict, Optional, TypeVar, Union
+from typing import Any, TypeVar
+
+from typing_extensions import Self
 
 from pyapp.conf import settings
 from pyapp.utils import text_to_bool
@@ -62,6 +66,59 @@ ENV_TRANSLATE = str.maketrans(
     " -abcdefghijklmnopqrstuvwxyz", "__ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 )
 _F = TypeVar("_F", bound=Callable[..., Any])
+
+
+class ModifyFeatureFlagsContext:
+    """
+    Context object used to make temporary modifications to feature flags.
+
+    The main use-case for this feature is within test cases.
+
+    Feature flags can be changed and when the context is exited the
+    changes are reverted.
+
+    Example::
+
+        >>> # Directly add settings (you shouldn't normally do this!)
+        >>> DEFAULT.set("my-flag", False)
+        >>> # Make some changes
+        >>> with DEFAULT.modify() as patch:
+        ...     # Change state of a flag
+        ...     patch["my-flag"] = True
+        ...     assert get("my-flag") is True
+        >>> # Compare with initial state
+        >>> assert get("my-flag") is False
+
+    """
+
+    __slots__ = ("__flags", "__rollback")
+
+    def __init__(self, feature_flags: dict[str, bool]):
+        self.__flags = feature_flags
+        self.__rollback = []
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Restore the state by running the rollback actions in reverse
+        for action, args in reversed(self.__rollback):
+            action(*args)
+
+    def __setitem__(self, flag: str, value: bool):
+        """Replace a flag state."""
+
+        assert isinstance(flag, str), "Expected a `str` key."  # noqa: S101 - Assertions used in testing
+
+        if flag in self.__flags:
+            # Prepare an action that puts the current value back
+            action = self.__flags.__setitem__, (flag, self.__flags[flag])
+        else:
+            # Prepare an action to remove the flag again
+            action = self.__flags.__delitem__, (flag,)
+        self.__rollback.append(action)
+
+        self.__flags[flag] = value
 
 
 class FeatureFlags:
@@ -76,13 +133,11 @@ class FeatureFlags:
 
     """
 
-    __slots__ = ("_cache",)
-
     def __init__(self):
-        self._cache: Dict[str, bool] = {}
+        self._cache: dict[str, bool] = {}
 
     @staticmethod
-    def _resolve_from_environment(flag: str) -> Optional[bool]:
+    def _resolve_from_environment(flag: str) -> bool | None:
         """
         Attempt to resolve from environment.
         """
@@ -94,7 +149,7 @@ class FeatureFlags:
         return None
 
     @staticmethod
-    def _resolve_from_settings(flag: str) -> Optional[bool]:
+    def _resolve_from_settings(flag: str) -> bool | None:
         LOGGER.debug("Resolving flag %r from settings", flag)
         return settings.FEATURE_FLAGS.get(flag, None)
 
@@ -137,8 +192,8 @@ class FeatureFlags:
     def a_or_b(
         self,
         flag: str,
-        option_a: Union[Any, Callable[[], Any]],
-        option_b: Union[Any, Callable[[], Any]],
+        option_a: Any | Callable[[], Any],
+        option_b: Any | Callable[[], Any],
         *,
         default: bool = False,
     ):
@@ -178,7 +233,25 @@ class FeatureFlags:
 
         return decorator
 
+    def modify(self) -> ModifyFeatureFlagsContext:
+        """
+        Apply changes to feature flags using a context manager that will roll back
+        the changes on exit of a with block. Designed to simplify test cases.
+
+        This should be used with a context manager:
+
+            >>> feature_flags = FeatureFlags()
+            >>> with feature_flags.modify() as patch:
+            >>>     # Change a flag
+            >>>     patch["foo"] = False
+            >>>     # Clear a flag
+            >>>     del patch["bar"]
+
+        """
+        return ModifyFeatureFlagsContext(self._cache)
+
 
 DEFAULT = FeatureFlags()
 get = DEFAULT.get  # pylint: disable=invalid-name
 if_enabled = DEFAULT.if_enabled  # pylint: disable=invalid-name
+a_or_b = DEFAULT.a_or_b

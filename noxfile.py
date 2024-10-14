@@ -1,20 +1,21 @@
-from tempfile import TemporaryDirectory
+from pathlib import Path
 
 import nox
 from nox.sessions import Session
 
+HERE = Path(__file__).parent
 
-@nox.session(python=("3.8", "3.9", "3.10"), reuse_venv=True)
+
+@nox.session(
+    python=("python3.10", "python3.11", "python3.12", "python3.13", "pypy3.10"),
+    venv_backend=None,
+)
 def tests(session: Session):
-    with TemporaryDirectory() as tmpdir:
-        session.install("poetry")
-        session.run("poetry", "build")
-        session.run(
-            "poetry",
-            "export",
-            "--dev",
-            "--format=requirements.txt",
-            f"--output={tmpdir}/requirements.txt",
-        )
-        session.install(f"-r{tmpdir}/requirements.txt dist/pytest_pyapp*")
-    session.run("pytest")
+    print(f"🪄 Creating poetry environment for {session.python}")
+    session.run("poetry", "env", "use", session.python, external=True)
+
+    print("📦 Install dependencies...")
+    session.run("poetry", "install", "--with=dev", external=True)
+
+    print("▶️ Run tests")
+    session.run("poetry", "run", "pytest", "--config-file=pytest.ini", external=True)

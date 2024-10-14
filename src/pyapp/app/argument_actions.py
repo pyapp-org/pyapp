@@ -31,9 +31,10 @@ Date and Time types
 """
 
 from argparse import Action, ArgumentError, ArgumentParser, Namespace
+from collections.abc import Callable, Sequence
 from datetime import date, datetime, time
 from enum import Enum
-from typing import Any, Callable, Dict, Sequence, Tuple, Type, Union
+from typing import Any
 
 __all__ = (
     "KeyValueAction",
@@ -76,7 +77,7 @@ class KeyValueAction(Action):
         kwargs.setdefault("default", {})
         super().__init__(**kwargs)
 
-    def parse_value(self, value: str) -> Tuple[str, str]:
+    def parse_value(self, value: str) -> tuple[str, str]:
         """Parse an argument into a key/value pair"""
         key, part, value = value.partition("=")
         if not part:
@@ -87,7 +88,7 @@ class KeyValueAction(Action):
         self,
         parser: ArgumentParser,
         namespace: Namespace,
-        values: Union[Sequence[str], str],
+        values: Sequence[str] | str,
         option_string: str = None,
     ):
         # Ensure dest exists
@@ -137,7 +138,7 @@ class _EnumAction(Action):
         enum = self.to_enum(values)
         setattr(namespace, self.dest, enum)
 
-    def get_choices(self, choices: Union[Enum, Sequence[Enum]]):
+    def get_choices(self, choices: Enum | Sequence[Enum]):
         """
         Get choices from the enum
         """
@@ -152,7 +153,7 @@ class _EnumAction(Action):
 
 class EnumValue(_EnumAction):
     """
-    Action to use an Enum as the type of an argument. In this mode the Enum is
+    Action to use an Enum as the type of argument. In this mode the Enum is
     referenced by value.
 
     The choices are automatically generated for help.
@@ -178,7 +179,7 @@ class EnumValue(_EnumAction):
 
     """
 
-    def get_choices(self, choices: Union[Enum, Sequence[Enum]]):
+    def get_choices(self, choices: Enum | Sequence[Enum]):
         return tuple(e.value for e in choices)
 
     def to_enum(self, value):
@@ -187,7 +188,7 @@ class EnumValue(_EnumAction):
 
 class EnumName(_EnumAction):
     """
-    Action to use an Enum as the type of an argument. In this mode the Enum is
+    Action to use an Enum as the type of argument. In this mode the Enum is
     referenced by name.
 
     The choices are automatically generated for help.
@@ -199,21 +200,29 @@ class EnumName(_EnumAction):
             Green = "green"
             Blue = "blue"
 
+        class State(IntEnum):
+            Start = auto()
+            Stop = auto()
+            End = auto()
+
         @app.command
         @argument("--colour", type=Colour, action=EnumName)
+        @argument("--state", type=State, action=EnumName)
         def my_command(args: Namespace):
             print(args.colour)
+            print(args.state)
 
     From CLI::
 
-        > my_app m_command --colour Red
+        > my_app m_command --colour Red --state Stop
         Colour.Red
+        State.Stop
 
     .. versionadded:: 4.2
 
     """
 
-    def get_choices(self, choices: Union[Enum, Sequence[Enum]]):
+    def get_choices(self, choices: Enum | Sequence[Enum]):
         return tuple(e.name for e in choices)
 
     def to_enum(self, value):
@@ -250,7 +259,7 @@ class _AppendEnumActionMixin(_EnumAction):
         items.append(enum)
         setattr(namespace, self.dest, items)
 
-    def get_choices(self, choices: Union[Enum, Sequence[Enum]]):
+    def get_choices(self, choices: Enum | Sequence[Enum]):
         """
         Get choices from the enum
         """
@@ -358,7 +367,7 @@ class DateTimeAction(_DateTimeAction):
     parser = datetime.fromisoformat
 
 
-TYPE_ACTIONS: Dict[type, Type[Action]] = {
+TYPE_ACTIONS: dict[type, type[Action]] = {
     date: DateAction,
     time: TimeAction,
     datetime: DateTimeAction,

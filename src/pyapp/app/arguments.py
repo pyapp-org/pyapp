@@ -17,6 +17,7 @@ from typing import (
     Any,
     Awaitable,
     Callable,
+    Coroutine,
     Dict,
     Mapping,
     Optional,
@@ -24,6 +25,7 @@ from typing import (
     Tuple,
     Type,
     Union,
+    cast,
 )
 
 from argcomplete.completers import BaseCompleter
@@ -77,7 +79,12 @@ class CommandProxy(ParserBase):
 
     __slots__ = ("__name__", "handler", "_args", "_require_namespace")
 
-    def __init__(self, handler: Handler, parser: argparse.ArgumentParser, loglevel: int = logging.INFO):
+    def __init__(
+        self,
+        handler: Handler,
+        parser: argparse.ArgumentParser,
+        loglevel: int = logging.INFO,
+    ):
         """Initialise proxy.
 
         :param handler: Callable object that accepts a single argument.
@@ -144,7 +151,8 @@ class AsyncCommandProxy(CommandProxy):
     """
 
     def __call__(self, opts: argparse.Namespace):
-        return async_run(super().__call__(opts))
+        func = cast(Coroutine, super().__call__(opts))
+        return async_run(func)
 
 
 class ArgumentType(abc.ABC):
@@ -352,7 +360,7 @@ class Argument:
         nargs: Union[int, str] = None,
         const: Any = None,
         default: Any = EMPTY,
-        type: Optional[Type[Any]] = None,  # noqa
+        type: Optional[Callable[[Any], Any]] = None,  # noqa: A002
         choices: Sequence[Any] = None,
         required: bool = None,
         help_text: str = None,
@@ -401,8 +409,8 @@ class Argument:
         return action
 
 
-Arg = Argument.arg  # pylint: disable=invalid-name
-argument = Argument  # pylint: disable=invalid-name
+Arg = Argument.arg
+argument = Argument
 
 
 class CommandGroup(ParserBase):
@@ -458,14 +466,14 @@ class CommandGroup(ParserBase):
 
         return group
 
-    def command(
+    def command(  # noqa: PLR0913
         self,
         handler: Handler = None,
         *,
         name: str = None,
         aliases: Sequence[str] = (),
         help_text: str = None,
-        loglevel: int = logging.INFO
+        loglevel: int = logging.INFO,
     ) -> CommandProxy:
         """Decorator for registering handlers.
 
@@ -494,11 +502,15 @@ class CommandGroup(ParserBase):
             name_ = name or func.__name__
             if asyncio.iscoroutinefunction(func):
                 proxy = AsyncCommandProxy(
-                    func, self._sub_parsers.add_parser(name_, **kwargs)
+                    func,
+                    self._sub_parsers.add_parser(name_, **kwargs),
+                    loglevel=loglevel,
                 )
             else:
                 proxy = CommandProxy(
-                    func, self._sub_parsers.add_parser(name_, **kwargs)
+                    func,
+                    self._sub_parsers.add_parser(name_, **kwargs),
+                    loglevel=loglevel,
                 )
 
             self._add_handler(proxy, name_, aliases)

@@ -101,13 +101,11 @@ import logging
 import os
 import pickle
 import warnings
-from typing import Any, Dict, Iterable, List, Protocol, Sequence, Tuple, Union
-from typing.io import IO
+from collections.abc import Iterable, Sequence
+from typing import IO, Any, Protocol
 
-from pyapp.conf import base_settings
-from pyapp.conf.loaders import Loader, ModuleLoader
-
-from . import loaders
+from . import base_settings, loaders
+from .loaders import Loader, ModuleLoader, settings_iterator
 
 logger = logging.getLogger(__name__)
 
@@ -123,9 +121,9 @@ class ModifySettingsContext:
     Settings can be added/replaced/removed and when the context is exited the
     changes are reverted.
 
-    ..note:
+    .. note::
 
-        Changes made to an item (eg dictionary) are not reverted at this time,
+        Changes made to an item (e.g. dictionary) are not reverted at this time,
         to make changes to these items replace them with a clone.
 
     Example::
@@ -218,9 +216,7 @@ class ModifySettingsContext:
 
 
 class Settings:
-    """
-    Settings container
-    """
+    """Settings container."""
 
     def __init__(self, base_settings_=None):
         self._populate_base_settings(base_settings_)
@@ -234,10 +230,10 @@ class Settings:
     def __getitem__(self, item):
         return self.__dict__[item]
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self) -> dict[str, Any]:
         return dict(self.items())
 
-    def __setstate__(self, state: Dict[str, Any]):
+    def __setstate__(self, state: dict[str, Any]):
         self.__dict__.update(state)
 
     def __repr__(self) -> str:
@@ -245,39 +241,30 @@ class Settings:
         return f"{self.__class__.__name__}({sources})"
 
     def _populate_base_settings(self, base_settings_=None):
-        base_settings_ = base_settings_ or base_settings
-
         # Copy values from base settings file.
-        self.__dict__.update(
-            (k, getattr(base_settings_, k)) for k in dir(base_settings_) if k.upper()
-        )
+        self.__dict__.update(settings_iterator(base_settings_ or base_settings))
         self.__dict__["SETTINGS_SOURCES"] = []  # pylint: disable=invalid-name
 
     @property
     def is_configured(self) -> bool:
-        """
-        Settings have been configured (or some initial settings have been loaded).
-        """
+        """Settings have been configured (or some initial settings have been loaded)."""
         return bool(self.SETTINGS_SOURCES)
 
     @property
     def keys(self) -> Sequence[str]:
-        """
-        All settings keys available
-        """
+        """All settings keys available."""
         return [key for key in self.__dict__ if key.isupper()]
 
-    def items(self) -> Iterable[Tuple[str, Any]]:
-        """
-        Return a sorted iterable of all key/value pairs of settings
-        """
+    def items(self) -> Iterable[tuple[str, Any]]:
+        """Return a sorted iterable of all key/value pairs of settings."""
         data = self.__dict__
         for key in sorted(self.keys):
             yield key, data[key]
 
     def load(self, loader: Loader, apply_method=None):
-        """
-        Load settings from a loader instance. A loader is an iterator that yields key/value pairs.
+        """Load settings from a loader instance.
+
+        A loader is an iterator that yields key/value pairs.
 
         See :py:class:`pyapp.conf.loaders.ModuleLoader` as an example.
 
@@ -306,14 +293,13 @@ class Settings:
         self.SETTINGS_SOURCES.append(loader_key)
 
         # Handle instances of INCLUDE entries
-        include_settings = self.__dict__.pop("INCLUDE_SETTINGS", None)
+        include_settings = self.__dict__.pop("INCLUDE_SETTINGS", [])
         if include_settings:
             for source_url in include_settings:
                 self.load(loaders.factory(source_url), apply_method)
 
     def load_from_loaders(self, loader_list: Sequence[Loader], override: bool = True):
-        """
-        Load settings from a list of loaders.
+        """Load settings from a list of loaders.
 
         :param loader_list: List of loader instances.
         :param override: If True loaders override existing items else existing
@@ -327,16 +313,15 @@ class Settings:
 
     def configure(
         self,
-        default_settings: Union[str, Sequence[str]],
+        default_settings: str | Sequence[str],
         runtime_settings: str = None,
         additional_loaders: Sequence[Loader] = None,
         env_settings_key: str = DEFAULT_ENV_KEY,
     ):
-        """
-        Configure the settings object
+        """Configure the settings object.
 
         :param default_settings: Your applications and extensions default settings.
-        :param runtime_settings: Settings defined for the current runtime (eg from the command line)
+        :param runtime_settings: Settings defined for the current runtime (e.g. from the command line).
         :param additional_loaders: Additional loaders to execute
         :param env_settings_key: Environment variable key used to override the runtime_settings.
 
@@ -348,7 +333,7 @@ class Settings:
             default_settings = [default_settings]
 
         # Build list of loaders
-        loader_list: List[Loader] = [ModuleLoader(s) for s in default_settings]
+        loader_list: list[Loader] = [ModuleLoader(s) for s in default_settings]
 
         # Add run time settings (which can be overridden or specified by an
         # environment variable).
@@ -391,20 +376,15 @@ settings = Settings()  # pylint: disable=invalid-name
 class Serialiser(Protocol):
     """Protocol a serialiser must meet."""
 
-    def dump(self, obj: Dict[str, Any], file: IO):
-        """
-        Dump data into the file(like) object
-        """
+    def dump(self, obj: dict[str, Any], file: IO):
+        """Dump data into the file(like) object."""
 
-    def load(self, file: IO) -> Dict[str, Any]:
-        """
-        Load data from a file(like) object
-        """
+    def load(self, file: IO) -> dict[str, Any]:
+        """Load data from a file(like) object."""
 
 
 def export_settings(file: IO, *, serialiser: Serialiser = pickle):
-    """
-    Export settings into specified file(like) object using specified serialiser.
+    """Export settings into specified file(like) object using specified serialiser.
 
     The default serialiser is pickle
     """
@@ -413,8 +393,7 @@ def export_settings(file: IO, *, serialiser: Serialiser = pickle):
 
 
 def restore_settings(file: IO, *, serialiser: Serialiser = pickle):
-    """
-    Restore settings from specified file(like) object using specified serialiser.
+    """Restore settings from specified file(like) object using specified serialiser.
 
     The default serialiser is pickle
     """

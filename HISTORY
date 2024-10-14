@@ -1,3 +1,24 @@
+4.16
+====
+
+Features
+--------
+
+- Feature flags now has a modify context manager that allows for patching flags
+  that are reverted when the context manager exits (similar to settings).
+- Add PyTest fixture `patch_feature_flags` that returns modify context for feature
+  flags.
+- Fully implement split logging configuration. Settings now contains `LOG_HANDLERS`
+  and `LOG_LOGGERS` that are merged into the logging configuration before it is
+  applied.
+- Add a function `settings_in_module` in the testing package to fetch a list of
+  setting names from a settings module.
+- The injection FactoryRegistry now has a modify context manager that allows for
+  patching (and mocking) factories that are reverted when the context manager
+  exits.
+- Add PyTest fixture `patch_injection` that returns modify context for the
+  factory registry.
+
 4.15.1
 ======
 

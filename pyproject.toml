@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyapp"
-version = "4.15.2"
+version = "4.16"
 description = "A Python application framework - Let us handle the boring stuff!"
 authors = ["Tim Savage <tim@savage.company>"]
 license = "BSD-3-Clause"
@@ -20,9 +20,10 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
@@ -33,21 +34,21 @@ packages = [
 include = ["HISTORY"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 argcomplete = "^3.2"
 colorama = "*"
 yarl = "*"
 importlib_metadata = {version = "*", python = "<=3.9"}
+typing_extensions = "*"
 
 pyyaml = {version = "*", optional = true }
 toml = {version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.0"
-pytest-cov = "^4.0"
-pytest-asyncio = "^0.23"
-nox = "*"
-sphinx = "^7.1"
+pytest-cov = "^5.0"
+pytest-asyncio = "^0.24"
+sphinx = "^8.1"
 
 [tool.poetry.extras]
 yaml = ["pyyaml"]
@@ -64,8 +65,8 @@ toml = ["toml"]
 line-length = 88
 indent-width = 4
 
-# Assume Python 3.8
-target-version = "py38"
+# Assume Python 3.10
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["N", "F", "I", "UP", "PL", "A", "G", "S", "E", "SIM", "B"]

@@ -5,10 +5,12 @@ Content Type Support
 Used by File and HTTP loaders to handle both JSON and YAML content.
 
 """
+
 import mimetypes
+from collections.abc import Callable, Sequence
 from json import load as json_load
 from pathlib import Path
-from typing import Any, Callable, Dict, Sequence, TextIO, Union
+from typing import Any, TextIO
 
 from yarl import URL
 
@@ -54,17 +56,15 @@ def content_type_from_url(url: URL) -> str:
     return file_type
 
 
-ContentTypeParser = Callable[[TextIO], Dict[str, Any]]
+ContentTypeParser = Callable[[TextIO], dict[str, Any]]
 
 
-# TODO: Remove when pylint handles typing.List correctly  pylint: disable=fixme
-# pylint: disable=unsupported-assignment-operation,no-member
-class ContentTypeParserRegistry(Dict[str, ContentTypeParser]):
+class ContentTypeParserRegistry(dict[str, ContentTypeParser]):
     """
     Registry of content type parsers.
     """
 
-    def parse_file(self, fp, content_type: str) -> Dict[str, Any]:
+    def parse_file(self, fp, content_type: str) -> dict[str, Any]:
         """
         Parse a file using the specified content type.
 
@@ -78,7 +78,9 @@ class ContentTypeParserRegistry(Dict[str, ContentTypeParser]):
         return content_parser(fp)
 
     def register(
-        self, content_types: Union[str, Sequence[str]], parser: ContentTypeParser
+        self,
+        content_types: str | Sequence[str],
+        parser: ContentTypeParser,
     ) -> None:
         """
         Register a content type parser.

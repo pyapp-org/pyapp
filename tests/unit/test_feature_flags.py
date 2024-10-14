@@ -158,3 +158,32 @@ class TestFeatureFlags:
             """Sample"""
 
         assert foo.__doc__ == "Sample"
+
+    def test_modify__change_a_flag_state(self):
+        target = FeatureFlagsWrapper()
+        target._cache["foo"] = True
+        target._cache["bar"] = False
+
+        with target.modify() as patch:
+            patch["foo"] = False
+            patch["bar"] = True
+
+            assert target.get("foo") is False
+            assert target.get("bar", default=False) is True
+
+        assert target.get("foo") is True
+        assert target.get("bar") is False
+
+    def test__add_a_flag_state(self):
+        target = FeatureFlagsWrapper()
+        target._cache["foo"] = True
+
+        with target.modify() as patch:
+            patch["foo"] = False
+            patch["bar"] = True
+
+            assert target.get("foo") is False
+            assert target.get("bar", default=False) is True
+
+        assert target.get("foo") is True
+        assert target.get("bar", default=False) is False
