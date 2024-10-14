@@ -805,13 +805,13 @@ files = [
 
 [[package]]
 name = "sphinx"
-version = "8.1.1"
+version = "8.1.3"
 description = "Python documentation generator"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "sphinx-8.1.1-py3-none-any.whl", hash = "sha256:84db3c819ed4ae63c6b1847f64576fcffe9d4f40670eefffcd215f9abc992393"},
-    {file = "sphinx-8.1.1.tar.gz", hash = "sha256:65e0ee8f76c9cbfd53ec8466ac8c87a73f9ed911767a8ef36c3bf3c522242bcd"},
+    {file = "sphinx-8.1.3-py3-none-any.whl", hash = "sha256:09719015511837b76bf6e03e42eb7595ac8c2e41eeb9c29c5b755c6b677992a2"},
+    {file = "sphinx-8.1.3.tar.gz", hash = "sha256:43c1911eecb0d3e161ad78611bc905d1ad0e523e4ddc202a58a821773dc4c927"},
 ]
 
 [package.dependencies]
