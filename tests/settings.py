@@ -53,3 +53,8 @@ class MySettings(SettingsDef):
     TEST_PROVIDERS: Sequence[str] = [
         "tests.unit.conf.helpers.test_providers_factories.ProviderBaseTest"
     ]
+
+
+class MyPrefixedSettings(SettingsDef, prefix="FOO_"):
+    SETTING_1: str = "my-prefixed-setting"
+

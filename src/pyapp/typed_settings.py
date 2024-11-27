@@ -66,8 +66,9 @@ class SettingsDefType(type):
         for key, value in dct.items():
             # Settings must be upper case (or constant style)
             if key.isupper():
-                values.append((key, value))
-                descriptors[key] = SettingDescriptor(f"{prefix}{key}")
+                setting = f"{prefix}{key}"
+                values.append((setting, value))
+                descriptors[key] = SettingDescriptor(setting)
 
         # Update original dict.
         dct.update(descriptors)
