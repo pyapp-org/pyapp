@@ -1,3 +1,13 @@
+4.16.1
+======
+
+Bugfix
+------
+
+- TypedDef prefix was not being applied to setting merged into ``pyapp.conf.Setting``
+  instance.
+
+
 4.16
 ====
 
