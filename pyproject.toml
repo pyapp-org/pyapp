@@ -47,7 +47,7 @@ toml = {version = "*", optional = true }
 [tool.poetry.dev-dependencies]
 pytest = "^8.0"
 pytest-cov = "^6.0"
-pytest-asyncio = "^0.24"
+pytest-asyncio = "^0.25"
 sphinx = "^8.1"
 
 [tool.poetry.extras]
