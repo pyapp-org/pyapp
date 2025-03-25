@@ -8,8 +8,6 @@ Utils for managing deprecation of methods and tools
 
 import functools
 import inspect
-import os
-import sys
 import warnings
 
 
@@ -50,20 +48,3 @@ def deprecated(message: str, category: type[Warning] = DeprecationWarning):
         return func_wrapper
 
     return decorator
-
-
-if sys.platform.startswith("win"):
-    from ctypes import windll
-
-    ROOT_NAME = "Administrator"
-
-    def is_root() -> bool:
-        """This is a root user."""
-        return bool(windll.shell32.IsUserAnAdmin())
-
-else:
-    ROOT_NAME = "root"
-
-    def is_root() -> bool:
-        """This is a root user."""
-        return bool(os.getuid() == 0)
