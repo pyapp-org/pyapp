@@ -154,6 +154,7 @@ Argument Actions
 """
 
 import argparse
+import enum
 import io
 import logging.config
 import os
@@ -172,6 +173,7 @@ from ..conf.base_settings import LoggingSettings
 from ..events import Event
 from ..exceptions import ApplicationExit
 from ..injection import register_factory
+from ..compatability import is_user_root, ROOT_NAME
 from ..utils.inspect import import_root_module
 from . import init_logger
 from .argument_actions import *  # noqa
@@ -179,6 +181,16 @@ from .arguments import *  # noqa
 from .logging_formatter import ColourFormatter
 
 logger = logging.getLogger(__name__)
+
+
+class ExecutionPolicy(enum.IntEnum):
+    """Execution policy"""
+
+    Deny = 0
+    Confirm = 10
+    Warn = 20
+    Allow = 30
+
 
 
 def _key_help(key: str) -> str:
@@ -259,6 +271,7 @@ class CliApplication(CommandGroup):  # noqa: F405
         application_checks: str = None,
         env_settings_key: str = None,
         env_loglevel_key: str = None,
+        root_execution_policy: ExecutionPolicy = ExecutionPolicy.Deny,
     ):
         root_module = root_module or import_root_module()
         self.root_module = root_module
@@ -275,6 +288,8 @@ class CliApplication(CommandGroup):  # noqa: F405
             )
             self.ext_allow_list = ext_white_list
         self.ext_block_list = ext_block_list
+
+        self.root_execution_policy = root_execution_policy
 
         # Determine application settings (disable for standalone scripts)
         if application_settings is None and root_module.__name__ != "__main__":
@@ -317,6 +332,19 @@ class CliApplication(CommandGroup):  # noqa: F405
         if description:
             return f"{self.application_name} version {self.application_version} - {description}"
         return f"{self.application_name} version {self.application_version}"
+
+    def _apply_execution_policy(self):
+        if is_user_root():
+            match (self.root_execution_policy):
+                case ExecutionPolicy.Deny:
+                    print(f"Execution denied as {ROOT_NAME} user", file=os.stderr)
+                    sys.exit(1)
+                case ExecutionPolicy.Prompt:
+                    response = input(f"Warning: Executing as {ROOT_NAME}. Allow execution? [Y/N]")
+                    if response not in ("Y", "y"):
+                        sys.exit(1)
+                case ExecutionPolicy.Warning:
+                    print(f"Warning: Executing as {ROOT_NAME}", file=os.stderr)
 
     def _init_parser(self):
         # Create argument parser
