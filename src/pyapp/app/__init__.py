@@ -353,15 +353,15 @@ class CliApplication(CommandGroup):  # noqa: F405
 
             match root_execution_policy:
                 case ExecutionPolicy.Deny:
-                    print(f"Execution denied as {ROOT_NAME} user", file=sys.stderr)
+                    print(f"Execution denied for user {ROOT_NAME}", file=sys.stderr)
                     sys.exit(1)
                 case ExecutionPolicy.Confirm:
-                    print(f"Warning! Executing as {ROOT_NAME}", file=sys.stderr)
+                    print(f"Warning! Executing as user {ROOT_NAME}", file=sys.stderr)
                     response = input("Allow execution? [Y/N]")
                     if response not in ("Y", "y"):
                         sys.exit(1)
                 case ExecutionPolicy.Warn:
-                    print(f"Warning! Executing as {ROOT_NAME}", file=sys.stderr)
+                    print(f"Warning! Executing as user {ROOT_NAME}", file=sys.stderr)
 
     def _init_parser(self):
         # Create argument parser
