@@ -8,11 +8,12 @@ Utils for managing deprecation of methods and tools
 
 import functools
 import inspect
+import os
+import sys
 import warnings
-from typing import Type
 
 
-def deprecated(message: str, category: Type[Warning] = DeprecationWarning):
+def deprecated(message: str, category: type[Warning] = DeprecationWarning):
     """
     Decorator for marking classes/functions as being deprecated and are to be removed in the future.
 
@@ -49,3 +50,20 @@ def deprecated(message: str, category: Type[Warning] = DeprecationWarning):
         return func_wrapper
 
     return decorator
+
+
+if sys.platform.startswith("win"):
+    from ctypes import windll
+
+    ROOT_NAME = "Administrator"
+
+    def is_root() -> bool:
+        """This is a root user."""
+        return bool(windll.shell32.IsUserAnAdmin())
+
+else:
+    ROOT_NAME = "root"
+
+    def is_root() -> bool:
+        """This is a root user."""
+        return bool(os.getuid() == 0)

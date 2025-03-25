@@ -4,11 +4,10 @@ PyApp Utils
 """
 
 import importlib
-import os
-import sys
 import textwrap
+from collections.abc import Container, Sequence
 from fnmatch import fnmatch
-from typing import Any, Container, Sequence
+from typing import Any
 
 
 def is_iterable(obj: Any) -> bool:
@@ -19,25 +18,6 @@ def is_iterable(obj: Any) -> bool:
         return False
     else:
         return True
-
-
-if sys.platform.startswith("win"):
-    from ctypes import windll
-
-    ROOT_NAME = "Administrator"
-
-    
-    def is_root() -> bool:
-        """This is a root user."""
-        return bool(windll.shell32.IsUserAnAdmin()
-
-else:
-    ROOT_NAME = "root"
-
-
-    def is_root() -> bool:
-        """This is a root user."""
-        return bool(os.getuid() == 0)
 
 
 class CachedProperty:
