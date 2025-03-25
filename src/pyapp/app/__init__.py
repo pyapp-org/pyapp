@@ -154,6 +154,7 @@ Argument Actions
 """
 
 import argparse
+import contextlib
 import enum
 import io
 import logging.config
@@ -169,11 +170,11 @@ import colorama
 
 from .. import conf, extensions, feature_flags
 from ..app import builtin_handlers
+from ..compatability import ROOT_NAME, is_root_user
 from ..conf.base_settings import LoggingSettings
 from ..events import Event
 from ..exceptions import ApplicationExit
 from ..injection import register_factory
-from ..compatability import is_user_root, ROOT_NAME
 from ..utils.inspect import import_root_module
 from . import init_logger
 from .argument_actions import *  # noqa
@@ -183,14 +184,13 @@ from .logging_formatter import ColourFormatter
 logger = logging.getLogger(__name__)
 
 
-class ExecutionPolicy(enum.IntEnum):
-    """Execution policy"""
+class ExecutionPolicy(str, enum.Enum):
+    """Execution policy."""
 
-    Deny = 0
-    Confirm = 10
-    Warn = 20
-    Allow = 30
-
+    Deny = "deny"
+    Confirm = "confirm"
+    Warn = "warn"
+    Allow = "allow"
 
 
 def _key_help(key: str) -> str:
@@ -238,11 +238,17 @@ class CliApplication(CommandGroup):  # noqa: F405
     )
     """Log formatter with colour applied by default to the root logger handler."""
 
+    root_execution_policy: ExecutionPolicy = ExecutionPolicy.Deny
+    """Execution policy for applications executing as root or with Administrator access."""
+
     env_settings_key = conf.DEFAULT_ENV_KEY
     """Key used to define settings reference in environment."""
 
     env_loglevel_key = "PYAPP_LOGLEVEL"
     """Key used to define log level in environment."""
+
+    env_root_execution_policy_key = "PYAPP_ROOT_EXECUTION_POLICY"
+    """Key used to define root application execution policy."""
 
     additional_handlers = (
         builtin_handlers.checks,
@@ -264,14 +270,15 @@ class CliApplication(CommandGroup):  # noqa: F405
         description: str = None,
         epilog: str = None,
         version: str = None,
-        ext_white_list: Sequence[str] = None,
-        ext_allow_list: Sequence[str] = None,
-        ext_block_list: Sequence[str] = None,
+        ext_white_list: list[str] = None,
+        ext_allow_list: list[str] = None,
+        ext_block_list: list[str] = None,
         application_settings: str = None,
         application_checks: str = None,
+        root_execution_policy: ExecutionPolicy = None,
         env_settings_key: str = None,
         env_loglevel_key: str = None,
-        root_execution_policy: ExecutionPolicy = ExecutionPolicy.Deny,
+        env_root_execution_policy_key: str = None,
     ):
         root_module = root_module or import_root_module()
         self.root_module = root_module
@@ -289,8 +296,6 @@ class CliApplication(CommandGroup):  # noqa: F405
             self.ext_allow_list = ext_white_list
         self.ext_block_list = ext_block_list
 
-        self.root_execution_policy = root_execution_policy
-
         # Determine application settings (disable for standalone scripts)
         if application_settings is None and root_module.__name__ != "__main__":
             application_settings = f"{root_module.__name__}.default_settings"
@@ -306,6 +311,13 @@ class CliApplication(CommandGroup):  # noqa: F405
             self.env_settings_key = env_settings_key
         if env_loglevel_key is not None:
             self.env_loglevel_key = env_loglevel_key
+        if env_root_execution_policy_key is not None:
+            self.env_root_execution_policy_key = env_root_execution_policy_key
+
+        # Apply execution policy early
+        self._apply_execution_policy(
+            root_execution_policy or self.root_execution_policy
+        )
 
         # Configure Logging as early as possible
         self._init_logger = init_logger.InitHandler(self.default_log_handler)
@@ -333,18 +345,23 @@ class CliApplication(CommandGroup):  # noqa: F405
             return f"{self.application_name} version {self.application_version} - {description}"
         return f"{self.application_name} version {self.application_version}"
 
-    def _apply_execution_policy(self):
-        if is_user_root():
-            match (self.root_execution_policy):
+    def _apply_execution_policy(self, root_execution_policy):
+        if is_root_user():
+            if execution_policy := os.getenv(self.env_root_execution_policy_key, None):
+                with contextlib.suppress(ValueError):
+                    root_execution_policy = ExecutionPolicy(execution_policy)
+
+            match root_execution_policy:
                 case ExecutionPolicy.Deny:
-                    print(f"Execution denied as {ROOT_NAME} user", file=os.stderr)
+                    print(f"Execution denied as {ROOT_NAME} user", file=sys.stderr)
                     sys.exit(1)
-                case ExecutionPolicy.Prompt:
-                    response = input(f"Warning: Executing as {ROOT_NAME}. Allow execution? [Y/N]")
+                case ExecutionPolicy.Confirm:
+                    print(f"Warning! Executing as {ROOT_NAME}", file=sys.stderr)
+                    response = input("Allow execution? [Y/N]")
                     if response not in ("Y", "y"):
                         sys.exit(1)
-                case ExecutionPolicy.Warning:
-                    print(f"Warning: Executing as {ROOT_NAME}", file=os.stderr)
+                case ExecutionPolicy.Warn:
+                    print(f"Warning! Executing as {ROOT_NAME}", file=sys.stderr)
 
     def _init_parser(self):
         # Create argument parser

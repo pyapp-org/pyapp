@@ -11,13 +11,13 @@ if sys.platform.startswith("win"):
 
     ROOT_NAME = "Administrator"
 
-    def is_root() -> bool:
+    def is_root_user() -> bool:
         """This is a root user."""
         return bool(windll.shell32.IsUserAnAdmin())
 
 else:
     ROOT_NAME = "root"
 
-    def is_root() -> bool:
+    def is_root_user() -> bool:
         """This is a root user."""
         return bool(os.getuid() == 0)
