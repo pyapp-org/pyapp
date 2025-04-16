@@ -268,7 +268,7 @@ class TestCliApplication:
         monkeypatch.setenv("PYAPP_ROOT_EXECUTION_POLICY", "boo")
 
         with pytest.raises(SystemExit):
-            CliApplication(tests.unit.sample_app, root_executoin_policy=app.ExecutionPolicy.Deny)
+            CliApplication(tests.unit.sample_app, root_execution_policy=app.ExecutionPolicy.Deny)
 
     def test_execution_policy__where_root_user_with_custom_environment_override(
         self, monkeypatch, capsys
