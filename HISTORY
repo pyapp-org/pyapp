@@ -1,5 +1,5 @@
-4.17
-====
+4.17rc1
+=======
 
 Features
 --------
@@ -13,7 +13,7 @@ Features
 Backward Compatibility
 ----------------------
 
-- The addition of the root_execution_policy will by default deny execution of
+- The addition of the root_execution_policy will by default confirm execution of
   applications as root/Administrator. This policy needs to be explicitly set
   to override this default behaviour when execution by root is required.
 
