@@ -238,7 +238,7 @@ class CliApplication(CommandGroup):  # noqa: F405
     )
     """Log formatter with colour applied by default to the root logger handler."""
 
-    root_execution_policy: ExecutionPolicy = ExecutionPolicy.Deny
+    root_execution_policy: ExecutionPolicy = ExecutionPolicy.Confirm
     """Execution policy for applications executing as root or with Administrator access."""
 
     env_settings_key = conf.DEFAULT_ENV_KEY
