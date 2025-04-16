@@ -1,5 +1,7 @@
+import builtins
+
 import pytest
-from pyapp import feature_flags
+from pyapp import app, feature_flags
 from pyapp.app import CliApplication, _key_help, argument
 from pyapp.app.logging_formatter import ColourFormatter
 
@@ -201,3 +203,83 @@ class TestCliApplication:
         target = CliApplication(tests.unit.sample_app, prog="testing")
 
         assert repr(target) == "CliApplication(<module tests.unit.sample_app>)"
+
+    def test_execution_policy__where_non_root(self, monkeypatch):
+        monkeypatch.setattr(app, "is_root_user", lambda: False)
+
+        CliApplication(tests.unit.sample_app)
+
+    def test_execution_policy__where_root_user_and_deny(self, monkeypatch, capsys):
+        monkeypatch.setattr(app, "is_root_user", lambda: True)
+
+        with pytest.raises(SystemExit):
+            CliApplication(tests.unit.sample_app, root_execution_policy=app.ExecutionPolicy.Deny)
+
+        captured = capsys.readouterr()
+        assert captured.err.startswith("Execution denied")
+
+    def test_execution_policy__where_root_user_and_warning(self, monkeypatch, capsys):
+        monkeypatch.setattr(app, "is_root_user", lambda: True)
+
+        CliApplication(
+            tests.unit.sample_app, root_execution_policy=app.ExecutionPolicy.Warn
+        )
+
+        captured = capsys.readouterr()
+        assert captured.err.startswith("Warning! Executing as")
+
+    def test_execution_policy__where_root_user_and_confirm_true(
+        self, monkeypatch, capsys
+    ):
+        monkeypatch.setattr(app, "is_root_user", lambda: True)
+        monkeypatch.setattr(builtins, "input", lambda x: "y")
+
+        CliApplication(
+            tests.unit.sample_app, root_execution_policy=app.ExecutionPolicy.Confirm
+        )
+
+        captured = capsys.readouterr()
+        assert captured.err.startswith("Warning! Executing as")
+
+    def test_execution_policy__where_root_user_and_confirm_false(
+        self, monkeypatch, capsys
+    ):
+        monkeypatch.setattr(app, "is_root_user", lambda: True)
+        monkeypatch.setattr(builtins, "input", lambda x: "")
+
+        with pytest.raises(SystemExit):
+            CliApplication(
+                tests.unit.sample_app, root_execution_policy=app.ExecutionPolicy.Confirm
+            )
+
+        captured = capsys.readouterr()
+        assert captured.err.startswith("Warning! Executing as")
+
+    def test_execution_policy__where_root_user_env_override(self, monkeypatch):
+        monkeypatch.setattr(app, "is_root_user", lambda: True)
+        monkeypatch.setenv("PYAPP_ROOT_EXECUTION_POLICY", "allow")
+
+        CliApplication(tests.unit.sample_app)
+
+    def test_execution_policy__where_root_user_env_override_is_invalid(
+        self, monkeypatch
+    ):
+        monkeypatch.setattr(app, "is_root_user", lambda: True)
+        monkeypatch.setenv("PYAPP_ROOT_EXECUTION_POLICY", "boo")
+
+        with pytest.raises(SystemExit):
+            CliApplication(tests.unit.sample_app, root_execution_policy=app.ExecutionPolicy.Deny)
+
+    def test_execution_policy__where_root_user_with_custom_environment_override(
+        self, monkeypatch, capsys
+    ):
+        monkeypatch.setattr(app, "is_root_user", lambda: True)
+        monkeypatch.setenv("MY_APP_ROOT_EXECUTION_POLICY", "warn")
+
+        CliApplication(
+            tests.unit.sample_app,
+            env_root_execution_policy_key="MY_APP_ROOT_EXECUTION_POLICY",
+        )
+
+        captured = capsys.readouterr()
+        assert captured.err.startswith("Warning! Executing as")

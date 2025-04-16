@@ -1,3 +1,26 @@
+4.17rc1
+=======
+
+Features
+--------
+
+- Add root_execution_policy used to define behaviour of pyapp when executed as 
+  root or Administrator. The default behaviour is to deny execution. This can
+  be overridden by specifying an alternate policy or by using the environment
+  variable PYAPP_ROOT_EXECUTION_POLICY.
+
+
+Backward Compatibility
+----------------------
+
+- The addition of the root_execution_policy will by default confirm execution of
+  applications as root/Administrator. This policy needs to be explicitly set
+  to override this default behaviour when execution by root is required.
+
+  Any user with permissions to execute as Administrator is included in this 
+  policy on Windows.
+
+
 4.16.1
 ======
 

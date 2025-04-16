@@ -5,8 +5,9 @@ PyApp Utils
 
 import importlib
 import textwrap
+from collections.abc import Container, Sequence
 from fnmatch import fnmatch
-from typing import Any, Container, Sequence
+from typing import Any
 
 
 def is_iterable(obj: Any) -> bool:
