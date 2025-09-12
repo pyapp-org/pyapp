@@ -12,20 +12,13 @@ import argparse
 import asyncio
 import inspect
 import logging
+from collections.abc import Awaitable, Callable, Coroutine, Sequence
 from enum import Enum
+from types import UnionType
 from typing import (
     Any,
-    Awaitable,
-    Callable,
-    Coroutine,
-    Dict,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
     cast,
+    get_origin,
 )
 
 from argcomplete.completers import BaseCompleter
@@ -38,12 +31,12 @@ from .argument_actions import TYPE_ACTIONS, AppendEnumName, EnumName, KeyValueAc
 __all__ = ("Handler", "argument", "CommandGroup", "Arg", "ArgumentType")
 
 
-Handler = Union[
-    Callable[..., Optional[int]],
-    Callable[[argparse.Namespace], Optional[int]],
-    Callable[..., Awaitable[Optional[int]]],
-    Callable[[argparse.Namespace], Awaitable[Optional[int]]],
-]
+Handler = (
+    Callable[..., int | None]
+    | Callable[[argparse.Namespace], int | None]
+    | Callable[..., Awaitable[int | None]]
+    | Callable[[argparse.Namespace], Awaitable[int | None]]
+)
 
 EMPTY = inspect.Parameter.empty
 
@@ -194,7 +187,7 @@ class Argument:
         choices: Sequence[Any] = None,
         help: str = None,  # noqa: A002
         metavar: str = None,
-        completer: Optional[BaseCompleter] = None,
+        completer: BaseCompleter | None = None,
     ) -> "Argument":
         """
         Aliased to become the inline definition for an argument
@@ -218,13 +211,13 @@ class Argument:
 
     @staticmethod
     def _handle_generics(  # noqa: PLR0912
-        origin, type_, positional: bool, kwargs: Dict[str, Any]
+        origin, type_, positional: bool, kwargs: dict[str, Any]
     ) -> type:
         """
         Handle generic types
         """
         name = str(origin)
-        if name == "typing.Union":
+        if name == "typing.Union" or origin is UnionType:
             if (
                 len(type_.__args__) == 2  # noqa: PLR2004
                 and type(None) in type_.__args__
@@ -235,7 +228,7 @@ class Argument:
                     kwargs["default"] = None
             else:
                 raise TypeError(
-                    "Only Optional[TYPE] or Union[TYPE, None] are supported"
+                    "Only TYPE | None, Optional[TYPE] or Union[TYPE, None] are supported"
                 )
 
         elif name == "typing.Literal":
@@ -250,7 +243,7 @@ class Argument:
             kwargs["choices"] = type_.__args__
             return choice_type
 
-        elif issubclass(origin, Tuple):
+        elif issubclass(origin, tuple):
             kwargs["nargs"] = len(type_.__args__)
 
         elif issubclass(origin, Sequence):
@@ -262,7 +255,7 @@ class Argument:
             else:
                 kwargs["action"] = "append"
 
-        elif issubclass(origin, Mapping):
+        elif issubclass(origin, dict):
             kwargs["action"] = KeyValueAction
             if positional:
                 kwargs["nargs"] = "+"
@@ -273,9 +266,7 @@ class Argument:
         return type_.__args__[0] if type_.__args__ else None
 
     @staticmethod
-    def _handle_types(
-        type_, positional: bool, kwargs: Dict[str, Any]
-    ) -> Optional[type]:
+    def _handle_types(type_, positional: bool, kwargs: dict[str, Any]) -> type | None:
         """
         Handle types
         """
@@ -312,7 +303,7 @@ class Argument:
     def from_parameter(cls, name: str, parameter: inspect.Parameter) -> "Argument":
         # pylint: disable=too-many-branches,too-many-statements
         """
-        Generate an argument from a inspection parameter
+        Generate an argument from an inspection parameter
 
         .. versionadded:: 4.4
             Determine arguments from handler signature.
@@ -338,7 +329,7 @@ class Argument:
             kwargs.setdefault("default", default)
 
         # Handle type variances
-        origin = getattr(type_, "__origin__", None)
+        origin = get_origin(type_)
         if origin is not None:
             type_ = cls._handle_generics(origin, type_, positional, kwargs)
         elif isinstance(type_, type):
@@ -346,7 +337,7 @@ class Argument:
         elif isinstance(type_, (argparse.FileType, ArgumentType)):
             pass  # Just pass as this is an `argparse` builtin
         else:
-            raise TypeError(f"Unsupported type: {type_!r}")
+            raise TypeError(f"Unsupported type on {name!r} argument: {type_!r}")
 
         if type_:
             kwargs["type"] = type_
@@ -356,11 +347,11 @@ class Argument:
     def __init__(  # noqa: PLR0913
         self,
         *name_or_flags,
-        action: Union[str, Type[argparse.Action]] = None,
-        nargs: Union[int, str] = None,
+        action: str | type[argparse.Action] = None,
+        nargs: int | str = None,
         const: Any = None,
         default: Any = EMPTY,
-        type: Optional[Callable[[Any], Any]] = None,  # noqa: A002
+        type: Callable[[Any], Any] | None = None,  # noqa: A002
         choices: Sequence[Any] = None,
         required: bool = None,
         help_text: str = None,
@@ -387,9 +378,7 @@ class Argument:
         if default is not EMPTY:
             self.kwargs["default"] = default
 
-    def __call__(
-        self, func: Union[Handler, CommandProxy]
-    ) -> Union[Handler, CommandProxy]:
+    def __call__(self, func: Handler | CommandProxy) -> Handler | CommandProxy:
         if isinstance(func, CommandProxy):
             self.register_with_proxy(func)
         elif hasattr(func, "arguments__"):
@@ -420,11 +409,11 @@ class CommandGroup(ParserBase):
         self,
         parser: argparse.ArgumentParser,
         _prefix: str = None,
-        _handlers: Dict[str, Handler] = None,
+        _handlers: dict[str, Handler] = None,
     ):
         super().__init__(parser)
         self._prefix = _prefix
-        self._handlers: Dict[str, Handler] = {} if _handlers is None else _handlers
+        self._handlers: dict[str, Handler] = {} if _handlers is None else _handlers
 
         self._sub_parsers = parser.add_subparsers(dest=self.handler_dest)
         self._default_handler = self.default_handler
