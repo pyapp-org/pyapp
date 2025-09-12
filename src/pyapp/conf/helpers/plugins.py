@@ -29,7 +29,7 @@ factory::
 
 import threading
 from abc import ABCMeta
-from typing import Type, TypeVar
+from typing import TypeVar
 
 from pyapp import checks
 from pyapp.conf import settings
@@ -84,7 +84,7 @@ class NamedPluginFactory(FactoryMixin[PT_co], metaclass=ABCMeta):
     """
 
     def __init__(
-        self, setting: str, *, abc: Type[PT_co] = None, default_name: str = "default"
+        self, setting: str, *, abc: type[PT_co] = None, default_name: str = "default"
     ):
         """
         Initialise a named factory.

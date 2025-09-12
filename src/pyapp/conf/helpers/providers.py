@@ -59,7 +59,8 @@ Example::CheckMessage
 
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict, namedtuple
-from typing import Any, Dict, Generic, Optional, Sequence, Tuple, Type, TypeVar, Union
+from collections.abc import Sequence
+from typing import Any, Generic, TypeVar, Union
 
 from pyapp import checks
 from pyapp.conf import settings
@@ -80,7 +81,7 @@ class ProviderFactoryBase(Generic[PT_co], metaclass=ABCMeta):
     Factory to instantiate and configure a provider.
     """
 
-    def __init__(self, setting: str, abc: Type[PT_co] = None):
+    def __init__(self, setting: str, abc: type[PT_co] = None):
         self.setting = setting
         self.abc = abc
 
@@ -95,7 +96,7 @@ class ProviderFactoryBase(Generic[PT_co], metaclass=ABCMeta):
         return provider(**provider_config)
 
     @cached_property
-    def providers(self) -> Dict[str, Any]:
+    def providers(self) -> dict[str, Any]:
         """
         List of providers defined in settings.
         """
@@ -136,7 +137,7 @@ class ProviderFactoryBase(Generic[PT_co], metaclass=ABCMeta):
             ) from None
 
     @abstractmethod
-    def load_config(self, *args, **kwargs) -> Tuple[str, Dict[str, Any]]:
+    def load_config(self, *args, **kwargs) -> tuple[str, dict[str, Any]]:
         """
         Load configuration for data store.
 
@@ -188,7 +189,7 @@ class ProviderFactoryBase(Generic[PT_co], metaclass=ABCMeta):
 
     def check_instance(
         self, idx: int, provider_ref: str, **_
-    ) -> Optional[Union["checks.CheckMessage", Sequence["checks.CheckMessage"]]]:
+    ) -> Union["checks.CheckMessage", Sequence["checks.CheckMessage"], None]:
         """
         Checks for individual providers.
         """

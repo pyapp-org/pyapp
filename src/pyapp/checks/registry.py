@@ -6,8 +6,9 @@ Location for registering and listing checks.
 
 """
 
+from collections.abc import Callable, Iterable, Sequence
 from itertools import chain
-from typing import Callable, Iterable, List, NamedTuple, Sequence, TypeVar, Union
+from typing import NamedTuple
 
 from pyapp import extensions
 from pyapp.checks.messages import CheckMessage, UnhandledException
@@ -20,8 +21,8 @@ class Tags:
     security = "security"
 
 
-Check = Callable[[Settings], Union[CheckMessage, Sequence[CheckMessage]]]
-_C = TypeVar("_C", bound=Callable[[Check], Check])
+Check = Callable[[Settings], CheckMessage | Sequence[CheckMessage]]
+CheckDecorator = Callable[[Check], Check]
 
 
 class CheckResult(NamedTuple):
@@ -31,14 +32,14 @@ class CheckResult(NamedTuple):
     messages: Sequence[CheckMessage]
 
 
-class CheckRegistry(List[Check]):
+class CheckRegistry(list[Check]):
     """Registry list for checks."""
 
     def register(
         self,
-        check: Union[Check, str] = None,
+        check: Check | str = None,
         *tags: str,
-    ) -> Union[_C, Callable[[_C], _C]]:
+    ) -> Check | CheckDecorator:
         """Can be used as a function or a decorator. Register given function
         `func` labeled with given `tags`. The function should receive **kwargs
         and return a list of Messages.
@@ -47,7 +48,9 @@ class CheckRegistry(List[Check]):
 
         """
 
-        def inner(func):
+        def inner(
+            func: Check,
+        ) -> Check:
             func._check__tags = tags
             if func not in self:
                 self.append(func)
@@ -88,7 +91,7 @@ class CheckRegistry(List[Check]):
             check_func = check.checks if hasattr(check, "checks") else check
             try:
                 messages = check_func(**check_kwargs)
-            except Exception:  # noqa:
+            except Exception:
                 messages = UnhandledException("Unhandled Exception")
 
             if isinstance(messages, CheckMessage):

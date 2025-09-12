@@ -66,7 +66,7 @@ configuration where configuration is obtained from data storage eg a database.
 
 import itertools
 from abc import ABCMeta
-from typing import Any, Dict, Sequence
+from collections.abc import Sequence
 
 from pyapp import checks
 from pyapp.conf import settings
@@ -119,7 +119,7 @@ class NamedConfiguration:
         self,
         setting: str,
         *,
-        defaults: Dict[str, Any] = None,
+        defaults: dict[str, ...] = None,
         required_keys: Sequence[str] = None,
         optional_keys: Sequence[str] = None,
         default_name: str = None,
@@ -162,10 +162,10 @@ class NamedConfiguration:
         )
 
     @cached_property
-    def _config_definitions(self) -> Dict[str, Any]:
+    def _config_definitions(self) -> dict[str, ...]:
         return getattr(settings, self.setting, {})
 
-    def _get_config_definition(self, name: str) -> Dict[str, Any]:
+    def _get_config_definition(self, name: str) -> dict[str, ...]:
         try:
             kwargs = self._config_definitions[name]  # pylint: disable=unsubscriptable-object
         except KeyError:
@@ -178,7 +178,7 @@ class NamedConfiguration:
             config.update(kwargs)
         return config
 
-    def get(self, name: str = None) -> Dict[str, Any]:
+    def get(self, name: str = None) -> dict[str, ...]:
         """
         Get named configuration from settings
 
@@ -239,7 +239,7 @@ class NamedConfiguration:
     checks.check_name = "{obj.setting}.check_configuration"
 
     def check_definition(
-        self, config_definitions: Dict[str, Dict[str, Any]], name: str, **_
+        self, config_definitions: dict[str, dict[str, ...]], name: str, **_
     ):
         """
         Checks for individual definitions.

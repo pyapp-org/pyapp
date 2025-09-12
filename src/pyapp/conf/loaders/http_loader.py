@@ -9,7 +9,7 @@ Loads settings from an HTTP endpoint (HTTPS is recommended)
 import contextlib
 import ssl
 import tempfile
-from typing import TextIO, Tuple
+from typing import TextIO
 from urllib.error import ContentTooShortError
 from urllib.request import urlopen
 
@@ -20,7 +20,7 @@ from pyapp.conf.loaders.content_types import content_type_from_url, registry
 from pyapp.exceptions import InvalidConfiguration
 
 
-def retrieve_file(url: URL) -> Tuple[TextIO, str]:
+def retrieve_file(url: URL) -> tuple[TextIO, str]:
     """Fetch a file from a URL (handling SSL).
 
     This is based off `urllib.request.urlretrieve`.
@@ -46,13 +46,13 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
         if "Content-Length" in headers:
             size = int(headers["Content-Length"])
 
-        content_type = (
+        content_type: str = (
             headers["Content-Type"]
             if "Content-Type" in headers
             else content_type_from_url(url)
         )
 
-        tfp = tempfile.TemporaryFile()
+        tfp = tempfile.TemporaryFile(mode="wt")  # noqa: SIM115
         while True:
             block = response.read(block_size)
             if not block:
@@ -66,9 +66,8 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
     if size >= 0 and read < size:
         tfp.close()
 
-        raise ContentTooShortError(
-            f"retrieval incomplete: got only {read} out of {size} bytes", headers
-        )
+        msg = f"retrieval incomplete: got only {read} out of {size} bytes"
+        raise ContentTooShortError(msg, headers)
 
     return tfp, content_type
 

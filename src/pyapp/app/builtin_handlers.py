@@ -6,9 +6,9 @@ App Builtin Handlers
 Commands that come builtin to the pyApp CLI.
 
 """
+
 import sys
 from argparse import FileType
-from typing import Optional
 
 from pyapp.app.arguments import CommandGroup, argument
 
@@ -42,8 +42,8 @@ def checks(app):
         help_text="Output report in tabular format.",
     )
     @app.command(name="checks", help_text="Run a check report")
-    def _handler(opts) -> Optional[int]:
-        from pyapp.checks.report import execute_report
+    def _handler(opts) -> int | None:
+        from pyapp.checks.report import execute_report  # noqa: PLC0415
 
         return (
             4
@@ -77,11 +77,11 @@ def extensions(app: CommandGroup):
         help_text="File to output extension report to; default is stdout.",
     )
     @app.command(name="extensions")
-    def _handler(opts) -> Optional[int]:
+    def _handler(opts) -> int | None:
         """
         Report of installed PyApp extensions.
         """
-        from pyapp.extensions.report import ExtensionReport
+        from pyapp.extensions.report import ExtensionReport  # noqa: PLC0415
 
         return ExtensionReport(opts.verbose, opts.no_color, opts.out).run()
 
@@ -98,11 +98,11 @@ def settings(app: CommandGroup):
         type=FileType(mode="w"),
         help_text="File to output settings report to; default is stdout.",
     )
-    def _handler(opts) -> Optional[int]:
+    def _handler(opts) -> int | None:
         """
         Report of current settings.
         """
-        from pyapp.conf.report import SettingsReport
+        from pyapp.conf.report import SettingsReport  # noqa: PLC0415
 
         return SettingsReport(False, opts.no_color, opts.out).run()
 

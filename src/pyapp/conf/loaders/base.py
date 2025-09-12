@@ -5,23 +5,25 @@ Base Loader
 ABC for loader implementations.
 
 """
-import abc
-from typing import Any, Iterable, Sequence, Tuple, Union
 
+import abc
+from collections.abc import Iterable, Sequence
+
+from typing_extensions import Self
 from yarl import URL
 
 
-class Loader(abc.ABC, Iterable[Tuple[str, Any]]):
+class Loader(abc.ABC, Iterable[tuple[str, ...]]):
     """
     ABC class to define the loader interface.
     """
 
-    scheme: Union[str, Sequence[str]]
+    scheme: str | Sequence[str]
     """
     Scheme that this loader provides handling of.
     """
 
-    def __enter__(self) -> "Loader":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -29,7 +31,7 @@ class Loader(abc.ABC, Iterable[Tuple[str, Any]]):
 
     @classmethod
     @abc.abstractmethod
-    def from_url(cls, url: URL) -> "Loader":
+    def from_url(cls, url: URL) -> Self:
         """
         Create an instance of a `Loader` using the results of the parsed file URL.
         """

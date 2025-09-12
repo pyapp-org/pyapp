@@ -46,8 +46,10 @@ Example::
     event.
 
 """
+
 import asyncio
-from typing import Any, Callable, Coroutine, Generic, Optional, Set, TypeVar, Union
+from collections.abc import Callable, Coroutine
+from typing import Any, Generic, TypeVar, Union
 
 __all__ = ("Event", "AsyncEvent", "listen_to", "Callback", "AsyncCallback", "bind_to")
 
@@ -61,7 +63,7 @@ class _ListenerDescriptor:
     __slots__ = ("name",)
 
     set_type: type
-    name: Optional[str]
+    name: str | None
 
     def __init__(self):
         """Initialise descriptor."""
@@ -110,7 +112,7 @@ class ListenerContext(Generic[_CT]):
 
     __slots__ = ("listener", "listeners")
 
-    def __init__(self, listener: _CT, listeners: Set[_CT]):
+    def __init__(self, listener: _CT, listeners: set[_CT]):
         self.listener = listener
         self.listeners = listeners
 
@@ -123,7 +125,7 @@ class ListenerContext(Generic[_CT]):
 
 # TODO: Remove when pylint handles typing.Set correctly  pylint: disable=fixme
 # pylint: disable=not-an-iterable,no-member
-class BaseListenerSet(Set[_CT]):
+class BaseListenerSet(set[_CT]):
     """Set of event listeners."""
 
     __slots__ = ()
@@ -132,7 +134,7 @@ class BaseListenerSet(Set[_CT]):
         listeners = sorted(c.__qualname__ for c in self)
         return f"ListenerSet({', '.join(listeners)})"
 
-    def __iadd__(self, other: Union[Set[_CT], _CT]) -> "BaseListenerSet[_CT]":
+    def __iadd__(self, other: set[_CT] | _CT) -> "BaseListenerSet[_CT]":
         """Allow listeners to be registered using the += operator."""
         # Merge sets
         if isinstance(other, set):
@@ -232,7 +234,7 @@ class CallbackBindingBase(Generic[_CT]):
     __slots__ = ("_callback",)
 
     def __init__(self):
-        self._callback: Optional[_CT] = None
+        self._callback: _CT | None = None
 
     def __iadd__(self, callback: _CT) -> "CallbackBindingBase[_CT]":
         self._callback = callback
