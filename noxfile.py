@@ -7,7 +7,14 @@ HERE = Path(__file__).parent
 
 
 @nox.session(
-    python=("python3.10", "python3.11", "python3.12", "python3.13", "pypy3.10"),
+    python=(
+        "python3.10",
+        "python3.11",
+        "python3.12",
+        "python3.13",
+        "pypy3.10",
+        "python-3.14",
+    ),
     venv_backend=None,
 )
 def tests(session: Session):
