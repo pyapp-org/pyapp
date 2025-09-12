@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14-dev']
 
     name: Test Python ${{ matrix.python-version }}
     steps:
@@ -30,7 +30,10 @@ jobs:
 
     - name: Test with pytest
       run: |
-        poetry run pytest --junit-xml=reports/xunit-result-${{ matrix.python-version }}.xml --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml tests
+        poetry run coverage run --rcfile=.coveragerc \
+          -m pytest --no-cov --junit-xml=reports/xunit-result-${{ matrix.python-version }}.xml tests
+        poetry run coverage xml --rcfile=.coveragerc \
+          -oreports/coverage-${{ matrix.python-version }}.xml
 
     - name: Analyze with SonarCloud
       uses: SonarSource/sonarqube-scan-action@v5.0.0

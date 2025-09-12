@@ -18,4 +18,24 @@ def tests(session: Session):
     session.run("poetry", "install", "--with=dev", external=True)
 
     print("▶️ Run tests")
-    session.run("poetry", "run", "pytest", "--config-file=pytest.ini", external=True)
+    session.run(
+        "poetry",
+        "run",
+        "coverage",
+        "run",
+        "--rcfile=.coveragerc",
+        "-m",
+        "pytest",
+        "--no-cov",
+        "--config-file=pytest.ini",
+        external=True,
+    )
+    session.run(
+        "poetry",
+        "run",
+        "coverage",
+        "xml",
+        "--rcfile=.coveragerc",
+        f"-oreports/coverage-{session.python}.xml",
+        external=True,
+    )
