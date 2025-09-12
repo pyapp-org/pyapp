@@ -99,7 +99,7 @@ class CheckRegistry(list[Check]):
             elif messages:
                 yield CheckResult(check, messages)
             else:
-                yield CheckResult(check, tuple())
+                yield CheckResult(check, ())
 
     def run_checks(self, tags: Iterable[str] = None) -> Sequence[CheckMessage]:
         """

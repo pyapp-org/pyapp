@@ -1,29 +1,25 @@
 """Automated settings documentation."""
+
 import ast
+from collections.abc import Sequence
 from functools import singledispatchmethod
 from pathlib import Path
 from types import ModuleType
 from typing import (
     Any,
-    Dict,
-    List,
     NamedTuple,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
 )
 
 
 class _SettingsExtractor:
     """Used to extract documentation from a default settings modules."""
 
-    def __init__(self, module_or_file: Union[ModuleType, Path, str]):
+    def __init__(self, module_or_file: ModuleType | Path | str):
         if isinstance(module_or_file, ModuleType):
             module_or_file = module_or_file.__file__
         self._file = Path(module_or_file)
 
-        self._current_setting: Optional[Tuple[str, Optional[str], Optional[str]]] = None
+        self._current_setting: tuple[str, str | None, str | None] | None = None
 
     def process(self):
         """Process the settings module or file."""
@@ -37,9 +33,9 @@ class _SettingsExtractor:
     def setting(
         self,
         setting_key: str,
-        type_name: Optional[str],
+        type_name: str | None,
         default: Any,
-        doc: Optional[str],
+        doc: str | None,
     ):
         """Event when a setting is found.
 
@@ -49,7 +45,7 @@ class _SettingsExtractor:
         :param doc: Optional doc string for setting.
         """
 
-    def start_settings_def(self, name: str, doc: Optional[str] = None):
+    def start_settings_def(self, name: str, doc: str | None = None):
         """Start of settings definition.
 
         :param name: Name of the settings definition group.
@@ -59,7 +55,7 @@ class _SettingsExtractor:
     def end_settings_def(self):
         """End of settings definition."""
 
-    def _generate_setting(self, doc: Optional[str] = None):
+    def _generate_setting(self, doc: str | None = None):
         """Generate a setting if one is defined."""
         if self._current_setting:
             self.setting(*self._current_setting, doc)
@@ -134,7 +130,7 @@ class _SettingsExtractor:
             self._generate_setting()
 
 
-def flatten_type_annotation(annotation) -> Optional[str]:
+def flatten_type_annotation(annotation) -> str | None:
     """Flatten a type annotation to a string."""
     if isinstance(annotation, ast.Name):
         return annotation.id
@@ -154,7 +150,7 @@ def flatten_type_annotation(annotation) -> Optional[str]:
     return None
 
 
-def flatten_default_value(value) -> Union[str, int, float, bool, list, dict, None]:
+def flatten_default_value(value) -> str | int | float | bool | list | dict | None:
     """Flatten a default value to a string."""
 
     if isinstance(value, ast.Constant):
@@ -164,7 +160,10 @@ def flatten_default_value(value) -> Union[str, int, float, bool, list, dict, Non
         return value.id
 
     if isinstance(value, ast.Dict):
-        return {k.s: flatten_default_value(v) for k, v in zip(value.keys, value.values)}
+        return {
+            k.s: flatten_default_value(v)
+            for k, v in zip(value.keys, value.values, strict=False)
+        }
 
     if isinstance(value, (ast.List, ast.Tuple)):
         return [flatten_default_value(v) for v in value.elts]
@@ -176,20 +175,20 @@ class SettingDef(NamedTuple):
     """A setting definition."""
 
     key: str
-    type_name: Optional[str]
+    type_name: str | None
     default: Any
-    doc: Optional[str]
+    doc: str | None
 
 
 class SettingDefGroup(NamedTuple):
     """A group of setting definitions."""
 
-    name: Optional[str]
-    settings: List[SettingDef]
-    doc: Optional[str]
+    name: str | None
+    settings: list[SettingDef]
+    doc: str | None
 
     @property
-    def sorted_settings(self) -> List[SettingDef]:
+    def sorted_settings(self) -> list[SettingDef]:
         """Sort settings by key."""
         return sorted(self.settings, key=lambda s: s.key)
 
@@ -199,7 +198,7 @@ class SettingsCollection(_SettingsExtractor):
 
     def __init__(
         self,
-        module_or_file: Union[ModuleType, Path, str],
+        module_or_file: ModuleType | Path | str,
         *,
         exclude_keys: Sequence[str] = ("INCLUDE_SETTINGS",),
     ):
@@ -207,7 +206,7 @@ class SettingsCollection(_SettingsExtractor):
         self.exclude_keys = exclude_keys
 
         self.current_group: SettingDefGroup = SettingDefGroup(None, [], None)
-        self.settings: Dict[Optional[str], SettingDefGroup] = {
+        self.settings: dict[str | None, SettingDefGroup] = {
             None: self.current_group,
         }
 
@@ -223,9 +222,9 @@ class SettingsCollection(_SettingsExtractor):
     def setting(
         self,
         setting_key: str,
-        type_name: Optional[str],
+        type_name: str | None,
         default: Any,
-        doc: Optional[str],
+        doc: str | None,
     ):
         """Event when a setting is found.
 
@@ -239,7 +238,7 @@ class SettingsCollection(_SettingsExtractor):
                 SettingDef(setting_key, type_name, default, doc)
             )
 
-    def start_settings_def(self, name: str, doc: Optional[str] = None):
+    def start_settings_def(self, name: str, doc: str | None = None):
         """Start of settings definition.
 
         :param name: Name of the settings definition group.

@@ -248,11 +248,11 @@ class CheckReport(BaseReport):
 
     def render_result(self, _: Check, message: CheckMessage | None):
         if message:
-            format_args = dict(
-                level=logging.getLevelName(message.level),
-                title=self.format_title(message),
-                hint=self.format_hint(message),
-            )
+            format_args = {
+                "level": logging.getLevelName(message.level),
+                "title": self.format_title(message),
+                "hint": self.format_hint(message),
+            }
             if not self.no_color:
                 format_args.update(border_style=COLOURS[message.level][1])
 

@@ -7,6 +7,8 @@ Provides ``settings``, ``patch_settings``, ``patch_feature_flags``,
 
 """
 
+from collections.abc import Generator
+
 import pytest
 
 import pyapp.checks
@@ -26,7 +28,7 @@ def settings() -> pyapp.conf.Settings:
 
 
 @pytest.fixture
-def patch_settings(settings) -> pyapp.conf.ModifySettingsContext:
+def patch_settings(settings) -> Generator[pyapp.conf.ModifySettingsContext, None, None]:
     """
     Fixture that provides a :class:`pyapp.conf.ModifySettingsContext` instance
     that allows a test to modify settings that will be rolled back after the
@@ -49,7 +51,7 @@ def pyapp_feature_flags() -> pyapp.feature_flags.FeatureFlags:
 @pytest.fixture
 def patch_feature_flags(
     pyapp_feature_flags,
-) -> pyapp.feature_flags.ModifyFeatureFlagsContext:
+) -> Generator[pyapp.feature_flags.ModifyFeatureFlagsContext, None, None]:
     """
     Fixture that provides a :class:`pyapp.feature_flags.ModifyFeatureFlagsContext`
     instance that allows a test to modify feature flags that will be rolled back
@@ -71,7 +73,7 @@ def pyapp_factory_registry() -> pyapp.injection.FactoryRegistry:
 @pytest.fixture
 def patch_injection(
     pyapp_factory_registry,
-) -> pyapp.injection.ModifyFactoryRegistryContext:
+) -> Generator[pyapp.injection.ModifyFactoryRegistryContext, None, None]:
     """
     Fixture that proces a :class:`pyapp.injection.ModifyFactoryRegistryContext`
     instance that allows a test to modify factories mapped to abstract types

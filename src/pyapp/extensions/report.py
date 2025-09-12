@@ -5,6 +5,7 @@ Extension Report
 Generates the report of the currently loaded/available extensions.
 
 """
+
 import sys
 
 from colorama import Fore, Style
@@ -73,13 +74,13 @@ class ExtensionReport:
         """
         Output a result to output file.
         """
-        format_args = dict(
-            name=extension.name,
-            key=extension.key,
-            version=extension.version or "Unknown",
-            default_settings=extension.default_settings or "None",
-            has_checks="Yes" if bool(extension.checks_module) else "No",
-        )
+        format_args = {
+            "name": extension.name,
+            "key": extension.key,
+            "version": extension.version or "Unknown",
+            "default_settings": extension.default_settings or "None",
+            "has_checks": "Yes" if bool(extension.checks_module) else "No",
+        }
 
         if self.verbose:
             self.f_out.write(self.verbose_template.format(**format_args))

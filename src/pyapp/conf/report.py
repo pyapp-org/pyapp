@@ -5,6 +5,7 @@ Conf Report
 Generates settings reports
 
 """
+
 import pprint
 import sys
 from typing import TextIO
@@ -61,13 +62,13 @@ class SettingsReport:
         """
         Output a result to output file.
         """
-        format_args = dict(
-            key=key,
-            setting=setting,
-            ppsetting=wrap_text(
+        format_args = {
+            "key": key,
+            "setting": setting,
+            "ppsetting": wrap_text(
                 pprint.pformat(setting, 2), width=self.width, indent=25
             ).strip(),
-        )
+        }
 
         self.f_out.write(self.basic_template.format(**format_args))
 
