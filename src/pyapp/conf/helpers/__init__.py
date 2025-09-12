@@ -43,7 +43,7 @@ Plugin factories
 ----------------
 
 Similar to simple factories, plugin factories also come in the same three
-flavours, however they include the additional functionality of supporting the
+flavours, however, they include the additional functionality of supporting the
 creation of object instances based off configuration. The definition is
 slightly more complex in your settings file.
 
@@ -57,7 +57,7 @@ slightly more complex in your settings file.
 Provider factories
 ------------------
 
-Extending from plugin factories providers provide an additional level of dynamic
+Extending from plugin factories providers provides an additional level of dynamic
 configuration where configuration is obtained from data storage eg a database.
 
 .. autoclass:: ProviderFactoryBase

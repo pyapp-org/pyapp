@@ -107,7 +107,7 @@ class CommandProxy(ParserBase):
         """Extract args from signature and turn into command line args."""
         sig = inspect.signature(func)
 
-        # Backwards compatibility
+        # Backward compatibility
         if len(sig.parameters) == 1:
             ((name, parameter),) = sig.parameters.items()
             if (

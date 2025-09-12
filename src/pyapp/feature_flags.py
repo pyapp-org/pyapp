@@ -2,7 +2,7 @@
 Feature Flags
 ~~~~~~~~~~~~~
 
-Runtime configurable feature flags.
+Runtime-configurable feature flags.
 
 Define flags in code either in a code block:
 
@@ -11,7 +11,7 @@ Define flags in code either in a code block:
     if feature_flags.get("MY-FLAG"):
         pass
 
-Or as an A/B switch:
+or as an A/B switch:
 
 .. code-block:: python
 
@@ -19,7 +19,7 @@ Or as an A/B switch:
 
 .. tip:: ``option_a`` and ``option_b`` parameters can also be callables.
 
-Or by using as a decorator:
+or by using as a decorator:
 
 .. code-block:: python
 
@@ -74,7 +74,7 @@ class ModifyFeatureFlagsContext:
 
     The main use-case for this feature is within test cases.
 
-    Feature flags can be changed and when the context is exited the
+    Feature flags can be changed, and when the context is exited, the
     changes are reverted.
 
     Example::
@@ -214,11 +214,11 @@ class FeatureFlags:
         self, flag: str, *, default: bool = False, disabled_return: Any = None
     ) -> Callable[[_F], _F]:
         """
-        Decorator that is enabled by flag.
+        Decorator that is enabled by a flag.
 
         :param flag: Name of flag
         :param default: Default flag state
-        :param disabled_return: Return value if flag is disabled
+        :param disabled_return: Return value if a flag is disabled
 
         """
 
@@ -244,8 +244,6 @@ class FeatureFlags:
             >>> with feature_flags.modify() as patch:
             >>>     # Change a flag
             >>>     patch["foo"] = False
-            >>>     # Clear a flag
-            >>>     del patch["bar"]
 
         """
         return ModifyFeatureFlagsContext(self._cache)

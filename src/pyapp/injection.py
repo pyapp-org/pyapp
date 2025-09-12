@@ -8,7 +8,7 @@ These methods are built around *data annotations* and `abc` module.
 
 Usage::
 
-    # Register factory with framework
+    # Register factory with the framework
     >>> pyapp.injection.register_factory(FooABC, foo_factory)
 
     # Mark functions for injection and specify type
@@ -16,7 +16,7 @@ Usage::
     ... def my_function(foo: FooABC = Args(name="second")):
     ...    ...
 
-What `my_function` is called a concrete instance that implements `FooABC` is
+When `my_function` is called, a concrete instance that implements `FooABC` is
 passed into the function.
 
 """
@@ -45,8 +45,7 @@ AT_co = TypeVar("AT_co", bound=abc.ABC, covariant=True)
 
 
 class FactoryFunc(Protocol[AT_co]):
-    def __call__(self, *args, **kwargs) -> AT_co:
-        ...
+    def __call__(self, *args, **kwargs) -> AT_co: ...
 
 
 class InjectionError(Exception):
@@ -62,11 +61,11 @@ class InjectionSetupError(Exception):
 
 
 class ModifyFactoryRegistryContext:
-    """Context object used to make temporary modifications to factory registry.
+    """Context object used to make temporary modifications to the factory registry.
 
     The main use-case for this feature is within test cases.
 
-    Mocks can be changed and when the context is exited the changes are reverted.
+    Mocks can be changed, and when the context is exited, the changes are reverted.
     """
 
     __slots__ = ("__registry", "__rollback")
@@ -111,7 +110,7 @@ class ModifyFactoryRegistryContext:
 
         Will return the generated mock.
         """
-        from unittest.mock import Mock
+        from unittest.mock import Mock  # noqa: PLC0415
 
         assert issubclass(abstract_type, abc.ABC), "Expected an abstract type"  # noqa: S101 - Assertions used in testing
 

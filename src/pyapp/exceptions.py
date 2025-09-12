@@ -85,7 +85,7 @@ class ProviderConfigNotFound(ProviderException):
 
 class UnsupportedContentType(Exception):
     """
-    Content type of the file is not supported
+    The content type of the file is not supported
     """
 
 

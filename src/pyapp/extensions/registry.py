@@ -7,11 +7,9 @@ extensions.
 
 """
 
-try:
-    import importlib_metadata as metadata
-except ImportError:
-    from importlib import metadata
-from typing import Iterable, Iterator, List, NamedTuple, Optional, Sequence
+from collections.abc import Iterable, Iterator, Sequence
+from importlib import metadata
+from typing import NamedTuple
 
 from pyapp.app.arguments import CommandGroup
 from pyapp.utils import AllowBlockFilter
@@ -30,7 +28,7 @@ class ExtensionDetail(NamedTuple):
     version: str
 
     @property
-    def default_settings(self) -> Optional[str]:
+    def default_settings(self) -> str | None:
         """Get reference to optional default settings."""
         module = getattr(self.extension, "default_settings", None)
         if module and module.startswith("."):
@@ -38,7 +36,7 @@ class ExtensionDetail(NamedTuple):
         return module
 
     @property
-    def checks_module(self) -> Optional[str]:
+    def checks_module(self) -> str | None:
         """Get reference to optional `checks` module."""
         module = getattr(self.extension, "checks", None)
         if module and module.startswith("."):
@@ -89,7 +87,7 @@ class ExtensionEntryPoints:
             )
 
 
-class ExtensionRegistry(List[ExtensionDetail]):
+class ExtensionRegistry(list[ExtensionDetail]):
     """Registry for tracking install PyApp extensions."""
 
     def load_from(self, extensions: Iterable[ExtensionDetail]):

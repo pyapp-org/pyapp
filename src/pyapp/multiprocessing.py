@@ -12,16 +12,17 @@ implementation.
 
 """
 
+from collections.abc import Callable, Sequence
 from io import BytesIO
 from multiprocessing.pool import Pool as _Pool
-from typing import Any, Callable, Sequence
+from typing import Any
 
 from pyapp.conf import export_settings, restore_settings
 
 
 def pyapp_initializer(pickled_settings: bytes, initializer, init_args):
     """
-    initializer for pyApp that that restores pickled settings
+    Initializer for pyApp that that restores pickled settings
     """
     file = BytesIO(pickled_settings)
     restore_settings(file)
@@ -40,7 +41,7 @@ def prepare_settings() -> bytes:
 
 class Pool(_Pool):
     """
-    Wrapper around multiprocessing pool that ensures each worker has a valid
+    Wrapper around a multiprocessing pool that ensures each worker has a valid
     settings object initialised.
     """
 

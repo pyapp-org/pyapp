@@ -1,6 +1,6 @@
 """Compatibility between Python Releases and Operating Systems."""
 
-__all__ = ("async_run",)
+__all__ = ("async_run", "ROOT_NAME", "is_root_user")
 
 import os
 import sys

@@ -1,10 +1,10 @@
 """
-*Dynamic configuration based Instance factories*
+*Dynamic configuration-based Instance factories*
 
 A provider is similar to a plugin in that they are created dynamically from
-configuration. The main difference is that a providers configuration is
-stored outside of settings. This could be in a database to provide user
-specific endpoints eg fetching social media feeds.
+configuration. The main difference is that a provider configuration is
+stored outside of settings. This could be in a database to provide
+user-specific endpoints e.g. fetching social media feeds.
 
 This library provides the basic infrastructure for utilising providers.
 
@@ -139,7 +139,7 @@ class ProviderFactoryBase(Generic[PT_co], metaclass=ABCMeta):
     @abstractmethod
     def load_config(self, *args, **kwargs) -> tuple[str, dict[str, Any]]:
         """
-        Load configuration for data store.
+        Load configuration from a data store.
 
         This method should raise a ProviderConfigNotFound exception if configuration cannot be loaded
         """
@@ -149,7 +149,7 @@ class ProviderFactoryBase(Generic[PT_co], metaclass=ABCMeta):
 
     def checks(self, **kwargs):
         """
-        Run checks to ensure settings are valid, secondly run checks against
+        Run checks to ensure settings are valid, secondly, run checks against
         individual definitions in settings.
 
         """

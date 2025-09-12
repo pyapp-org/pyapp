@@ -4,7 +4,7 @@ Application
 
 *Application with bindings for commands*
 
-The application object handles all the initial configuration to set up the
+The application object handles all the initial configuration to set up a
 run-time environment.
 
 Quick demo::
@@ -25,12 +25,12 @@ Quick demo::
 
 This example provides an application with a command `hello` that takes an
 optional `verbose` flag. The framework also provides help, configures and loads
-settings (using :py:mod:`pyapp.conf`), an interface to the checks framework
+settings (using :py:mod:`pyapp.conf`), an interface to the check framework
 and configures the Python logging framework.
 
-There are however a few more things that are required to get this going. The
+There are, however, a few more things that are required to get this going. The
 :py:class:`CliApplication` class expects a certain structure of your
-application to allow for it's (customisable) defaults to be applied.
+application to allow for its (customisable) defaults to be applied.
 
 Your application can have one of two structures
 
@@ -52,10 +52,10 @@ Generation of CLI from command Signature
 
 .. versionadded:: 4.4
 
-As of pyApp 4.4 command functions can supply all required arguments in the function
+As of pyApp `4.4` command functions can supply all required arguments in the function
 signature.
 
-As an example consider the command function:
+As an example, consider the command function:
 
 .. code-block:: python
 
@@ -82,14 +82,14 @@ This translates into the following on the CLI:
 
     optional arguments:
       -h, --help  show this help message and exit
-      --arg2    Enable the argilizer
+      --arg2      Enable the argilizer
       --arg3
       --arg4 {foo,bar}
 
 
 The following types are supported as arguments:
 
-    - Basic types eg int, str, float, this covers any type that can be provided
+    - Basic types e.g. int, str, float, this covers any type that can be provided
       to argparse in the type field.
 
     - bool, this is made into an argparse `store_true` action.
@@ -97,9 +97,9 @@ The following types are supported as arguments:
     - Enum types using the pyApp EnumAction.
 
     - Generic types
-        - Mapping/Dict as well as a basic dict for Key/Value pairs
+        - Mapping/dict as well as a basic dict for Key/Value pairs
 
-        - Sequence/List for typed sequences, ``nargs="+"`` for positional arguments
+        - Sequence/list for typed sequences, ``nargs="+"`` for positional arguments
           of ``action="append"`` for optional.
 
         - Tuple for typed sequences of a fixed size eg ``nargs=len(tuple)``. Only
@@ -107,7 +107,7 @@ The following types are supported as arguments:
 
     - FileType from ``argparse``.
 
-.. tip:: Too get access to the parse results from `argparse` provide a vairable
+.. tip:: To get access to the parse results from `argparse` provide a variable
     with the type ``pyapp.app.CommandOptions``.
 
 
@@ -123,15 +123,15 @@ Events
 CliApplication generates the following events, all methods are provided with the
 ``argparse`` namespace.
 
-+--------------------------------------------------------------+----------------------------------------------------+
-| ``pre_dispatch[[argparse.Namespace], None]``                 | Generated before command dispatch is called        |
-+--------------------------------------------------------------+----------------------------------------------------+
-| ``post_dispatch[[Optional[int], argparse.Namespace], None]`` | Generated after command dispatch returns without   |
-|                                                              | error includes the return code if one is provided. |
-+--------------------------------------------------------------+----------------------------------------------------+
-| ``dispatch_error[[Exception, argparse.Namespace], None]``    | Generated when an exception is raised in a command |
-|                                                              | function before the standard exception reporting.  |
-+--------------------------------------------------------------+----------------------------------------------------+
++-----------------------------------------------------------+----------------------------------------------------+
+| ``pre_dispatch[[argparse.Namespace], None]``              | Generated before command dispatch is called        |
++-----------------------------------------------------------+----------------------------------------------------+
+| ``post_dispatch[[int | None, argparse.Namespace], None]`` | Generated after command dispatch returns without   |
+|                                                           | error includes the return code if one is provided. |
++-----------------------------------------------------------+----------------------------------------------------+
+| ``dispatch_error[[Exception, argparse.Namespace], None]`` | Generated when an exception is raised in a command |
+|                                                           | function before the standard exception reporting.  |
++-----------------------------------------------------------+----------------------------------------------------+
 
 
 Arguments
@@ -472,8 +472,7 @@ class CliApplication(CommandGroup):  # noqa: F405
     @staticmethod
     def register_factories():
         """Register any abstract interface factories."""
-        # pylint: disable=import-outside-toplevel
-        from asyncio import AbstractEventLoop, get_event_loop
+        from asyncio import AbstractEventLoop, get_event_loop  # noqa: PLC0415
 
         register_factory(AbstractEventLoop, get_event_loop)
 
@@ -565,8 +564,7 @@ class CliApplication(CommandGroup):  # noqa: F405
 
     def checks_on_startup(self, opts: CommandOptions):
         """Run checks on startup."""
-        # pylint: disable=import-outside-toplevel
-        from pyapp.checks.report import execute_report
+        from pyapp.checks.report import execute_report  # noqa: PLC0415
 
         if opts.checks_on_startup:
             out = io.StringIO()
@@ -629,7 +627,7 @@ class CliApplication(CommandGroup):  # noqa: F405
         try:
             exit_code = self.dispatch_handler(opts)
 
-        except Exception as ex:  # pylint: disable=broad-except
+        except Exception as ex:
             self.dispatch_error(ex, opts)
             if not self.exception_report(ex, opts):
                 raise

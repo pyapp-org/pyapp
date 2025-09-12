@@ -3,20 +3,17 @@ Versioning
 ~~~~~~~~~~
 
 This module provides a method for obtaining the installed version of a named
-package. This is used by `pyApp` itself to determine it's version at runtime
-to avoid the back-flips required to bake the current version into the package
+package. This is used by `pyApp` itself to determine its version at runtime
+to avoid the backflips required to bake the current version into the package
 at build time.
 
 This module is only for compatibility reasons and will be removed in a future.
 
-Recommended replacement is to use ``importlib.metadata.distribution`` directly.
+The recommended replacement is to use ``importlib.metadata.distribution`` directly.
 
 """
 
-try:
-    import importlib_metadata as metadata
-except ImportError:
-    from importlib import metadata
+from importlib import metadata
 
 
 def get_installed_version(

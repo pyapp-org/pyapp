@@ -6,11 +6,11 @@ Checks
 *your application.*
 
 Checks are executed via the CLI with the `checks` command. This will run all checks
-and report the outcome. This is an invaluable tool for operations teams, checks can
+and report the outcome. This is an invaluable tool for operations teams; checks can
 be used to diagnose connectivity issues, for daily status checks or for PIV (Post
 Implementation Verification) checking.
 
-Checks are simply functions that accept a `settings` instance and optionally return
+Checks are simply functions that accept the `settings` instance and optionally return
 one or many message objects. Message objects come as Debug, Info, Warn, Error and
 Critical varieties corresponding to the associated logging status definitions.
 

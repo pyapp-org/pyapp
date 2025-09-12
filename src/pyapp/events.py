@@ -7,13 +7,13 @@ A simple framework to publish events or callbacks to subscribed listener(s).
 Async events/callbacks are also supported via the `AsyncEvent` and `AsyncCallback`
 descriptors.
 
-An event can have multiple listening functions whereas callbacks can only have
+An event can have multiple listening functions, whereas callbacks can only have
 a single function bound (assigning a second will remove the previous binding).
 
 .. note::
 
     Event and Callback descriptors do not work when ``__slots__`` are defined.
-    If slots are defined a ``InstanceHasNoDictError`` will be raised on access
+    If slots are defined, an `` InstanceHasNoDictError`` will be raised on access
 
 
 Example::

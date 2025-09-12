@@ -109,7 +109,7 @@ class KeyValueAction(Action):
 
 class _EnumAction(Action):
     def __init__(self, **kwargs):
-        enum = kwargs.pop("type", None)
+        enum: type | None = kwargs.pop("type", None)
         if enum is None:
             raise ValueError("type must be assigned an Enum when using EnumAction")
         if not issubclass(enum, Enum):
@@ -242,7 +242,7 @@ def _copy_items(items):
     if isinstance(items, list):
         return items[:]
 
-    import copy  # pylint: disable=import-outside-toplevel
+    import copy  # noqa: PLC0415
 
     return copy.copy(items)
 

@@ -32,5 +32,5 @@ class InitHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
         """Emit the record"""
 
-        # Pass to initial handler
+        # Pass to the initial handler
         self.handler.emit(record)
