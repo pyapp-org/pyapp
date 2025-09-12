@@ -33,7 +33,7 @@ jobs:
         poetry run pytest --junit-xml=reports/xunit-result-${{ matrix.python-version }}.xml --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml tests
 
     - name: Analyze with SonarCloud
-      uses: sonarsource/sonarcloud-github-action@master
+      uses: SonarSource/sonarqube-scan-action@v5.0.0
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
