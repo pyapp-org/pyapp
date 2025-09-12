@@ -3,10 +3,10 @@ from unittest import mock
 from urllib.error import ContentTooShortError
 
 import pytest
-from pyapp.conf.loaders import http_loader
-from pyapp.exceptions import InvalidConfiguration, UnsupportedContentType
 from yarl import URL
 
+from pyapp.conf.loaders import http_loader
+from pyapp.exceptions import InvalidConfiguration, UnsupportedContentType
 from tests.unit.mock import ANY_INSTANCE_OF
 
 
@@ -80,7 +80,7 @@ class TestHttpLoader:
         target._fp = mock_fp
         target.close()
 
-        mock_fp.close.assert_called()
+        assert target._fp is None
 
     def test_iter(self, target: http_loader.HttpLoader, monkeypatch):
         retrieve_file_mock = mock.Mock(
