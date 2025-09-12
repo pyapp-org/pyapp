@@ -55,7 +55,7 @@ class LoggingSettings(SettingsDef):
     
     """
 
-    LOGGING: dict[str, dict] = {}
+    LOGGING: dict[str, dict | int] = {}
     """Logging configuration.
     
     The following configuration is applied by default::

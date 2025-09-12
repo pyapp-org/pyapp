@@ -8,9 +8,14 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13']
+        experimental: [false]
+        include:
+          - python-version: "3.14-dev"
+            experimental: true
 
     name: Test Python ${{ matrix.python-version }}
     steps:
@@ -30,10 +35,13 @@ jobs:
 
     - name: Test with pytest
       run: |
-        poetry run pytest --junit-xml=reports/xunit-result-${{ matrix.python-version }}.xml --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml tests
+        poetry run coverage run --rcfile=.coveragerc \
+          -m pytest --no-cov --junit-xml=reports/xunit-result-${{ matrix.python-version }}.xml tests
+        poetry run coverage xml --rcfile=.coveragerc \
+          -oreports/coverage-${{ matrix.python-version }}.xml
 
     - name: Analyze with SonarCloud
-      uses: sonarsource/sonarcloud-github-action@master
+      uses: SonarSource/sonarqube-scan-action@v5.0.0
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

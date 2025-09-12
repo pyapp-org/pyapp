@@ -1,10 +1,10 @@
 """
-*Dynamic configuration based Instance factories*
+*Dynamic configuration-based Instance factories*
 
 A provider is similar to a plugin in that they are created dynamically from
-configuration. The main difference is that a providers configuration is
-stored outside of settings. This could be in a database to provide user
-specific endpoints eg fetching social media feeds.
+configuration. The main difference is that a provider configuration is
+stored outside of settings. This could be in a database to provide
+user-specific endpoints e.g. fetching social media feeds.
 
 This library provides the basic infrastructure for utilising providers.
 
@@ -59,7 +59,8 @@ Example::CheckMessage
 
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict, namedtuple
-from typing import Any, Dict, Generic, Optional, Sequence, Tuple, Type, TypeVar, Union
+from collections.abc import Sequence
+from typing import Any, Generic, TypeVar, Union
 
 from pyapp import checks
 from pyapp.conf import settings
@@ -80,7 +81,7 @@ class ProviderFactoryBase(Generic[PT_co], metaclass=ABCMeta):
     Factory to instantiate and configure a provider.
     """
 
-    def __init__(self, setting: str, abc: Type[PT_co] = None):
+    def __init__(self, setting: str, abc: type[PT_co] = None):
         self.setting = setting
         self.abc = abc
 
@@ -95,7 +96,7 @@ class ProviderFactoryBase(Generic[PT_co], metaclass=ABCMeta):
         return provider(**provider_config)
 
     @cached_property
-    def providers(self) -> Dict[str, Any]:
+    def providers(self) -> dict[str, Any]:
         """
         List of providers defined in settings.
         """
@@ -136,9 +137,9 @@ class ProviderFactoryBase(Generic[PT_co], metaclass=ABCMeta):
             ) from None
 
     @abstractmethod
-    def load_config(self, *args, **kwargs) -> Tuple[str, Dict[str, Any]]:
+    def load_config(self, *args, **kwargs) -> tuple[str, dict[str, Any]]:
         """
-        Load configuration for data store.
+        Load configuration from a data store.
 
         This method should raise a ProviderConfigNotFound exception if configuration cannot be loaded
         """
@@ -148,7 +149,7 @@ class ProviderFactoryBase(Generic[PT_co], metaclass=ABCMeta):
 
     def checks(self, **kwargs):
         """
-        Run checks to ensure settings are valid, secondly run checks against
+        Run checks to ensure settings are valid, secondly, run checks against
         individual definitions in settings.
 
         """
@@ -188,7 +189,7 @@ class ProviderFactoryBase(Generic[PT_co], metaclass=ABCMeta):
 
     def check_instance(
         self, idx: int, provider_ref: str, **_
-    ) -> Optional[Union["checks.CheckMessage", Sequence["checks.CheckMessage"]]]:
+    ) -> Union["checks.CheckMessage", Sequence["checks.CheckMessage"], None]:
         """
         Checks for individual providers.
         """

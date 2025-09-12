@@ -47,7 +47,7 @@ class CheckMessage:
             paragraphs. Note that any messages are word wrapped to 80 chars
             for display.
         :param obj: An object this message relates to (useful in the case of
-            multiple database connections for example).
+            multiple database connections, for example).
 
         """
         self.level = level
@@ -175,7 +175,7 @@ class Critical(CheckMessage):
 
 class UnhandledException(CheckMessage):
     """
-    Special case of error message for unhandled exceptions
+    Special case of an error message for unhandled exceptions
     """
 
     def __init__(

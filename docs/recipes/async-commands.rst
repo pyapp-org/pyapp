@@ -2,7 +2,7 @@ Using Async Commands
 ====================
 
 As of pyApp 4.3 command handlers can be defined as Async functions and pyApp will
-take care of setting up an event loop call the handler.
+take care of setting up an event loop to call the handler.
 
 .. code-block:: python
 

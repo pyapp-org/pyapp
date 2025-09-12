@@ -2,14 +2,14 @@
 Typed Settings
 ~~~~~~~~~~~~~~
 
-Building on the standard settings features that is a core part of pyApp typed
+Building on the standard settings features that are a core part of pyApp typed
 settings provides a more convenient way to define and access settings.
 
 Default settings are defined using a `SettingsDef` object along with the expected
 type via type annotations. The settings can then be accessed at runtime using the
 same definition.
 
-For example settings are defined in the `default_settings.py` file as:
+For example, settings are defined in the `default_settings.py` file as:
 
 .. code-block:: python
 
@@ -34,9 +34,6 @@ the benefits of auto-completion and typing.
 
 """
 
-from collections.abc import Mapping
-from typing import Any
-
 
 class SettingDescriptor:
     """Descriptor that can access a named setting."""
@@ -47,7 +44,7 @@ class SettingDescriptor:
         self.setting = setting
 
     def __get__(self, instance, owner):
-        from pyapp.conf import settings
+        from pyapp.conf import settings  # noqa: PLC0415
 
         return getattr(settings, self.setting, None)
 
@@ -55,7 +52,7 @@ class SettingDescriptor:
 class SettingsDefType(type):
     """Typed Settings definition type."""
 
-    def __new__(cls, name: str, bases, dct: dict[str, Any], *, prefix: str = ""):
+    def __new__(cls, name: str, bases, dct: dict[str, ...], *, prefix: str = ""):
         """Generate new type."""
 
         if prefix and not prefix.isupper():
@@ -82,5 +79,5 @@ class SettingsDef(metaclass=SettingsDefType):
     """Typed settings definition."""
 
 
-NamedConfig = Mapping[str, Mapping[str, Any]]
-NamedPluginConfig = Mapping[str, tuple[str, Mapping[str, Any]]]
+NamedConfig = dict[str, dict[str, ...]]
+NamedPluginConfig = dict[str, tuple[str, dict[str, ...]]]

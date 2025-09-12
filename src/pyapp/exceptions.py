@@ -5,14 +5,14 @@ Exceptions
 Collection of standard exceptions.
 
 """
-from typing import Optional
 
 
 class ApplicationExit(SystemExit):
     """Exception used to directly exit a PyApp application.
 
     Will be caught by the CliApplication instance."""
-    def __init__(self, status_code: int, message: Optional[str] = None):
+
+    def __init__(self, status_code: int, message: str | None = None):
         super().__init__(status_code)
         self.status_code = status_code
         self.message = message
@@ -85,7 +85,7 @@ class ProviderConfigNotFound(ProviderException):
 
 class UnsupportedContentType(Exception):
     """
-    Content type of the file is not supported
+    The content type of the file is not supported
     """
 
 

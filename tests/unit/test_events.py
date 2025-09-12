@@ -1,6 +1,8 @@
-from typing import Awaitable, Callable
+import asyncio
+from collections.abc import Awaitable, Callable
 
 import pytest
+
 from pyapp import events
 
 
@@ -231,24 +233,23 @@ class TestCallback:
 
 
 class TestAsyncCallbackBinding:
-    def test_call__bound(self, event_loop):
+    def test_call__bound(self):
         actual = []
-
         target = events.AsyncCallbackBinding()
 
         @events.bind_to(target)
         async def on_target(*args, **kwargs):
             actual.extend((args, kwargs))
 
-        event_loop.run_until_complete(target("a", "b", c="d", e="f"))
+        asyncio.run(target("a", "b", c="d", e="f"))
 
         assert actual == [("a", "b"), {"c": "d", "e": "f"}]
 
-    def test_call__unbound(self, event_loop):
+    def test_call__unbound(self):
         # Should just do nothing
         target = events.AsyncCallbackBinding()
 
-        event_loop.run_until_complete(target("a", "b", c="d", e="f"))
+        asyncio.run(target("a", "b", c="d", e="f"))
 
 
 class TestAsyncCallback:

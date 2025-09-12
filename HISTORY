@@ -1,10 +1,31 @@
+4.17rc2
+=======
+
+Features
+--------
+
+- Arguments no longer require Dict/Optional/Tuple etc can use dict,tuple,list
+  str | None
+
+
+Project Changes
+---------------
+
+- Upgraded type hints to use builtin types eg `str | None` vs `Optional[str]`
+- A lot of spelling and grammar fixes in doc strings
+- Fixed issue causing reported test coverage to be well below expected value.
+  PyApp registers as a PyTest plugin to provide fixtures to simplify testing;
+  this causes parts of the PyApp to be imported before coverage tracking is
+  activated causing ~20% of SLOC not being included in the coverage report.
+
+
 4.17rc1
 =======
 
 Features
 --------
 
-- Add root_execution_policy used to define behaviour of pyapp when executed as 
+- Add root_execution_policy used to define behaviour of pyapp when executed as
   root or Administrator. The default behaviour is to deny execution. This can
   be overridden by specifying an alternate policy or by using the environment
   variable PYAPP_ROOT_EXECUTION_POLICY.

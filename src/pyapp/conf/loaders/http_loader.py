@@ -8,8 +8,7 @@ Loads settings from an HTTP endpoint (HTTPS is recommended)
 
 import contextlib
 import ssl
-import tempfile
-from typing import TextIO, Tuple
+from io import BytesIO
 from urllib.error import ContentTooShortError
 from urllib.request import urlopen
 
@@ -20,7 +19,7 @@ from pyapp.conf.loaders.content_types import content_type_from_url, registry
 from pyapp.exceptions import InvalidConfiguration
 
 
-def retrieve_file(url: URL) -> Tuple[TextIO, str]:
+def retrieve_file(url: URL) -> tuple[BytesIO, str]:
     """Fetch a file from a URL (handling SSL).
 
     This is based off `urllib.request.urlretrieve`.
@@ -46,31 +45,28 @@ def retrieve_file(url: URL) -> Tuple[TextIO, str]:
         if "Content-Length" in headers:
             size = int(headers["Content-Length"])
 
-        content_type = (
+        content_type: str = (
             headers["Content-Type"]
             if "Content-Type" in headers
             else content_type_from_url(url)
         )
 
-        tfp = tempfile.TemporaryFile()
+        data = BytesIO()
         while True:
             block = response.read(block_size)
             if not block:
                 break
             read += len(block)
-            tfp.write(block)
+            data.write(block)
 
         # Seek to start
-        tfp.seek(0)
+        data.seek(0)
 
     if size >= 0 and read < size:
-        tfp.close()
+        msg = f"retrieval incomplete: got only {read} out of {size} bytes"
+        raise ContentTooShortError(msg, headers)
 
-        raise ContentTooShortError(
-            f"retrieval incomplete: got only {read} out of {size} bytes", headers
-        )
-
-    return tfp, content_type
+    return data, content_type
 
 
 class HttpLoader(Loader):
@@ -93,7 +89,7 @@ class HttpLoader(Loader):
 
     def __init__(self, url: URL):
         self.url = url
-        self._fp = None
+        self._fp: BytesIO | None = None
         self.content_type = None
 
     def __del__(self):
@@ -129,5 +125,4 @@ class HttpLoader(Loader):
         Ensure the file pointer is closed
         """
         if self._fp:
-            self._fp.close()
             self._fp = None

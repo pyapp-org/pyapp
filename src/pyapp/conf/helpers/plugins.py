@@ -1,12 +1,12 @@
 """
-*Configuration based Instance factories*
+*Configuration-based Instance factories*
 
 Inversion of control style plugin factories that return an object instance
 based on a named definition from configuration. Makes use of
 :py:mod:`pyapp.conf` to store instance definitions in settings.
 
-An instance definition includes both the object type as well as arguments
-provided at instantiation, this can be used to provide for example connections
+An instance definition includes both the object type and arguments
+provided at instantiation; this can be used to provide, for example, connections
 to different multiple different database instances (that use the same database
 engine and connection library).
 
@@ -18,18 +18,18 @@ Usage::
     >>> foo_factory = NamedPluginFactory('FOO')
     >>> instance = foo_factory.create()
 
-or taking advantage of the factory being callable we can create a singleton
+or taking advantage of the factory being callable, we can create a singleton
 factory::
 
     >>> get_bar_instance = NamedSingletonPluginFactory('BAR')
-    >>> # Get iron bar instance
+    >>> # Get an iron bar instance
     >>> bar = get_bar_instance.create('iron')
 
 """
 
 import threading
 from abc import ABCMeta
-from typing import Type, TypeVar
+from typing import TypeVar
 
 from pyapp import checks
 from pyapp.conf import settings
@@ -84,7 +84,7 @@ class NamedPluginFactory(FactoryMixin[PT_co], metaclass=ABCMeta):
     """
 
     def __init__(
-        self, setting: str, *, abc: Type[PT_co] = None, default_name: str = "default"
+        self, setting: str, *, abc: type[PT_co] = None, default_name: str = "default"
     ):
         """
         Initialise a named factory.

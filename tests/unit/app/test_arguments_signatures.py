@@ -1,11 +1,13 @@
 import argparse
 import datetime
 from argparse import FileType
+from collections.abc import Callable, Sequence
 from enum import Enum
-from typing import Callable, Dict, Literal, Optional, Sequence, Tuple, Union
+from typing import Literal
 from unittest import mock
 
 import pytest
+
 from pyapp.app import CommandOptions
 from pyapp.app.argument_actions import (
     AppendEnumName,
@@ -192,30 +194,30 @@ def func_sample_15(*, arg1: Sequence[str]):
 
 
 @expected_args(mock.call("ARG1", type=str, action=KeyValueAction, nargs="+"))
-def func_sample_16(arg1: Dict[str, str]):
+def func_sample_16(arg1: dict[str, str]):
     return arg1
 
 
 @expected_args(mock.call("--arg1", type=str, action=KeyValueAction))
-def func_sample_17(*, arg1: Dict[str, str]):
+def func_sample_17(*, arg1: dict[str, str]):
     return arg1
 
 
 @expected_args(mock.call("--arg1", type=str, nargs=3))
 @call_args("--arg1", "a", "b", "c", expected=["a", "b", "c"])
-def func_sample_18(*, arg1: Tuple[str, str, str]):
+def func_sample_18(*, arg1: tuple[str, str, str]):
     return arg1
 
 
 @expected_args(mock.call("ARG1", type=str, nargs="?"))
 @call_args(expected=None)
-def func_sample_19(arg1: Optional[str]):
+def func_sample_19(arg1: str | None):
     return arg1
 
 
 @expected_args(mock.call("--arg1", type=str, default=None))
 @call_args(expected=None)
-def func_sample_20(*, arg1: Optional[str]):
+def func_sample_20(*, arg1: str | None):
     return arg1
 
 
@@ -266,7 +268,7 @@ def func_sample_32(*, arg1: Callable[[int], None] = None):
     return arg1
 
 
-def func_sample_33(*, arg1: Union[int, str, None] = None):
+def func_sample_33(*, arg1: int | str | None = None):
     return arg1
 
 
@@ -407,7 +409,8 @@ def test_from_parameter__only_optional_unions():
     mock_parser = mock.Mock()
 
     with pytest.raises(
-        TypeError, match=r"Only Optional\[TYPE\] or Union\[TYPE, None\] are supported"
+        TypeError,
+        match=r"Only TYPE | None, Optional\[TYPE\] or Union\[TYPE, None\] are supported",
     ):
         CommandProxy(func_sample_33, mock_parser)
 

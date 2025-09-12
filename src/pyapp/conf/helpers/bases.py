@@ -3,6 +3,7 @@ Conf Helper Bases
 ~~~~~~~~~~~~~~~~~
 
 """
+
 import abc
 import threading
 from abc import ABCMeta
@@ -50,9 +51,9 @@ class SingletonFactoryMixin(FactoryMixin[FT], metaclass=ABCMeta):
     Mixin that provides a single named instance.
 
     This instance factory type is useful for instance types that only require
-    a single instance eg database connections, web service agents.
+    a single instance e.g. database connections, web service agents.
 
-    If your instance types are not thread safe it is recommended that the
+    If your instance types are not thread safe, it is recommended that the
     :py:class:`ThreadLocalSingletonFactoryMixin` is used.
 
     """
@@ -77,7 +78,7 @@ class ThreadLocalSingletonFactoryMixin(FactoryMixin[FT], metaclass=ABCMeta):
     Mixin that provides a single named instance per thread.
 
     This instance factory type is useful for instance types that only require
-    a single instance eg database connections, web service agents and that are
+    a single instance e.g. database connections, web service agents and that are
     not thread safe.
 
     """
