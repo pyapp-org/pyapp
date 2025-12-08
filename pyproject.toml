@@ -44,7 +44,7 @@ pyyaml = {version = "*", optional = true }
 toml = {version = "*", optional = true }
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
+pytest = ">=8,<10"
 pytest-cov = "^7.0.0"
 pytest-asyncio = "^1.2"
 sphinx = "^8.1"
